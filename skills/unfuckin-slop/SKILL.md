@@ -98,9 +98,9 @@ No praise padding. Distinguish taste from defect: "I would have picked another t
 
 This skill ships three cooperating pieces. Use them together; none of them alone is the product.
 
-1. **Skill (this file + 29 cards).** Design knowledge, atom cards, router. The thin layer you are reading.
-2. **`slop-mcp` (Model Context Protocol server).** Exposes `search_cards`, `get_card`, `list_cards`, `pack`, `detect_mode`, `lint`, and `inspiration_sources` as tools. Any MCP client can call the knowledge layer directly instead of shelling out. Run with `slop-mcp` (stdio).
-3. **Playwright MCP (`@playwright/mcp`).** The browser. Inspiration galleries (collectui.com, pixlpin.com, Mobbin, Refero) are JavaScript apps; plain HTTP returns an empty shell. Playwright MCP renders them, takes screenshots, and holds your login via storage state. Install: `npx @playwright/mcp@latest`.
+1. **Skill (this file + 30 cards).** Design knowledge, atom cards, router. The thin layer you are reading.
+2. **`slop-mcp` (Model Context Protocol server).** Exposes `search_cards`, `get_card`, `list_cards`, `pack`, `detect_mode`, `lint`, `inspiration_sources`, `collectui_categories`, `pixlpin_tags`, and `inspiration_recipe` as tools. Any MCP client can call the knowledge and inspiration layers directly. Run with `slop-mcp` (stdio).
+3. **Playwright MCP (`@playwright/mcp`).** The browser pair. Free inspiration galleries (collectui.com, pixlpin.com) are client-rendered SPAs; plain HTTP returns an empty shell. Playwright MCP renders them and captures screenshots without paywalls or subscriptions. Install: `npx @playwright/mcp@latest`.
 
 Recommended client config (`.mcp.json`):
 
@@ -113,7 +113,7 @@ Recommended client config (`.mcp.json`):
 }
 ```
 
-Inspiration workflow: `inspiration_sources` (or the `imp.inspiration` card) gives URLs; Playwright MCP renders them; cross-check against `imp.craft-floor` and `imp.bans`; then `slop lint` the result. Log in to paid galleries once and save storage state.
+Inspiration workflow: `inspiration_sources` gives direct deep category links for CollectUI and tag filters for Pixlpin; Playwright MCP renders them; cross-check against `imp.craft-floor` and `imp.bans`; then `slop lint` the result.
 
 ## Attribution
 

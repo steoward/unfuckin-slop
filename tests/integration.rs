@@ -88,3 +88,68 @@ fn doctor_reports_library_status() {
     assert_eq!(lib.cards.len(), 30);
     assert!(lib.total_tokens() > 10000);
 }
+
+#[tokio::test]
+async fn mcp_inspiration_sources_targets_free_galleries_only() {
+    use rmcp::handler::server::wrapper::Parameters;
+    use unfuckin_slop::mcp::{InspoServer, InspirationArgs};
+
+    let server = InspoServer::default();
+
+    // Test pricing query
+    let res = server.inspiration_sources(Parameters(InspirationArgs {
+        query: "pricing table".into(),
+        site: "all".into(),
+    })).await;
+
+    assert!(res.contains("CollectUI"), "must include CollectUI");
+    assert!(res.contains("Pixlpin"), "must include Pixlpin");
+    assert!(res.contains("pricing-table-ui-design-inspiration"), "must match direct category");
+    assert!(!res.to_lowercase().contains("mobbin"), "mobbin must not be present");
+    assert!(!res.to_lowercase().contains("refero"), "refero must not be present");
+}
+
+#[tokio::test]
+async fn mcp_collectui_categories_lists_and_filters() {
+    use rmcp::handler::server::wrapper::Parameters;
+    use unfuckin_slop::mcp::{InspoServer, CollectUICategoriesArgs};
+
+    let server = InspoServer::default();
+
+    let all_cats = server.collectui_categories(Parameters(CollectUICategoriesArgs {
+        filter: None,
+    })).await;
+    assert!(all_cats.contains("\"count\": 20"));
+    assert!(all_cats.contains("sign-in"));
+    assert!(all_cats.contains("pricing"));
+
+    // Test filter
+    let auth_cats = server.collectui_categories(Parameters(CollectUICategoriesArgs {
+        filter: Some("auth".into()),
+    })).await;
+    assert!(auth_cats.contains("sign-in"));
+    assert!(auth_cats.contains("sign-up"));
+    assert!(!auth_cats.contains("calculator"));
+}
+
+#[tokio::test]
+async fn mcp_pixlpin_tags_and_recipes() {
+    use rmcp::handler::server::wrapper::Parameters;
+    use unfuckin_slop::mcp::{InspoServer, PixlpinTagsArgs, RecipeArgs};
+
+    let server = InspoServer::default();
+
+    let tags = server.pixlpin_tags(Parameters(PixlpinTagsArgs {
+        filter: Some("dark".into()),
+    })).await;
+    assert!(tags.contains("dark-mode"));
+
+    // Test recipe generator
+    let recipe = server.inspiration_recipe(Parameters(RecipeArgs {
+        query: "checkout flow".into(),
+        gallery: "collectui".into(),
+    })).await;
+    assert!(recipe.contains("checkout-ui-design-inspiration"));
+    assert!(recipe.contains("browser_navigate"));
+    assert!(recipe.contains("browser_wait_for"));
+}

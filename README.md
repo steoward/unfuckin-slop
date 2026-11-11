@@ -147,9 +147,9 @@ Unfuckin-Slop is not a single thing. It ships three cooperating pieces:
 
 1. **The skill** (this folder + 30 cards): design knowledge and the router.
 2. **`slop-mcp`**: an MCP server (stdio) exposing `search_cards`, `get_card`, `list_cards`, `pack`,
-   `detect_mode`, `lint`, and `inspiration_sources`. Run it with `slop-mcp`.
-3. **Playwright MCP** (`@playwright/mcp`): the browser. Inspiration galleries (collectui.com,
-   pixlpin.com, Mobbin, Refero) are JavaScript apps; plain HTTP returns an empty shell.
+   `detect_mode`, `lint`, `inspiration_sources`, `collectui_categories`, `pixlpin_tags`, and `inspiration_recipe`. Run it with `slop-mcp`.
+3. **Playwright MCP** (`@playwright/mcp`): the browser. Free inspiration galleries (collectui.com,
+   pixlpin.com) are client-rendered SPAs; plain HTTP returns an empty shell.
 
 Wire both in your MCP client (see `.mcp.json`):
 
@@ -162,9 +162,9 @@ Wire both in your MCP client (see `.mcp.json`):
 }
 ```
 
-Workflow: `inspiration_sources` (or the `imp.inspiration` card) gives gallery URLs → Playwright MCP
-renders them and captures shots → cross-check against `imp.craft-floor` and `imp.bans` → `slop lint`
-the result. Log in to paid galleries once and save Playwright storage state for reuse.
+Workflow: `inspiration_sources` gives direct deep category links for CollectUI and tag filters for Pixlpin → Playwright MCP
+renders them and captures shots with zero logins or paywalls → cross-check against `imp.craft-floor` and `imp.bans` → `slop lint`
+the result.
 
 Respect copyrights: these galleries are reference material, never a source to redistribute.
 

@@ -22,8 +22,8 @@ pub fn detect_mode(task: &str) -> String {
     let has = |words: &[&str]| words.iter().any(|w| t.contains(w));
 
     if has(&[
-        "inspiration", "reference", "example", "gallery", "collectui", "pixlpin", "mobbin", "refero",
-        "shot", "dribbble", "pattern", "inspo",
+        "inspiration", "reference", "example", "gallery", "collectui", "pixlpin",
+        "shot", "dribbble", "pattern", "inspo", "screens", "ui pattern",
     ]) {
         "inspire".to_string()
     } else if has(&["gesture", "swipe", "drag", "grab", "pointer", "touch", "carousel"]) {
