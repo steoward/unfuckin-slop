@@ -1,6 +1,6 @@
 /**
- * STRATA Model 01 - State-of-the-Art Physical Acoustic Console Engine
- * Built under Unfuckin-Slop discipline and synthesized from CollectUI & Pixlpin inspirations.
+ * AETHER OS - Spatial Neural Computing Workstation Engine
+ * Engineered under Unfuckin-Slop discipline and CollectUI / Pixlpin inspirations.
  */
 
 (function () {
@@ -29,7 +29,7 @@
       }
     }
 
-    playDetentTick(freq = 540) {
+    playDetentTick(freq = 560) {
       if (!this.enabled) return;
       this.ensureContext();
       if (!this.ctx) return;
@@ -41,16 +41,16 @@
 
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, now);
-        osc.frequency.exponentialRampToValueAtTime(140, now + 0.018);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.016);
 
         gain.gain.setValueAtTime(0.045, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.016);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
 
         osc.start(now);
-        osc.stop(now + 0.018);
+        osc.stop(now + 0.016);
       } catch (err) {
         // Silently catch audio policy blocks
       }
@@ -67,17 +67,17 @@
         const gain = this.ctx.createGain();
 
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(360, now);
-        osc.frequency.exponentialRampToValueAtTime(90, now + 0.024);
+        osc.frequency.setValueAtTime(380, now);
+        osc.frequency.exponentialRampToValueAtTime(95, now + 0.022);
 
-        gain.gain.setValueAtTime(0.06, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.024);
+        gain.gain.setValueAtTime(0.055, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.022);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
 
         osc.start(now);
-        osc.stop(now + 0.024);
+        osc.stop(now + 0.022);
       } catch (err) {
         // Silently catch audio policy blocks
       }
@@ -96,17 +96,17 @@
           const t = now + offset;
 
           osc.type = 'square';
-          osc.frequency.setValueAtTime(idx === 0 ? 460 : 260, t);
-          osc.frequency.exponentialRampToValueAtTime(70, t + 0.016);
+          osc.frequency.setValueAtTime(idx === 0 ? 480 : 280, t);
+          osc.frequency.exponentialRampToValueAtTime(75, t + 0.015);
 
           gain.gain.setValueAtTime(0.035, t);
-          gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.016);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.015);
 
           osc.connect(gain);
           gain.connect(this.ctx.destination);
 
           osc.start(t);
-          osc.stop(t + 0.016);
+          osc.stop(t + 0.015);
         });
       } catch (err) {
         // Silently catch audio policy blocks
@@ -120,7 +120,7 @@
 
       try {
         const now = this.ctx.currentTime;
-        const chord = [523.25, 659.25, 783.99, 1046.5]; // C Major Chord
+        const chord = [523.25, 659.25, 783.99, 1046.5, 1318.5]; // C Major 9
         chord.forEach((freq, idx) => {
           const osc = this.ctx.createOscillator();
           const gain = this.ctx.createGain();
@@ -130,20 +130,20 @@
           osc.frequency.setValueAtTime(freq, startT);
 
           gain.gain.setValueAtTime(0.04, startT);
-          gain.gain.exponentialRampToValueAtTime(0.0001, startT + 0.38);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startT + 0.45);
 
           osc.connect(gain);
           gain.connect(this.ctx.destination);
 
           osc.start(startT);
-          osc.stop(startT + 0.38);
+          osc.stop(startT + 0.45);
         });
       } catch (err) {
         // Silently catch audio policy blocks
       }
     }
 
-    startAcousticTone(freq = 220) {
+    startAcousticTone(freq = 260) {
       if (!this.enabled || this.isDroneActive) return;
       this.ensureContext();
       if (!this.ctx) return;
@@ -157,8 +157,8 @@
         this.droneOsc.frequency.setValueAtTime(freq, this.ctx.currentTime);
 
         this.droneFilter.type = 'lowpass';
-        this.droneFilter.frequency.setValueAtTime(800, this.ctx.currentTime);
-        this.droneFilter.Q.setValueAtTime(3.5, this.ctx.currentTime);
+        this.droneFilter.frequency.setValueAtTime(900, this.ctx.currentTime);
+        this.droneFilter.Q.setValueAtTime(3.8, this.ctx.currentTime);
 
         this.droneGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
         this.droneGain.gain.exponentialRampToValueAtTime(0.03, this.ctx.currentTime + 0.06);
@@ -212,74 +212,82 @@
 
   const haptics = new HapticAudioEngine();
 
-  // --- Instrument State ---
-  let spatialAngle = 120; // 0 to 360 deg
-  let resonanceQ = 42;    // 0 to 100 (4.2 dB)
-  let activeHarmonicMode = 'binaural';
+  // --- Workstation State Variables ---
+  let orbitalAngle = 140; // 0 to 360 deg
+  let resonanceQ = 48;    // 0 to 100 (4.8 dB)
+  let activeAlgorithm = 'neural';
   let isManipulatingDial = false;
 
+  // --- 3D Spatial Vector Matrix Math ---
+  let rotX = 0.25;
+  let rotY = 0.45;
+  let targetRotX = 0.25;
+  let targetRotY = 0.45;
+  let velRotX = 0;
+  let velRotY = 0;
+  let isDraggingCanvas = false;
+  let lastMouseX = 0;
+  let lastMouseY = 0;
+
   // --- DOM Elements ---
-  const radarContainer = document.getElementById('radar-container');
-  const knobSpatial = document.getElementById('knob-spatial');
-  const spatialRadarCanvas = document.getElementById('spatial-radar-canvas');
-  const readoutSpatialAngle = document.getElementById('readout-spatial-angle');
+  const cosmicCanvas = document.getElementById('cosmic-canvas');
+  const spatialCanvas = document.getElementById('spatial-canvas');
+  const hudModeReadout = document.getElementById('hud-mode-readout');
+  const hudTensorFrequency = document.getElementById('hud-tensor-frequency');
+  const hudCoordinates = document.getElementById('hud-coordinates');
+  const hudFpsCounter = document.getElementById('hud-fps-counter');
+  const busMeter = document.getElementById('bus-meter');
+
+  const dialOrbital = document.getElementById('dial-orbital');
+  const rotorOrbital = document.getElementById('rotor-orbital');
+  const metricOrbitalAngle = document.getElementById('metric-orbital-angle');
 
   const dialResonance = document.getElementById('dial-resonance');
-  const knobResonance = document.getElementById('knob-resonance');
-  const readoutResonanceQ = document.getElementById('readout-resonance-q');
+  const rotorResonance = document.getElementById('rotor-resonance');
+  const metricResonanceQ = document.getElementById('metric-resonance-q');
 
-  const vectorOscilloscopeCanvas = document.getElementById('vector-oscilloscope-canvas');
-  const hudModeDisplay = document.getElementById('hud-mode-display');
-  const hudHarmonicFreq = document.getElementById('hud-harmonic-freq');
-  const hudImpedance = document.getElementById('hud-impedance');
-  const deckTelemetryStatus = document.getElementById('deck-telemetry-status');
+  const finishTitaniumBtn = document.getElementById('finish-titanium');
+  const finishObsidianBtn = document.getElementById('finish-obsidian');
+  const chassisFinishChoice = document.getElementById('chassis-finish-choice');
+  const hapticAudioSwitch = document.getElementById('haptic-audio-switch');
+  const audioStateGlyph = document.getElementById('audio-state-glyph');
 
-  const meterLeft = document.getElementById('meter-left');
-  const meterRight = document.getElementById('meter-right');
+  const modeSwitchButtons = document.querySelectorAll('.mode-switch-btn');
+  const explorerTabs = document.querySelectorAll('.explorer-tab');
 
-  const btnFinishObsidian = document.getElementById('btn-finish-obsidian');
-  const btnFinishSilver = document.getElementById('btn-finish-silver');
-  const selectFinishChoice = document.getElementById('select-finish-choice');
-  const audioFeedbackBtn = document.getElementById('audio-feedback-btn');
-  const audioIconDisplay = document.getElementById('audio-icon-display');
-
-  const modeSwitches = document.querySelectorAll('.tactile-switch');
-  const architectureTabs = document.querySelectorAll('.terminal-tab');
-
-  const allocationForm = document.getElementById('allocation-form');
-  const inputClientName = document.getElementById('input-client-name');
-  const inputClientEmail = document.getElementById('input-client-email');
-  const feedbackName = document.getElementById('feedback-name');
-  const feedbackEmail = document.getElementById('feedback-email');
-  const allocationSuccessReceipt = document.getElementById('allocation-success-receipt');
-  const receiptMessageText = document.getElementById('receipt-message-text');
-  const btnSubmitAllocation = document.getElementById('btn-submit-allocation');
+  const reservationForm = document.getElementById('reservation-form');
+  const clientNameInput = document.getElementById('client-name');
+  const clientEmailInput = document.getElementById('client-email');
+  const nameErrorDisplay = document.getElementById('name-error-display');
+  const emailErrorDisplay = document.getElementById('email-error-display');
+  const allocationSuccessModal = document.getElementById('allocation-success-modal');
+  const successDynamicMessage = document.getElementById('success-dynamic-message');
+  const btnConfirmReservation = document.getElementById('btn-confirm-reservation');
 
   // --- Rotary Knob Controller ---
-  class DialController {
-    constructor(element, knob, onValueChange, options = {}) {
+  class RotaryKnob {
+    constructor(element, rotor, onChange, options = {}) {
       this.element = element;
-      this.knob = knob;
-      this.onValueChange = onValueChange;
+      this.rotor = rotor;
+      this.onChange = onChange;
       this.min = options.min ?? 0;
       this.max = options.max ?? 360;
       this.step = options.step ?? 1;
-      this.val = options.initial ?? 0;
+      this.value = options.initial ?? 0;
+      this.lastTickVal = this.value;
       this.isDragging = false;
-      this.lastTickVal = this.val;
 
       this.init();
     }
 
     init() {
       this.render();
-      this.element.addEventListener('pointerdown', this.onPointerDown.bind(this));
-      window.addEventListener('pointermove', this.onPointerMove.bind(this));
-      window.addEventListener('pointerup', this.onPointerUp.bind(this));
-      window.addEventListener('pointercancel', this.onPointerUp.bind(this));
-
+      this.element.addEventListener('pointerdown', this.onDown.bind(this));
+      window.addEventListener('pointermove', this.onMove.bind(this));
+      window.addEventListener('pointerup', this.onUp.bind(this));
+      window.addEventListener('pointercancel', this.onUp.bind(this));
       this.element.addEventListener('wheel', this.onWheel.bind(this), { passive: false });
-      this.element.addEventListener('keydown', this.onKeyDown.bind(this));
+      this.element.addEventListener('keydown', this.onKey.bind(this));
     }
 
     getCenter() {
@@ -291,37 +299,34 @@
     }
 
     getAngle(clientX, clientY) {
-      const center = this.getCenter();
-      const dx = clientX - center.x;
-      const dy = clientY - center.y;
+      const c = this.getCenter();
+      const dx = clientX - c.x;
+      const dy = clientY - c.y;
       let deg = Math.atan2(dy, dx) * (180 / Math.PI);
       deg = (deg + 90 + 360) % 360;
       return deg;
     }
 
-    onPointerDown(e) {
+    onDown(e) {
       if (e.button !== 0 && e.pointerType === 'mouse') return;
       this.isDragging = true;
       isManipulatingDial = true;
       this.element.setPointerCapture(e.pointerId);
 
       const deg = this.getAngle(e.clientX, e.clientY);
-      this.updateFromAngle(deg);
+      this.updateAngle(deg);
 
-      haptics.startAcousticTone(220 + (this.val / this.max) * 220);
-      haptics.playDetentTick(580);
-      if (deckTelemetryStatus) {
-        deckTelemetryStatus.textContent = 'OPTICAL DETENT: ROTATING';
-      }
+      haptics.startAcousticTone(240 + (this.value / this.max) * 240);
+      haptics.playDetentTick(620);
     }
 
-    onPointerMove(e) {
+    onMove(e) {
       if (!this.isDragging) return;
       const deg = this.getAngle(e.clientX, e.clientY);
-      this.updateFromAngle(deg);
+      this.updateAngle(deg);
     }
 
-    onPointerUp(e) {
+    onUp(e) {
       if (!this.isDragging) return;
       this.isDragging = false;
       isManipulatingDial = false;
@@ -331,24 +336,21 @@
         // Ignored
       }
       haptics.stopAcousticTone();
-      if (deckTelemetryStatus) {
-        deckTelemetryStatus.textContent = 'MAGNETIC BRAKE: ENGAGED';
-      }
     }
 
     onWheel(e) {
       e.preventDefault();
       const delta = e.deltaY < 0 ? this.step * 2 : -this.step * 2;
-      this.setClamped(this.val + delta);
+      this.setClamped(this.value + delta);
     }
 
-    onKeyDown(e) {
+    onKey(e) {
       let handled = false;
       if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
-        this.setClamped(this.val + this.step * 3);
+        this.setClamped(this.value + this.step * 3);
         handled = true;
       } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
-        this.setClamped(this.val - this.step * 3);
+        this.setClamped(this.value - this.step * 3);
         handled = true;
       }
       if (handled) {
@@ -356,7 +358,7 @@
       }
     }
 
-    updateFromAngle(deg) {
+    updateAngle(deg) {
       const ratio = deg / 360;
       const target = this.min + ratio * (this.max - this.min);
       this.setClamped(target);
@@ -366,409 +368,530 @@
       const clamped = Math.max(this.min, Math.min(this.max, target));
       const stepped = Math.round(clamped / this.step) * this.step;
 
-      if (stepped !== this.val) {
-        this.val = stepped;
+      if (stepped !== this.value) {
+        this.value = stepped;
         this.render();
-        this.element.setAttribute('aria-valuenow', this.val);
+        this.element.setAttribute('aria-valuenow', this.value);
 
-        if (Math.abs(this.val - this.lastTickVal) >= this.step) {
-          haptics.playDetentTick(480 + (this.val / this.max) * 280);
-          this.lastTickVal = this.val;
+        if (Math.abs(this.value - this.lastTickVal) >= this.step) {
+          haptics.playDetentTick(500 + (this.value / this.max) * 280);
+          this.lastTickVal = this.value;
         }
 
         haptics.updateAcousticTone(
-          200 + (this.val / this.max) * 320,
-          600 + (resonanceQ / 100) * 2400
+          220 + (this.value / this.max) * 360,
+          700 + (resonanceQ / 100) * 2600
         );
 
-        this.onValueChange(this.val);
+        this.onChange(this.value);
       }
     }
 
     render() {
-      const ratio = (this.val - this.min) / (this.max - this.min);
+      const ratio = (this.value - this.min) / (this.max - this.min);
       const deg = ratio * 360;
-      this.knob.style.transform = `rotate(${deg}deg)`;
+      this.rotor.style.transform = `rotate(${deg}deg)`;
     }
   }
 
-  // --- Initialize Dials ---
-  new DialController(radarContainer, knobSpatial, val => {
-    spatialAngle = val;
-    readoutSpatialAngle.textContent = `${Math.round(val)}°`;
-    hudHarmonicFreq.textContent = `${(320 + (val / 360) * 280).toFixed(1)} Hz`;
-  }, { min: 0, max: 360, step: 2, initial: 120 });
+  // --- Initialize Rotary Dials ---
+  new RotaryKnob(dialOrbital, rotorOrbital, val => {
+    orbitalAngle = val;
+    metricOrbitalAngle.textContent = `${Math.round(val)}°`;
+    hudTensorFrequency.textContent = `RESONANCE: ${(320 + (val / 360) * 340).toFixed(1)} Hz`;
+    targetRotY = (val / 360) * Math.PI * 2;
+  }, { min: 0, max: 360, step: 2, initial: 140 });
 
-  new DialController(dialResonance, knobResonance, val => {
+  new RotaryKnob(dialResonance, rotorResonance, val => {
     resonanceQ = val;
-    readoutResonanceQ.textContent = `${(val / 10).toFixed(1)} dB`;
-    hudImpedance.textContent = `${Math.round(200 + (val / 100) * 600)} Ω`;
-  }, { min: 0, max: 100, step: 1, initial: 42 });
+    metricResonanceQ.textContent = `${(val / 10).toFixed(1)} dB`;
+  }, { min: 0, max: 100, step: 1, initial: 48 });
 
-  // --- Circular Spatial Radar Canvas ---
-  let radarCtx = null;
+  // --- Background Cosmic Coordinate Matrix ---
+  let cosmicCtx = null;
+  const cosmicNodes = [];
 
-  function initRadarCanvas() {
-    if (!spatialRadarCanvas) return;
-    radarCtx = spatialRadarCanvas.getContext('2d');
-    renderRadar();
+  function initCosmicBackdrop() {
+    if (!cosmicCanvas) return;
+    cosmicCtx = cosmicCanvas.getContext('2d');
+    resizeCosmicCanvas();
+    window.addEventListener('resize', resizeCosmicCanvas);
+
+    for (let i = 0; i < 48; i++) {
+      cosmicNodes.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        radius: Math.random() * 1.5 + 0.5
+      });
+    }
+
+    renderCosmic();
   }
 
-  function renderRadar() {
-    if (!radarCtx || !spatialRadarCanvas) return;
-    const w = spatialRadarCanvas.width;
-    const h = spatialRadarCanvas.height;
+  function resizeCosmicCanvas() {
+    if (!cosmicCanvas) return;
+    cosmicCanvas.width = window.innerWidth;
+    cosmicCanvas.height = window.innerHeight;
+  }
+
+  function renderCosmic() {
+    if (!cosmicCtx || !cosmicCanvas) return;
+    const w = cosmicCanvas.width;
+    const h = cosmicCanvas.height;
+
+    cosmicCtx.clearRect(0, 0, w, h);
+    cosmicCtx.fillStyle = 'rgba(167, 139, 250, 0.4)';
+    cosmicCtx.strokeStyle = 'rgba(45, 212, 191, 0.04)';
+    cosmicCtx.lineWidth = 1;
+
+    for (let i = 0; i < cosmicNodes.length; i++) {
+      const n = cosmicNodes[i];
+      n.x += n.vx;
+      n.y += n.vy;
+
+      if (n.x < 0) n.x = w;
+      if (n.x > w) n.x = 0;
+      if (n.y < 0) n.y = h;
+      if (n.y > h) n.y = 0;
+
+      cosmicCtx.beginPath();
+      cosmicCtx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+      cosmicCtx.fill();
+
+      for (let j = i + 1; j < cosmicNodes.length; j++) {
+        const n2 = cosmicNodes[j];
+        const dx = n.x - n2.x;
+        const dy = n.y - n2.y;
+        const dist = dx * dx + dy * dy;
+        if (dist < 14000) {
+          cosmicCtx.beginPath();
+          cosmicCtx.moveTo(n.x, n.y);
+          cosmicCtx.lineTo(n2.x, n2.y);
+          cosmicCtx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(renderCosmic);
+  }
+
+  // --- 3D Interactive Spatial Orbital Vector Canvas ---
+  let spatialCtx = null;
+  let lastFrameTime = performance.now();
+  let smoothFps = 120;
+
+  // Generate 3D Orbital Points
+  const SPATIAL_POINTS = [];
+  const TOTAL_POINTS = 160;
+  for (let i = 0; i < TOTAL_POINTS; i++) {
+    const theta = Math.acos(1 - 2 * (i / TOTAL_POINTS));
+    const phi = Math.PI * (1 + Math.sqrt(5)) * i;
+    const r = 95;
+    SPATIAL_POINTS.push({
+      ox: r * Math.sin(theta) * Math.cos(phi),
+      oy: r * Math.sin(theta) * Math.sin(phi),
+      oz: r * Math.cos(theta),
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+
+  function initSpatialCanvas() {
+    if (!spatialCanvas) return;
+    spatialCtx = spatialCanvas.getContext('2d');
+    resizeSpatialCanvas();
+    window.addEventListener('resize', resizeSpatialCanvas);
+
+    // Mouse drag rotation on 3D canvas
+    spatialCanvas.addEventListener('pointerdown', e => {
+      isDraggingCanvas = true;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+      spatialCanvas.setPointerCapture(e.pointerId);
+      haptics.playSwitchClick();
+    });
+
+    window.addEventListener('pointermove', e => {
+      if (!isDraggingCanvas) return;
+      const dx = e.clientX - lastMouseX;
+      const dy = e.clientY - lastMouseY;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+
+      velRotY = dx * 0.008;
+      velRotX = dy * 0.008;
+      targetRotY += velRotY;
+      targetRotX += velRotX;
+    });
+
+    const stopDrag = e => {
+      if (isDraggingCanvas) {
+        isDraggingCanvas = false;
+        try {
+          spatialCanvas.releasePointerCapture(e.pointerId);
+        } catch (err) {}
+      }
+    };
+    window.addEventListener('pointerup', stopDrag);
+    window.addEventListener('pointercancel', stopDrag);
+
+    requestAnimationFrame(renderSpatial);
+  }
+
+  function resizeSpatialCanvas() {
+    if (!spatialCanvas) return;
+    const rect = spatialCanvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    spatialCanvas.width = rect.width * dpr;
+    spatialCanvas.height = rect.height * dpr;
+    if (spatialCtx) {
+      spatialCtx.scale(dpr, dpr);
+    }
+  }
+
+  function renderSpatial(now) {
+    if (!spatialCtx || !spatialCanvas) return;
+
+    // Delta time & FPS calculation
+    const delta = (now - lastFrameTime) / 1000;
+    lastFrameTime = now;
+    if (delta > 0) {
+      const instantFps = 1 / delta;
+      smoothFps = smoothFps * 0.92 + instantFps * 0.08;
+      if (hudFpsCounter) {
+        hudFpsCounter.textContent = `${Math.round(smoothFps)} FPS NATIVE`;
+      }
+    }
+
+    const rect = spatialCanvas.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
     const cx = w / 2;
     const cy = h / 2;
 
-    radarCtx.clearRect(0, 0, w, h);
+    // Clear frame
+    spatialCtx.fillStyle = 'rgba(5, 6, 8, 0.4)';
+    spatialCtx.fillRect(0, 0, w, h);
 
-    // Concentric Reticle Rings
-    radarCtx.strokeStyle = 'rgba(56, 189, 248, 0.15)';
-    radarCtx.lineWidth = 1;
-    [30, 52, 74].forEach(r => {
-      radarCtx.beginPath();
-      radarCtx.arc(cx, cy, r, 0, Math.PI * 2);
-      radarCtx.stroke();
-    });
-
-    // Crosshairs
-    radarCtx.beginPath();
-    radarCtx.moveTo(cx, 4);
-    radarCtx.lineTo(cx, h - 4);
-    radarCtx.moveTo(4, cy);
-    radarCtx.lineTo(w - 4, cy);
-    radarCtx.stroke();
-
-    // Sweeping Spatial Beam
-    const rad = (spatialAngle - 90) * (Math.PI / 180);
-    const beamLength = 72;
-    const bx = cx + Math.cos(rad) * beamLength;
-    const by = cy + Math.sin(rad) * beamLength;
-
-    radarCtx.strokeStyle = '#ff5722';
-    radarCtx.lineWidth = 2;
-    radarCtx.beginPath();
-    radarCtx.moveTo(cx, cy);
-    radarCtx.lineTo(bx, by);
-    radarCtx.stroke();
-
-    // Beam Target Dot
-    radarCtx.fillStyle = '#ff5722';
-    radarCtx.beginPath();
-    radarCtx.arc(bx, by, 3.5, 0, Math.PI * 2);
-    radarCtx.fill();
-
-    requestAnimationFrame(renderRadar);
-  }
-
-  // --- Real-Time Vector Oscilloscope Canvas ---
-  let oscCtx = null;
-  let wavePhase = 0;
-
-  function initOscilloscope() {
-    if (!vectorOscilloscopeCanvas) return;
-    oscCtx = vectorOscilloscopeCanvas.getContext('2d');
-    resizeOscilloscope();
-    window.addEventListener('resize', resizeOscilloscope);
-    requestAnimationFrame(renderOscilloscope);
-  }
-
-  function resizeOscilloscope() {
-    if (!vectorOscilloscopeCanvas) return;
-    const rect = vectorOscilloscopeCanvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    vectorOscilloscopeCanvas.width = rect.width * dpr;
-    vectorOscilloscopeCanvas.height = rect.height * dpr;
-    if (oscCtx) {
-      oscCtx.scale(dpr, dpr);
+    // Draw Graticule Grid
+    spatialCtx.strokeStyle = 'rgba(167, 139, 250, 0.06)';
+    spatialCtx.lineWidth = 1;
+    const gridDivs = 8;
+    for (let c = 1; c < gridDivs; c++) {
+      const gx = (w / gridDivs) * c;
+      spatialCtx.beginPath();
+      spatialCtx.moveTo(gx, 0);
+      spatialCtx.lineTo(gx, h);
+      spatialCtx.stroke();
     }
-  }
-
-  function renderOscilloscope() {
-    if (!oscCtx || !vectorOscilloscopeCanvas) return;
-    const rect = vectorOscilloscopeCanvas.getBoundingClientRect();
-    const w = rect.width;
-    const h = rect.height;
-
-    // Canvas Background
-    oscCtx.fillStyle = 'rgba(10, 12, 16, 0.45)';
-    oscCtx.fillRect(0, 0, w, h);
-
-    // Coordinate Grid Lines
-    oscCtx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
-    oscCtx.lineWidth = 1;
-    const cols = 8;
-    const rows = 4;
-    for (let c = 1; c < cols; c++) {
-      const gx = (w / cols) * c;
-      oscCtx.beginPath();
-      oscCtx.moveTo(gx, 0);
-      oscCtx.lineTo(gx, h);
-      oscCtx.stroke();
-    }
-    for (let r = 1; r < rows; r++) {
-      const gy = (h / rows) * r;
-      oscCtx.beginPath();
-      oscCtx.moveTo(0, gy);
-      oscCtx.lineTo(w, gy);
-      oscCtx.stroke();
+    for (let r = 1; r < 4; r++) {
+      const gy = (h / 4) * r;
+      spatialCtx.beginPath();
+      spatialCtx.moveTo(0, gy);
+      spatialCtx.lineTo(w, gy);
+      spatialCtx.stroke();
     }
 
-    const midY = h / 2;
-    const speed = isManipulatingDial ? 0.08 : 0.032;
-    wavePhase += speed;
+    // Auto-spin velocity & damping
+    if (!isDraggingCanvas) {
+      targetRotY += 0.005 + (orbitalAngle / 360) * 0.008;
+    }
 
-    const baseFrequency = 0.024 + (spatialAngle / 360) * 0.038;
-    const amplitude = (h * 0.28) * (0.6 + (resonanceQ / 100) * 0.55);
+    // Spring damping interpolation toward target rotation
+    rotX += (targetRotX - rotX) * 0.12;
+    rotY += (targetRotY - rotY) * 0.12;
 
-    // Primary Channel (Cyan)
-    oscCtx.beginPath();
-    oscCtx.lineWidth = 2;
-    oscCtx.strokeStyle = '#38bdf8';
+    if (hudCoordinates) {
+      hudCoordinates.textContent = `VECTOR [X: ${rotX.toFixed(2)}, Y: ${rotY.toFixed(2)}, Z: 1.00]`;
+    }
 
-    for (let x = 0; x < w; x++) {
-      let y = midY;
-      if (activeHarmonicMode === 'binaural') {
-        const p1 = Math.sin(x * baseFrequency + wavePhase);
-        const p2 = Math.sin(x * baseFrequency * 2.01 + wavePhase * 1.5) * 0.35;
-        y = midY + (p1 + p2) * amplitude;
-      } else if (activeHarmonicMode === 'harmonic') {
-        const f1 = Math.sin(x * baseFrequency + wavePhase);
-        const f2 = Math.sin(x * baseFrequency * 2 + wavePhase) * 0.5;
-        const f3 = Math.sin(x * baseFrequency * 3 + wavePhase) * 0.25;
-        y = midY + (f1 + f2 + f3) * (amplitude * 0.85);
-      } else if (activeHarmonicMode === 'transient') {
-        const decay = Math.exp(-((x % (w / 3)) / (w * 0.12)));
-        const ring = Math.sin(x * baseFrequency * 4 + wavePhase) * decay;
-        y = midY + ring * (amplitude * 1.3);
+    // 3D Rotation Matrix Calculation
+    const cosY = Math.cos(rotY);
+    const sinY = Math.sin(rotY);
+    const cosX = Math.cos(rotX);
+    const sinX = Math.sin(rotX);
+
+    const projected = [];
+    const focalLength = 320;
+    const pulseRate = now * 0.003;
+    const qFactor = 0.8 + (resonanceQ / 100) * 0.6;
+
+    for (let i = 0; i < SPATIAL_POINTS.length; i++) {
+      const p = SPATIAL_POINTS[i];
+      let { ox, oy, oz } = p;
+
+      // Mode-specific deformation
+      if (activeAlgorithm === 'neural') {
+        const wave = Math.sin(p.phase + pulseRate) * 6 * qFactor;
+        ox += wave;
+        oy += wave;
+      } else if (activeAlgorithm === 'tensor') {
+        const torusWave = Math.sin(ox * 0.05 + pulseRate * 2) * 12;
+        oy += torusWave;
+      } else if (activeAlgorithm === 'kinetic') {
+        const spinWave = Math.cos(pulseRate * 3 + p.phase) * 16 * qFactor;
+        oz += spinWave;
       }
 
-      if (x === 0) {
-        oscCtx.moveTo(x, y);
-      } else {
-        oscCtx.lineTo(x, y);
+      // Rotate Y
+      const x1 = ox * cosY - oz * sinY;
+      const z1 = ox * sinY + oz * cosY;
+
+      // Rotate X
+      const y2 = oy * cosX - z1 * sinX;
+      const z2 = oy * sinX + z1 * cosX;
+
+      // Perspective Projection
+      const depth = z2 + 280;
+      if (depth > 10) {
+        const scale = focalLength / depth;
+        const px = cx + x1 * scale;
+        const py = cy + y2 * scale;
+        projected.push({
+          x: px,
+          y: py,
+          z: z2,
+          scale: scale,
+          rawZ: depth
+        });
       }
     }
-    oscCtx.stroke();
 
-    // Secondary Phase Channel (Amber) for Binaural Mode
-    if (activeHarmonicMode === 'binaural') {
-      oscCtx.beginPath();
-      oscCtx.lineWidth = 1.5;
-      oscCtx.strokeStyle = 'rgba(245, 158, 11, 0.75)';
-      const phaseOffset = (spatialAngle / 360) * Math.PI;
+    // Sort by depth (painter's algorithm)
+    projected.sort((a, b) => b.z - a.z);
 
-      for (let x = 0; x < w; x++) {
-        const p1 = Math.sin(x * baseFrequency + wavePhase + phaseOffset);
-        const p2 = Math.sin(x * baseFrequency * 1.99 + wavePhase * 1.5 + phaseOffset) * 0.35;
-        const y = midY + (p1 + p2) * (amplitude * 0.88);
-
-        if (x === 0) {
-          oscCtx.moveTo(x, y);
-        } else {
-          oscCtx.lineTo(x, y);
+    // Connect Neighboring Lines
+    spatialCtx.lineWidth = 1;
+    for (let i = 0; i < projected.length; i++) {
+      const p1 = projected[i];
+      for (let j = i + 1; j < projected.length; j++) {
+        const p2 = projected[j];
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < 1200) {
+          const alpha = (1 - d2 / 1200) * 0.28 * (p1.scale / 1.5);
+          spatialCtx.strokeStyle = activeAlgorithm === 'kinetic'
+            ? `rgba(45, 212, 191, ${alpha})`
+            : `rgba(167, 139, 250, ${alpha})`;
+          spatialCtx.beginPath();
+          spatialCtx.moveTo(p1.x, p1.y);
+          spatialCtx.lineTo(p2.x, p2.y);
+          spatialCtx.stroke();
         }
       }
-      oscCtx.stroke();
     }
 
-    requestAnimationFrame(renderOscilloscope);
-  }
+    // Draw Projected Nodes
+    for (let i = 0; i < projected.length; i++) {
+      const p = projected[i];
+      const radius = Math.max(1, p.scale * 2.5);
+      const alpha = Math.min(1, Math.max(0.2, (p.z + 100) / 200));
 
-  // --- Segmented LED VU Meter Pulse ---
-  function updateVUMeters() {
-    if (!meterLeft || !meterRight) return;
+      spatialCtx.fillStyle = activeAlgorithm === 'neural'
+        ? `rgba(167, 139, 250, ${alpha})`
+        : activeAlgorithm === 'tensor'
+        ? `rgba(243, 232, 203, ${alpha})`
+        : `rgba(45, 212, 191, ${alpha})`;
 
-    const leftSegments = meterLeft.querySelectorAll('.meter-segment');
-    const rightSegments = meterRight.querySelectorAll('.meter-segment');
-
-    // Modulate based on resonance and random transient burst
-    const baseEnergy = 0.5 + (resonanceQ / 100) * 0.4;
-    const lLevel = Math.min(8, Math.floor(baseEnergy * 7 + Math.random() * 2));
-    const rLevel = Math.min(8, Math.floor(baseEnergy * 7 + Math.random() * 2));
-
-    leftSegments.forEach((seg, idx) => {
-      seg.classList.toggle('active', idx < lLevel);
-    });
-
-    rightSegments.forEach((seg, idx) => {
-      seg.classList.toggle('active', idx < rLevel);
-    });
-  }
-  setInterval(updateVUMeters, 120);
-
-  // --- Architecture Exploded Layer Switcher ---
-  const ARCH_LAYERS = {
-    monobloc: {
-      coord: 'STRUCTURAL LAYER 01 // CNC BILLET',
-      spec: 'TOLERANCE ±0.015 mm',
-      title: 'Seamless Aerospace Magnesium Monobloc',
-      desc: 'High-pressure magnesium alloy AZ91D offers 33% lower density than aluminum with exceptional damping characteristics, suppressing electromagnetic interference and mechanical microphonics across all audio bandwidths.',
-      stats: [
-        { val: '680 g', label: 'Net Chassis Mass' },
-        { val: '242 × 158 × 32 mm', label: 'Exterior Dimensions' },
-        { val: '0.00012%', label: 'Residual Harmonic Distortion' }
-      ]
-    },
-    faraday: {
-      coord: 'ISOLATION LAYER 02 // FARADAY VAULT',
-      spec: 'SHIELDING > 115 dB',
-      title: 'Hermetically Sealed Analog Faraday Chambers',
-      desc: 'Input transformers and Lundahl step-up stages are isolated in machined chambers with pure oxygen-free copper gaskets, preventing digital processor clock ripple from entering the analog domain.',
-      stats: [
-        { val: '132.4 dB', label: 'Signal to Noise Ratio' },
-        { val: '< 42 fs', label: 'Master Clock Jitter' },
-        { val: '> 126.5 dB', label: 'Crosstalk Rejection' }
-      ]
-    },
-    rotary: {
-      coord: 'CONTROL LAYER 03 // NON-CONTACT ROTORS',
-      spec: 'RESOLUTION 4,096 CPR',
-      title: 'Optical Brushless Rotor Assembly',
-      desc: 'Infrared optical encoders with micro-perforated code discs track rotary angles with sub-millisecond precision. Integrated neodymium electromagnets dynamically simulate variable mechanical drag and tactile detents.',
-      stats: [
-        { val: '0 to 120 mN·m', label: 'Variable Magnetic Drag' },
-        { val: '0.12 ms', label: 'Encoder Response Time' },
-        { val: 'Infinite', label: 'Contactless Lifespan' }
-      ]
-    },
-    thermal: {
-      coord: 'THERMAL LAYER 04 // PASSIVE SIPHON',
-      spec: 'HEAT FLUX 18 W / m·K',
-      title: 'Passive Magnesium Thermal Siphon Deck',
-      desc: 'The monobloc chassis acts as a unified heat sink, silently drawing heat away from the class-A discrete operational amplifiers without fans or mechanical air circulation.',
-      stats: [
-        { val: '0.0 dBA', label: 'Acoustic Noise Floor' },
-        { val: '38° C', label: 'Nominal Operating Temp' },
-        { val: '15 W', label: 'Thunderbolt 4 Bus Power' }
-      ]
-    }
-  };
-
-  architectureTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const layerKey = tab.dataset.layer;
-      const data = ARCH_LAYERS[layerKey];
-      if (!data) return;
-
-      architectureTabs.forEach(t => {
-        const isSelected = t === tab;
-        t.classList.toggle('active', isSelected);
-        t.setAttribute('aria-selected', isSelected ? 'true' : 'false');
-      });
-
-      document.getElementById('layer-chip-id').textContent = data.coord;
-      document.getElementById('layer-chip-spec').textContent = data.spec;
-      document.getElementById('layer-title').textContent = data.title;
-      document.getElementById('layer-desc').textContent = data.desc;
-
-      const specsContainer = document.getElementById('layer-specs-row');
-      specsContainer.innerHTML = '';
-      data.stats.forEach(s => {
-        const div = document.createElement('div');
-        div.className = 'layer-stat';
-        div.innerHTML = `<span class="stat-value">${s.val}</span><span class="stat-label">${s.label}</span>`;
-        specsContainer.appendChild(div);
-      });
-
-      haptics.playSwitchClick();
-    });
-  });
-
-  // --- Finish Switcher Handlers ---
-  function applyChassisFinish(finish) {
-    document.body.setAttribute('data-finish', finish);
-
-    const isObsidian = finish === 'obsidian';
-    btnFinishObsidian.classList.toggle('active', isObsidian);
-    btnFinishObsidian.setAttribute('aria-pressed', isObsidian ? 'true' : 'false');
-
-    btnFinishSilver.classList.toggle('active', !isObsidian);
-    btnFinishSilver.setAttribute('aria-pressed', !isObsidian ? 'true' : 'false');
-
-    if (selectFinishChoice) {
-      selectFinishChoice.value = finish;
+      spatialCtx.beginPath();
+      spatialCtx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+      spatialCtx.fill();
     }
 
-    haptics.playRelayClack();
+    requestAnimationFrame(renderSpatial);
   }
 
-  btnFinishObsidian.addEventListener('click', () => applyChassisFinish('obsidian'));
-  btnFinishSilver.addEventListener('click', () => applyChassisFinish('silver'));
+  // --- Segmented Neural VU Meter Pulse ---
+  function updateNeuralBusMeter() {
+    if (!busMeter) return;
+    const cells = busMeter.querySelectorAll('.meter-cell');
+    const energy = 0.45 + (resonanceQ / 100) * 0.45;
+    const activeCount = Math.min(7, Math.floor(energy * 6 + Math.random() * 2));
 
-  if (selectFinishChoice) {
-    selectFinishChoice.addEventListener('change', e => {
-      applyChassisFinish(e.target.value);
+    cells.forEach((cell, idx) => {
+      cell.classList.toggle('active', idx < activeCount);
     });
   }
+  setInterval(updateNeuralBusMeter, 110);
 
-  // --- Mode Switches Handlers ---
-  modeSwitches.forEach(btn => {
+  // --- Algorithm Mode Switcher ---
+  modeSwitchButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const mode = btn.dataset.mode;
-      activeHarmonicMode = mode;
+      activeAlgorithm = mode;
 
-      modeSwitches.forEach(b => {
+      modeSwitchButtons.forEach(b => {
         const isSelected = b === btn;
         b.classList.toggle('active', isSelected);
         b.setAttribute('aria-checked', isSelected ? 'true' : 'false');
       });
 
-      hudModeDisplay.textContent = (mode === 'binaural' ? 'BINAURAL VECTOR' : mode === 'harmonic' ? 'HARMONIC SPECTRUM' : 'TRANSIENT SCOPE');
+      if (hudModeReadout) {
+        hudModeReadout.textContent = `ALGORITHM: ${
+          mode === 'neural' ? 'NEURAL TENSOR MESH' : mode === 'tensor' ? 'HARMONIC TENSOR TORUS' : 'KINETIC QUANTUM VOID'
+        }`;
+      }
+
       haptics.playSwitchClick();
     });
   });
 
-  // --- Haptic Sound Toggle ---
-  audioFeedbackBtn.addEventListener('click', () => {
+  // --- Material Finish Switcher ---
+  function setWorkstationFinish(finish) {
+    document.body.setAttribute('data-finish', finish);
+
+    const isTitanium = finish === 'titanium';
+    finishTitaniumBtn.classList.toggle('active', isTitanium);
+    finishTitaniumBtn.setAttribute('aria-pressed', isTitanium ? 'true' : 'false');
+
+    finishObsidianBtn.classList.toggle('active', !isTitanium);
+    finishObsidianBtn.setAttribute('aria-pressed', !isTitanium ? 'true' : 'false');
+
+    if (chassisFinishChoice) {
+      chassisFinishChoice.value = finish;
+    }
+
+    haptics.playRelayClack();
+  }
+
+  finishTitaniumBtn.addEventListener('click', () => setWorkstationFinish('titanium'));
+  finishObsidianBtn.addEventListener('click', () => setWorkstationFinish('obsidian'));
+
+  if (chassisFinishChoice) {
+    chassisFinishChoice.addEventListener('change', e => {
+      setWorkstationFinish(e.target.value);
+    });
+  }
+
+  // --- Architecture Explorer Tabs ---
+  const ARCHITECTURE_DATA = {
+    monocoque: {
+      id: 'STRUCTURAL ARCHITECTURE // LAYER 01',
+      spec: 'MACHINING TOLERANCE ±0.010 mm',
+      title: 'Solid Monobloc Grade 5 Titanium Monocoque',
+      desc: 'Titanium Grade 5 provides twice the tensile strength of 6061 aluminum with superior vibrational damping characteristics. Eliminates microphonic distortion, resonance ringing, and electromagnetic interference across high-frequency acoustic bands.',
+      stats: [
+        { val: '940 g', label: 'Chassis Structural Mass' },
+        { val: '280 × 175 × 28 mm', label: 'Exterior Monolith Footprint' },
+        { val: '0.00008%', label: 'Residual Harmonic Distortion' }
+      ]
+    },
+    vault: {
+      id: 'FARADAY ISOLATION // LAYER 02',
+      spec: 'SHIELDING REJECTION > 125 dB',
+      title: 'Hermetically Sealed Oxygen-Free Copper Vault',
+      desc: 'Differential Burr-Brown floating converters rest in an isolated pure copper sub-chassis. Gasket-sealed with gold-plated conductive mesh to completely isolate high-speed digital clock jitter from delicate analog preamplifiers.',
+      stats: [
+        { val: '142.4 dB', label: 'Signal to Noise Ratio' },
+        { val: '< 32 fs', label: 'Master Clock Jitter Floor' },
+        { val: '> 134.0 dB', label: 'Inter-channel Separation' }
+      ]
+    },
+    rotors: {
+      id: 'TACTILE ACTUATION // LAYER 03',
+      spec: 'OPTICAL CPR: 8,192 PULSES',
+      title: 'Neodymium Electromagnetic Rotor Assembly',
+      desc: 'Precision diamond-knurled dials with programmable magnetic detent coils. Non-contact optical sensors read micro-rotations at 8,192 counts per revolution with zero mechanical friction or potentiometer scratch.',
+      stats: [
+        { val: '0 to 140 mN·m', label: 'Variable Magnetic Resistance' },
+        { val: '< 0.08 ms', label: 'Encoder Latency' },
+        { val: 'Infinite', label: 'Contactless Lifespan' }
+      ]
+    },
+    thermal: {
+      id: 'CRYOGENIC CONDUCTION // LAYER 04',
+      spec: 'HEAT PIPING 24 W / m·K',
+      title: 'Passive Cryogenic Siphon Heatpipe',
+      desc: 'Sintered copper powder heatpipes disperse class-A amplifier thermal loads directly through the titanium chassis. 100% silent solid-state dissipation with zero fans or pump vibration.',
+      stats: [
+        { val: '0.0 dBA', label: 'Acoustic Sound Floor' },
+        { val: '36° C', label: 'Nominal Operating Temperature' },
+        { val: '20 W', label: 'Thunderbolt 4 Bus Power' }
+      ]
+    }
+  };
+
+  explorerTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const layer = tab.dataset.layer;
+      const data = ARCHITECTURE_DATA[layer];
+      if (!data) return;
+
+      explorerTabs.forEach(t => {
+        const isSelected = t === tab;
+        t.classList.toggle('active', isSelected);
+        t.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+      });
+
+      document.getElementById('layer-badge-id').textContent = data.id;
+      document.getElementById('layer-badge-spec').textContent = data.spec;
+      document.getElementById('layer-heading').textContent = data.title;
+      document.getElementById('layer-body-copy').textContent = data.desc;
+
+      const cluster = document.getElementById('layer-metrics-cluster');
+      cluster.innerHTML = '';
+      data.stats.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'metric-unit';
+        div.innerHTML = `<span class="unit-val">${s.val}</span><span class="unit-label">${s.label}</span>`;
+        cluster.appendChild(div);
+      });
+
+      haptics.playSwitchClick();
+    });
+  });
+
+  // --- Haptic Audio Switch ---
+  hapticAudioSwitch.addEventListener('click', () => {
     haptics.enabled = !haptics.enabled;
     if (haptics.enabled) {
-      audioIconDisplay.textContent = '🔊';
-      audioFeedbackBtn.setAttribute('title', 'Audio feedback enabled');
+      audioStateGlyph.textContent = '🔊';
+      hapticAudioSwitch.setAttribute('title', 'Audio feedback enabled');
       haptics.playSwitchClick();
     } else {
-      audioIconDisplay.textContent = '🔇';
-      audioFeedbackBtn.setAttribute('title', 'Audio feedback muted');
+      audioStateGlyph.textContent = '🔇';
+      hapticAudioSwitch.setAttribute('title', 'Audio feedback muted');
     }
   });
 
-  // --- Allocation Form Handling ---
-  if (allocationForm) {
-    allocationForm.addEventListener('submit', e => {
+  // --- Pre-Order Reservation Form ---
+  if (reservationForm) {
+    reservationForm.addEventListener('submit', e => {
       e.preventDefault();
 
       let valid = true;
-      feedbackName.textContent = '';
-      feedbackEmail.textContent = '';
+      nameErrorDisplay.textContent = '';
+      emailErrorDisplay.textContent = '';
 
-      if (!inputClientName.value.trim()) {
-        feedbackName.textContent = 'Please enter your client or studio name.';
-        inputClientName.focus();
+      if (!clientNameInput.value.trim()) {
+        nameErrorDisplay.textContent = 'Please enter your name or studio designation.';
+        clientNameInput.focus();
         valid = false;
       }
 
-      const emailVal = inputClientEmail.value.trim();
+      const emailVal = clientEmailInput.value.trim();
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailVal || !emailRegex.test(emailVal)) {
-        feedbackEmail.textContent = 'Please enter a valid studio email address for the hardware allocation key.';
-        if (valid) inputClientEmail.focus();
+        emailErrorDisplay.textContent = 'Please provide a valid professional email address for delivery confirmation.';
+        if (valid) clientEmailInput.focus();
         valid = false;
       }
 
       if (valid) {
         haptics.playAllocationChime();
-        allocationSuccessReceipt.classList.add('visible');
-        allocationSuccessReceipt.setAttribute('aria-hidden', 'false');
+        allocationSuccessModal.classList.add('visible');
+        allocationSuccessModal.setAttribute('aria-hidden', 'false');
 
-        if (btnSubmitAllocation) {
-          btnSubmitAllocation.disabled = true;
-          btnSubmitAllocation.textContent = 'Production Slot Secured';
+        if (btnConfirmReservation) {
+          btnConfirmReservation.disabled = true;
+          btnConfirmReservation.textContent = 'Allocation Secured';
         }
 
-        if (receiptMessageText) {
-          const serial = Math.floor(1000 + Math.random() * 9000);
-          receiptMessageText.textContent = `Batch 01 allocation #${serial} reserved for ${inputClientName.value.trim()}. Hardware key dispatched to ${emailVal}.`;
+        if (successDynamicMessage) {
+          const randomSerial = Math.floor(100 + Math.random() * 900);
+          successDynamicMessage.textContent = `Batch 01 production serial #00${randomSerial} registered for ${clientNameInput.value.trim()}. Verification transmitted to ${emailVal}.`;
         }
       }
     });
@@ -777,11 +900,11 @@
   // --- Boot Sequence ---
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      initRadarCanvas();
-      initOscilloscope();
+      initCosmicBackdrop();
+      initSpatialCanvas();
     });
   } else {
-    initRadarCanvas();
-    initOscilloscope();
+    initCosmicBackdrop();
+    initSpatialCanvas();
   }
 })();

@@ -106,7 +106,7 @@ fn parse(args: &[String]) -> Result<Flags, String> {
             }
             other if other.starts_with("--dir=") => flags.dir = Some(other[6..].to_string()),
             other if other.starts_with("--") => {
-                return Err(format!("unknown flag {other}. Run `slop help`."))
+                return Err(format!("unknown flag {other}. Run `unfslop help`."))
             }
             value => flags.positional.push(value.to_string()),
         }
@@ -132,7 +132,7 @@ fn context(flags: Flags) -> i32 {
     let library = Library::load();
     let task = flags.positional.join(" ");
     if task.trim().is_empty() {
-        eprintln!("error: context needs a task, e.g. slop context \"bottom sheet that snaps on flick\"");
+        eprintln!("error: context needs a task, e.g. unfslop context \"bottom sheet that snaps on flick\"");
         return 2;
     }
     let budget = flags.budget.unwrap_or(pack::DEFAULT_BUDGET);
@@ -157,7 +157,7 @@ fn search(flags: Flags) -> i32 {
     let library = Library::load();
     let query = flags.positional.join(" ");
     if query.trim().is_empty() {
-        eprintln!("error: search needs a query, e.g. slop search \"focus ring\"");
+        eprintln!("error: search needs a query, e.g. unfslop search \"focus ring\"");
         return 2;
     }
     let limit = flags.limit.unwrap_or(8);
@@ -181,7 +181,7 @@ fn cards(flags: Flags) -> i32 {
 
 fn get(flags: Flags) -> i32 {
     let Some(id) = flags.positional.first() else {
-        eprintln!("error: get needs a card id, e.g. slop get apple.springs");
+        eprintln!("error: get needs a card id, e.g. unfslop get apple.springs");
         return 2;
     };
     let library = Library::load();
@@ -191,7 +191,7 @@ fn get(flags: Flags) -> i32 {
             0
         }
         None => {
-            eprintln!("error: no card {id:?}. Run `slop cards` or `slop search \"<topic>\"`.");
+            eprintln!("error: no card {id:?}. Run `unfslop cards` or `unfslop search \"<topic>\"`.");
             2
         }
     }
@@ -245,7 +245,7 @@ fn install_cmd(flags: Flags) -> i32 {
                 target.to_string_lossy().replace('\\', "/")
             );
             println!("binary copied to {}/bin", target.to_string_lossy().replace('\\', "/"));
-            println!("next: point your agent's skill directory at that folder, then `slop context \"<task>\"`.");
+            println!("next: point your agent's skill directory at that folder, then `unfslop context \"<task>\"`.");
             0
         }
         Err(error) => {
@@ -386,13 +386,13 @@ fn print_help() {
         "unfuckin-slop · design context that costs only what the moment needs
 
 USAGE
-  slop context \"<task>\" [--budget N] [--limit N] [--mode M] [--brief] [--all] [--json]
-  slop search \"<query>\" [--limit N] [--json]
-  slop get <card-id> [--json]
-  slop cards [--json]
-  slop lint [paths...] [--fail-on error|warn|never] [--ignore rule] [--json]
-  slop install [--dir PATH | --user] [--agent claude|antigravity|codex|cursor|opencode] [--force]
-  slop doctor | stats | version | help
+  unfslop context \"<task>\" [--budget N] [--limit N] [--mode M] [--brief] [--all] [--json]
+  unfslop search \"<query>\" [--limit N] [--json]
+  unfslop get <card-id> [--json]
+  unfslop cards [--json]
+  unfslop lint [paths...] [--fail-on error|warn|never] [--ignore rule] [--json]
+  unfslop install [--dir PATH | --user] [--agent claude|antigravity|codex|cursor|opencode] [--force]
+  unfslop doctor | stats | version | help
 
 CONTEXT is the main command: it ranks cards for the task and prints only the
 ones that fit the budget (default {} tok, {} cards). Nothing else is loaded.",

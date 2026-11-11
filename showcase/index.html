@@ -3,207 +3,219 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>STRATA Model 01 · Tactile Spatial Acoustic Console</title>
-  <meta name="description" content="Precision spatial audio synthesizer and console milled from a solid aerospace magnesium monobloc with magnetic optical rotary controls.">
+  <title>AETHER OS · Spatial Neural Computing Terminal</title>
+  <meta name="description" content="Next-generation spatial neural computing workstation crafted in aerospace titanium monocoque with real-time tensor harmonic synthesis.">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body data-finish="obsidian">
-  <!-- Blueprint Background Grid Overlay -->
-  <div class="cad-grid-backdrop" aria-hidden="true"></div>
+<body data-finish="titanium">
+  <!-- Interactive Cosmic Coordinate Canvas Background -->
+  <canvas id="cosmic-canvas" class="cosmic-backdrop" aria-hidden="true"></canvas>
 
-  <!-- Floating Chromatic Frosted Navigation Dock -->
-  <header class="dock-header">
-    <div class="dock-inner">
-      <a href="#hero" class="dock-brand" aria-label="STRATA Home">
-        <span class="brand-monogram" aria-hidden="true">ST</span>
-        <span class="brand-name">STRATA</span>
-        <span class="dock-version-chip">v1.0 · M01</span>
+  <!-- Floating Specular Glass Dock -->
+  <header class="dock-shell">
+    <div class="dock-container">
+      <a href="#hero" class="dock-brand" aria-label="AETHER Home">
+        <span class="brand-glyph" aria-hidden="true">AE</span>
+        <span class="brand-title">AETHER</span>
+        <span class="brand-chip">CORE 3.2</span>
       </a>
 
-      <nav class="dock-nav" aria-label="Product sections">
-        <a href="#console-section" class="dock-nav-link">Instrument</a>
-        <a href="#architecture-section" class="dock-nav-link">Architecture</a>
-        <a href="#bento-matrix" class="dock-nav-link">Engineering</a>
-        <a href="#acoustics-section" class="dock-nav-link">Laboratory</a>
+      <nav class="dock-navigation" aria-label="Workstation Navigation">
+        <a href="#spatial-viewport" class="dock-nav-item">Terminal</a>
+        <a href="#neural-matrix" class="dock-nav-item">Neural Tensor</a>
+        <a href="#monocoque-deck" class="dock-nav-item">Architecture</a>
+        <a href="#lab-specifications" class="dock-nav-item">Laboratory</a>
       </nav>
 
-      <div class="dock-controls">
-        <!-- Finish Switcher (Obsidian / Silver) -->
-        <div class="dock-finish-toggle" role="group" aria-label="Chassis material finish">
-          <button type="button" class="dock-finish-btn active" id="btn-finish-obsidian" data-finish="obsidian" aria-pressed="true">
-            <span class="swatch swatch-obsidian" aria-hidden="true"></span>
-            <span>Obsidian</span>
+      <div class="dock-actions">
+        <!-- Material Finish Switcher (Starlight Titanium vs. Void Obsidian) -->
+        <div class="finish-switch-group" role="group" aria-label="Workstation material finish">
+          <button type="button" class="finish-btn active" id="finish-titanium" data-finish="titanium" aria-pressed="true">
+            <span class="finish-disc disc-titanium" aria-hidden="true"></span>
+            <span>Titanium</span>
           </button>
-          <button type="button" class="dock-finish-btn" id="btn-finish-silver" data-finish="silver" aria-pressed="false">
-            <span class="swatch swatch-silver" aria-hidden="true"></span>
-            <span>Silver</span>
+          <button type="button" class="finish-btn" id="finish-obsidian" data-finish="obsidian" aria-pressed="false">
+            <span class="finish-disc disc-obsidian" aria-hidden="true"></span>
+            <span>Obsidian</span>
           </button>
         </div>
 
-        <!-- Tactile Audio Feedback Switch -->
-        <button type="button" class="dock-icon-btn" id="audio-feedback-btn" aria-label="Toggle tactile haptic audio synthesis" title="Toggle audio feedback">
-          <span id="audio-icon-display" aria-hidden="true">🔊</span>
+        <!-- Haptic Sound Feedback Toggle -->
+        <button type="button" class="dock-btn-round" id="haptic-audio-switch" aria-label="Toggle tactile harmonic audio feedback" title="Toggle audio haptics">
+          <span id="audio-state-glyph" aria-hidden="true">🔊</span>
         </button>
 
-        <!-- Primary Reservation Call to Action -->
-        <a href="#reserve-section" class="dock-cta-btn">Reserve</a>
+        <!-- Main Reservation Anchor -->
+        <a href="#allocation-deck" class="dock-cta-pill">Reserve</a>
       </div>
     </div>
   </header>
 
-  <main id="content">
-    <!-- Hero Section: Staged Product Realism -->
-    <section class="hero-stage" id="hero" aria-label="Product introduction">
-      <div class="stage-container">
-        <div class="hero-header-block">
-          <div class="hero-status-ribbon">
-            <span class="beacon-pulse" aria-hidden="true"></span>
-            <span class="ribbon-text">BATCH 01 ALLOCATION · MONOBLOC MAGNESIUM AZ91D</span>
-            <span class="ribbon-latency" id="dsp-latency-readout">0.82 ms DSP</span>
+  <main id="main">
+    <!-- Hero Section: Staged Spatial Computing Realism -->
+    <section class="hero-stage" id="hero" aria-label="AETHER Spatial Computing Introduction">
+      <div class="stage-frame">
+        <div class="hero-manifesto-column">
+          <div class="telemetry-status-ribbon">
+            <span class="pulse-beacon" aria-hidden="true"></span>
+            <span class="ribbon-edition">NEURAL BATCH 01 · MONOCOQUE GRADE 5 TITANIUM</span>
+            <span class="ribbon-stat" id="hero-latency-indicator">0.14 ms TENSOR</span>
           </div>
 
-          <h1 class="hero-display-heading">The physical instrument for the spatial era.</h1>
+          <h1 class="hero-grand-title">Spatial neural computing at physical resolution.</h1>
           
-          <p class="hero-narrative">
-            Machined from a solid eight-pound billet of aerospace magnesium. Featuring dual optical brushless rotary controllers with dynamic programmable magnetic detents and zero-latency 32-bit float analog acoustic conversion.
+          <p class="hero-exposition">
+            Milled from solid aerospace Grade 5 titanium. Powered by dual optical quantum rotary encoders, zero-latency 64-bit tensor harmonic audio synthesis, and an ambient magnetic spatial field that binds direct human intention to digital matter.
           </p>
 
-          <div class="hero-action-cluster">
-            <a href="#reserve-section" class="action-btn action-primary">Reserve Model 01</a>
-            <a href="#console-section" class="action-btn action-secondary">Inspect Hardware Deck</a>
+          <div class="hero-actions-cluster">
+            <a href="#allocation-deck" class="hero-btn hero-btn-primary">Reserve Workstation</a>
+            <a href="#spatial-viewport" class="hero-btn hero-btn-secondary">Engage Live Simulator</a>
+          </div>
+
+          <!-- Micro Spec Strip -->
+          <div class="hero-specs-row">
+            <div class="hero-spec-item">
+              <span class="spec-number">128 TeraFLOPS</span>
+              <span class="spec-caption">Unified Spatial DSP</span>
+            </div>
+            <div class="hero-spec-item">
+              <span class="spec-number">0.14 ms</span>
+              <span class="spec-caption">Sub-Sensory Latency</span>
+            </div>
+            <div class="hero-spec-item">
+              <span class="spec-number">142 dB</span>
+              <span class="spec-caption">Acoustic Dynamic Range</span>
+            </div>
           </div>
         </div>
 
-        <!-- Staged Hardware Console Centerpiece -->
-        <div class="hardware-deck-viewport" id="console-section">
-          <div class="deck-monobloc-frame" id="chassis-frame" role="region" aria-label="Interactive STRATA Model 01 console interface">
+        <!-- Staged Interactive Spatial Terminal Centerpiece -->
+        <div class="spatial-terminal-wrapper" id="spatial-viewport">
+          <div class="terminal-monolith" id="terminal-body" role="region" aria-label="Interactive AETHER Spatial Terminal Interface">
             
-            <!-- Top Bezel & Machine Telemetry -->
-            <div class="deck-top-bezel">
-              <div class="bezel-id">
-                <span class="bezel-logo">STRATA</span>
-                <span class="bezel-model">MODEL 01 // A-SERIES</span>
-                <span class="bezel-serial">SN-01948 · BILLET AZ91D</span>
+            <!-- Terminal Header Bezel -->
+            <div class="terminal-bezel">
+              <div class="bezel-identity">
+                <span class="bezel-emblem">AETHER OS</span>
+                <span class="bezel-version">BUILD 3.2.8 // RECEPTOR ARRAY</span>
+                <span class="bezel-serial">SN-00482 · TI-6AL-4V</span>
               </div>
-              
-              <!-- Segmented LED Output Meters -->
-              <div class="bezel-meter-cluster" aria-label="Signal output level meters">
-                <div class="meter-channel">
-                  <span class="meter-channel-tag">L</span>
-                  <div class="led-meter-bar" id="meter-left" aria-hidden="true">
-                    <span class="meter-segment"></span>
-                    <span class="meter-segment"></span>
-                    <span class="meter-segment"></span>
-                    <span class="meter-segment"></span>
-                    <span class="meter-segment"></span>
-                    <span class="meter-segment"></span>
-                    <span class="meter-segment warn"></span>
-                    <span class="meter-segment peak"></span>
-                  </div>
-                </div>
-                <div class="meter-channel">
-                  <span class="meter-channel-tag">R</span>
-                  <div class="led-meter-bar" id="meter-right" aria-hidden="true">
-                    <span class="meter-segment"></span>
-                    <span class="meter-segment"></span>
-                    <span class="meter-segment"></span>
-                    <span class="meter-segment"></span>
-                    <span class="meter-segment"></span>
-                    <span class="meter-segment"></span>
-                    <span class="meter-segment warn"></span>
-                    <span class="meter-segment peak"></span>
-                  </div>
+
+              <!-- Segmented Neural Activity VU Meter -->
+              <div class="bezel-neural-meter" aria-label="Real-time neural bus activity">
+                <span class="meter-label">BUS</span>
+                <div class="meter-track" id="bus-meter" aria-hidden="true">
+                  <span class="meter-cell"></span>
+                  <span class="meter-cell"></span>
+                  <span class="meter-cell"></span>
+                  <span class="meter-cell"></span>
+                  <span class="meter-cell"></span>
+                  <span class="meter-cell warn"></span>
+                  <span class="meter-cell peak"></span>
                 </div>
               </div>
 
-              <div class="bezel-status-block">
-                <span class="clock-sync-pill">
-                  <span class="sync-dot" aria-hidden="true"></span>
-                  <span id="dsp-status-text">384 kHz SYNC</span>
-                </span>
+              <div class="bezel-state-pill">
+                <span class="state-dot" aria-hidden="true"></span>
+                <span id="quantum-sync-text">QUANTUM PHASE LOCKED</span>
               </div>
             </div>
 
-            <!-- Core Instrument Interaction Deck -->
-            <div class="deck-work-surface">
+            <!-- Terminal Staged Screen: 3D Interactive Spatial Orbital Canvas -->
+            <div class="terminal-display-screen">
+              <canvas id="spatial-canvas" width="760" height="340" aria-label="Interactive 3D orbital particle vector field"></canvas>
               
-              <!-- Station 1: Circular Optical Spatial Radar & Rotary Angle -->
-              <div class="instrument-station station-spatial">
-                <div class="station-header">
-                  <span class="station-coord">SEC.01</span>
-                  <span class="station-title">Spatial Radar</span>
+              <!-- Screen Optical HUD Overlays -->
+              <div class="display-hud-bar top-hud">
+                <span class="hud-tag" id="hud-mode-readout">ALGORITHM: NEURAL TENSOR MESH</span>
+                <span class="hud-tag" id="hud-tensor-frequency">RESONANCE: 528.0 Hz</span>
+                <span class="hud-tag" id="hud-damping-readout">DAMPING: 1.00 (CRITICAL)</span>
+              </div>
+              <div class="display-hud-bar bottom-hud">
+                <span class="hud-coords" id="hud-coordinates">VECTOR [X: 0.00, Y: 0.00, Z: 1.00]</span>
+                <span class="hud-fps" id="hud-fps-counter">120 FPS NATIVE</span>
+              </div>
+            </div>
+
+            <!-- Staged Physical Hardware Controller Deck -->
+            <div class="terminal-deck-controls">
+              
+              <!-- Station 1: Circular Orbital Tensor Dial -->
+              <div class="control-station">
+                <div class="station-meta">
+                  <span class="station-id">NODE 01</span>
+                  <span class="station-label">Orbital Harmonic</span>
                 </div>
 
-                <div class="circular-radar-viewport" id="radar-container" tabindex="0" role="slider" aria-label="Spatial field beam angle controller" aria-valuemin="0" aria-valuemax="360" aria-valuenow="120">
-                  <canvas id="spatial-radar-canvas" width="160" height="160" aria-label="Circular spatial radar view"></canvas>
-                  <div class="radar-interactive-knob" id="knob-spatial">
-                    <div class="knob-metal-grooves" aria-hidden="true"></div>
-                    <div class="knob-dial-pointer" aria-hidden="true"></div>
+                <div class="knob-rotary-assembly" id="dial-orbital" tabindex="0" role="slider" aria-label="Orbital tensor frequency dial" aria-valuemin="0" aria-valuemax="360" aria-valuenow="140">
+                  <div class="knob-orbit-ring" aria-hidden="true"></div>
+                  <div class="knob-rotor-disc" id="rotor-orbital">
+                    <div class="knob-knurling-texture" aria-hidden="true"></div>
+                    <div class="knob-indicator-needle needle-violet" aria-hidden="true"></div>
                   </div>
                 </div>
 
-                <div class="station-readout">
-                  <span class="readout-label">Field Angle</span>
-                  <span class="readout-number" id="readout-spatial-angle">120°</span>
+                <div class="station-value-block">
+                  <span class="val-caption">Angular Phase</span>
+                  <span class="val-metric" id="metric-orbital-angle">140°</span>
                 </div>
               </div>
 
-              <!-- Station 2: Oscilloscope & Acoustic Mode Selector -->
-              <div class="instrument-station station-screen">
-                <div class="screen-chassis">
-                  <div class="screen-hud-bar">
-                    <span class="hud-mode-tag" id="hud-mode-display">BINAURAL VECTOR</span>
-                    <span class="hud-param-tag" id="hud-harmonic-freq">432.0 Hz</span>
-                    <span class="hud-impedance-tag" id="hud-impedance">600 Ω</span>
-                  </div>
-                  <canvas id="vector-oscilloscope-canvas" width="480" height="190" aria-label="Real-time acoustic vector scope"></canvas>
+              <!-- Station 2: Mode Selector Switches -->
+              <div class="control-station station-algorithm">
+                <div class="station-meta">
+                  <span class="station-id">ALGORITHM ENGINE</span>
+                  <span class="station-label">Acoustic Tensor State</span>
                 </div>
 
-                <!-- Tactile Harmonic Mode Selectors -->
-                <div class="screen-mode-switches" role="radiogroup" aria-label="Acoustic algorithm selection">
-                  <button type="button" class="tactile-switch active" data-mode="binaural" role="radio" aria-checked="true">
-                    <span>Binaural 3D</span>
+                <div class="tactile-modes-grid" role="radiogroup" aria-label="Spatial algorithm mode selection">
+                  <button type="button" class="mode-switch-btn active" data-mode="neural" role="radio" aria-checked="true">
+                    <span class="mode-bullet" aria-hidden="true"></span>
+                    <span class="mode-text">Neural Mesh</span>
                   </button>
-                  <button type="button" class="tactile-switch" data-mode="harmonic" role="radio" aria-checked="false">
-                    <span>Harmonic Series</span>
+                  <button type="button" class="mode-switch-btn" data-mode="tensor" role="radio" aria-checked="false">
+                    <span class="mode-bullet" aria-hidden="true"></span>
+                    <span class="mode-text">Harmonic Tensor</span>
                   </button>
-                  <button type="button" class="tactile-switch" data-mode="transient" role="radio" aria-checked="false">
-                    <span>Transient Impulse</span>
+                  <button type="button" class="mode-switch-btn" data-mode="kinetic" role="radio" aria-checked="false">
+                    <span class="mode-bullet" aria-hidden="true"></span>
+                    <span class="mode-text">Kinetic Void</span>
                   </button>
+                </div>
+
+                <div class="station-instruction-note">
+                  <span>Interactive canvas: drag inside orbital field or rotate knobs with mouse wheel</span>
                 </div>
               </div>
 
-              <!-- Station 3: Optical Resonance Controller & Magnetic Detents -->
-              <div class="instrument-station station-resonance">
-                <div class="station-header">
-                  <span class="station-coord">SEC.02</span>
-                  <span class="station-title">Q Resonance</span>
+              <!-- Station 3: Optical Q Resonance Controller -->
+              <div class="control-station">
+                <div class="station-meta">
+                  <span class="station-id">NODE 02</span>
+                  <span class="station-label">Acoustic Q Filter</span>
                 </div>
 
-                <div class="rotary-station-assembly" id="dial-resonance" tabindex="0" role="slider" aria-label="Acoustic resonance Q dial" aria-valuemin="0" aria-valuemax="100" aria-valuenow="42">
-                  <div class="rotary-detent-scale" aria-hidden="true"></div>
-                  <div class="rotary-rotor" id="knob-resonance">
-                    <div class="knob-metal-grooves" aria-hidden="true"></div>
-                    <div class="knob-dial-pointer" aria-hidden="true"></div>
+                <div class="knob-rotary-assembly" id="dial-resonance" tabindex="0" role="slider" aria-label="Resonance Q factor dial" aria-valuemin="0" aria-valuemax="100" aria-valuenow="48">
+                  <div class="knob-orbit-ring" aria-hidden="true"></div>
+                  <div class="knob-rotor-disc" id="rotor-resonance">
+                    <div class="knob-knurling-texture" aria-hidden="true"></div>
+                    <div class="knob-indicator-needle needle-teal" aria-hidden="true"></div>
                   </div>
                 </div>
 
-                <div class="station-readout">
-                  <span class="readout-label">Acoustic Q</span>
-                  <span class="readout-number" id="readout-resonance-q">4.2 dB</span>
+                <div class="station-value-block">
+                  <span class="val-caption">Resonance Q</span>
+                  <span class="val-metric" id="metric-resonance-q">4.8 dB</span>
                 </div>
               </div>
 
             </div>
 
-            <!-- Lower Machined Deck Bar -->
-            <div class="deck-bottom-bar">
-              <div class="deck-instruction">
-                <span>Direct tactile manipulation: drag or wheel rotary dials to modulate spatial harmonics</span>
-              </div>
-              <div class="deck-telemetry-tag" id="deck-telemetry-status">
-                <span>MAGNETIC BRAKE: ENGAGED</span>
-              </div>
+            <!-- Terminal Base Telemetry Footer -->
+            <div class="terminal-base-footer">
+              <span class="footer-status-pill">STATUS: OPTICAL MAGNETIC ENCODERS ACTIVE</span>
+              <span class="footer-device-readout">SUB-MILLISECOND TENSOR HANDOFF READY</span>
             </div>
 
           </div>
@@ -211,63 +223,63 @@
       </div>
     </section>
 
-    <!-- Physical Architecture: Exploded CAD Layer View -->
-    <section class="section-divider architecture-block" id="architecture-section" aria-label="Chassis and internal architecture">
-      <div class="stage-container">
-        <div class="block-header-split">
-          <div class="split-left">
-            <h2 class="block-heading">Monobloc magnesium. Zero internal acoustic reflection.</h2>
+    <!-- Neural Architecture & Materiality (Asymmetric Split 7/5) -->
+    <section class="section-block architecture-section" id="monocoque-deck" aria-label="Physical architecture and materials">
+      <div class="stage-frame">
+        <div class="block-header-pair">
+          <div class="header-left">
+            <h2 class="block-display-title">Grade 5 titanium monocoque. Infinite structural rigidity.</h2>
           </div>
-          <div class="split-right">
-            <p class="block-subheading">
-              Traditional audio gear is assembled from stamped sheet steel that rattles and introduces microphonic resonance under acoustic pressure. Model 01 begins as an eight-pound billet of structural AZ91D magnesium, carved by continuous multi-axis CNC milling into an isolated acoustic monolith.
+          <div class="header-right">
+            <p class="block-narrative-text">
+              Most digital audio workstations are housed in flimsy aluminum housings with loose potentiometers. The AETHER Terminal begins as a solid fourteen-pound ingot of aerospace Grade 5 titanium (Ti-6Al-4V), five-axis CNC carved over six hours into a monolithic, unibody acoustic chamber with zero internal flexing.
             </p>
           </div>
         </div>
 
-        <!-- Interactive Architecture Exploded Layer Switcher -->
-        <div class="architecture-terminal">
-          <div class="terminal-nav" role="tablist" aria-label="Chassis architecture layers">
-            <button type="button" class="terminal-tab active" data-layer="monobloc" role="tab" aria-selected="true" id="tab-layer-monobloc">
-              <span class="tab-index">01</span>
-              <span>AZ91D Monobloc Chassis</span>
+        <!-- Interactive Architecture Exploded Stage -->
+        <div class="architecture-explorer-terminal">
+          <div class="explorer-nav-tabs" role="tablist" aria-label="Chassis architectural layers">
+            <button type="button" class="explorer-tab active" data-layer="monocoque" role="tab" aria-selected="true" id="tab-monocoque">
+              <span class="tab-serial">01</span>
+              <span>Titanium Monocoque</span>
             </button>
-            <button type="button" class="terminal-tab" data-layer="faraday" role="tab" aria-selected="false" id="tab-layer-faraday">
-              <span class="tab-index">02</span>
-              <span>Isolated Faraday Vault</span>
+            <button type="button" class="explorer-tab" data-layer="vault" role="tab" aria-selected="false" id="tab-vault">
+              <span class="tab-serial">02</span>
+              <span>Oxygen-Free Copper Vault</span>
             </button>
-            <button type="button" class="terminal-tab" data-layer="rotary" role="tab" aria-selected="false" id="tab-layer-rotary">
-              <span class="tab-index">03</span>
-              <span>Optical Magnetic Rotors</span>
+            <button type="button" class="explorer-tab" data-layer="rotors" role="tab" aria-selected="false" id="tab-rotors">
+              <span class="tab-serial">03</span>
+              <span>Neodymium Magnetic Rotors</span>
             </button>
-            <button type="button" class="terminal-tab" data-layer="thermal" role="tab" aria-selected="false" id="tab-layer-thermal">
-              <span class="tab-index">04</span>
-              <span>Passive Siphon Dissipation</span>
+            <button type="button" class="explorer-tab" data-layer="thermal" role="tab" aria-selected="false" id="tab-thermal">
+              <span class="tab-serial">04</span>
+              <span>Cryogenic Siphon Heatpipe</span>
             </button>
           </div>
 
-          <div class="terminal-stage">
-            <div class="terminal-display-card" id="layer-display-card">
-              <div class="layer-badge-row">
-                <span class="layer-coord-chip" id="layer-chip-id">STRUCTURAL LAYER 01 // CNC BILLET</span>
-                <span class="layer-spec-chip" id="layer-chip-spec">TOLERANCE ±0.015 mm</span>
+          <div class="explorer-body">
+            <div class="explorer-card" id="layer-card-display">
+              <div class="explorer-badges">
+                <span class="badge-accent" id="layer-badge-id">STRUCTURAL ARCHITECTURE // LAYER 01</span>
+                <span class="badge-dim" id="layer-badge-spec">MACHINING TOLERANCE ±0.010 mm</span>
               </div>
-              <h3 class="layer-title" id="layer-title">Seamless Aerospace Magnesium Monobloc</h3>
-              <p class="layer-description" id="layer-desc">
-                High-pressure magnesium alloy AZ91D offers 33% lower density than aluminum with exceptional damping characteristics, suppressing electromagnetic interference and mechanical microphonics across all audio bandwidths.
+              <h3 class="layer-heading" id="layer-heading">Solid Monobloc Grade 5 Titanium Monocoque</h3>
+              <p class="layer-body-copy" id="layer-body-copy">
+                Titanium Grade 5 provides twice the tensile strength of 6061 aluminum with superior vibrational damping characteristics. Eliminates microphonic distortion, resonance ringing, and electromagnetic interference across high-frequency acoustic bands.
               </p>
-              <div class="layer-specs-row" id="layer-specs-row">
-                <div class="layer-stat">
-                  <span class="stat-value">680 g</span>
-                  <span class="stat-label">Net Chassis Mass</span>
+              <div class="layer-metrics-cluster" id="layer-metrics-cluster">
+                <div class="metric-unit">
+                  <span class="unit-val">940 g</span>
+                  <span class="unit-label">Chassis Structural Mass</span>
                 </div>
-                <div class="layer-stat">
-                  <span class="stat-value">242 × 158 × 32 mm</span>
-                  <span class="stat-label">Exterior Dimensions</span>
+                <div class="metric-unit">
+                  <span class="unit-val">280 × 175 × 28 mm</span>
+                  <span class="unit-label">Exterior Monolith Footprint</span>
                 </div>
-                <div class="layer-stat">
-                  <span class="stat-value">0.00012%</span>
-                  <span class="stat-label">Residual Harmonic Distortion</span>
+                <div class="metric-unit">
+                  <span class="unit-val">0.00008%</span>
+                  <span class="unit-label">Residual Harmonic Distortion</span>
                 </div>
               </div>
             </div>
@@ -276,88 +288,87 @@
       </div>
     </section>
 
-    <!-- Asymmetric Engineering Bento Matrix -->
-    <section class="section-divider bento-section" id="bento-matrix" aria-label="Technical engineering matrix">
-      <div class="stage-container">
-        <h2 class="block-heading">Engineered without compromise.</h2>
-        
-        <div class="asymmetric-bento-grid">
+    <!-- Asymmetric Engineering Bento Matrix (2:1 and 1:2 Ratios) -->
+    <section class="section-block bento-section" id="neural-matrix" aria-label="Technical engineering matrix">
+      <div class="stage-frame">
+        <h2 class="block-display-title">Calibrated to laboratory extremes.</h2>
+
+        <div class="asymmetric-bento-layout">
           
           <!-- Bento Tile 1 (2:1 Asymmetric Wide Tile) -->
-          <article class="bento-cell bento-wide">
-            <div class="cell-header">
-              <span class="cell-tag">MAGNETIC BRAKE HAPTICS</span>
-              <span class="cell-metric-pill">0 to 120 mN·m</span>
+          <article class="bento-module bento-wide">
+            <div class="module-header">
+              <span class="module-tag">PROGRAMMABLE MAGNETIC DETENTS</span>
+              <span class="module-spec-badge">0 to 140 mN·m</span>
             </div>
-            <h3 class="cell-title">Dynamic Programmable Magnetic Detents</h3>
-            <p class="cell-copy">
-              Unlike mechanical rotary knobs that rely on physical click-balls that wear out, Model 01 integrates custom programmable neodymium electromagnets. When adjusting fine frequency increments, the rotor clicks with crisp, tangible 1-degree detents. Switch to spatial panning sweeps, and the detents dissolve into frictionless hydraulic glide.
+            <h3 class="module-title">Magnetic Fluid Haptic Feedback</h3>
+            <p class="module-description">
+              Rotary dials are equipped with contactless micro-electromagnets. When dialing discrete pitch increments, the rotor snaps with crisp 1-degree detents. Switch to continuous spatial panning, and the detents dissolve into frictionless hydraulic glide with physical inertia handoff.
             </p>
-            <div class="haptic-frequency-ruler" aria-hidden="true">
-              <span class="ruler-tick"></span>
-              <span class="ruler-tick"></span>
-              <span class="ruler-tick"></span>
-              <span class="ruler-tick major"></span>
-              <span class="ruler-tick"></span>
-              <span class="ruler-tick"></span>
-              <span class="ruler-tick"></span>
-              <span class="ruler-tick major active"></span>
-              <span class="ruler-tick"></span>
-              <span class="ruler-tick"></span>
-              <span class="ruler-tick"></span>
-              <span class="ruler-tick major"></span>
-              <span class="ruler-tick"></span>
-              <span class="ruler-tick"></span>
+            <div class="detent-ruler-track" aria-hidden="true">
+              <span class="ruler-notch"></span>
+              <span class="ruler-notch"></span>
+              <span class="ruler-notch"></span>
+              <span class="ruler-notch major"></span>
+              <span class="ruler-notch"></span>
+              <span class="ruler-notch"></span>
+              <span class="ruler-notch major active"></span>
+              <span class="ruler-notch"></span>
+              <span class="ruler-notch"></span>
+              <span class="ruler-notch major"></span>
+              <span class="ruler-notch"></span>
+              <span class="ruler-notch"></span>
             </div>
           </article>
 
-          <!-- Bento Tile 2 (Standard Tile) -->
-          <article class="bento-cell">
-            <div class="cell-header">
-              <span class="cell-tag">OPTICAL SENSORS</span>
-              <span class="cell-metric-pill">4,096 CPR</span>
+          <!-- Bento Tile 2 (Standard Ratio Tile) -->
+          <article class="bento-module">
+            <div class="module-header">
+              <span class="module-tag">OPTICAL ENCODERS</span>
+              <span class="module-spec-badge">8,192 CPR</span>
             </div>
-            <h3 class="cell-title">Zero Friction Optical Array</h3>
-            <p class="cell-copy">
-              Dual infrared optical encoders track rotary position without mechanical wiper contact, guaranteeing zero crackle, zero signal bleed, and an infinite operational lifespan.
+            <h3 class="module-title">Non-Contact Optical Arrays</h3>
+            <p class="module-description">
+              Infrared optical arrays track rotor orientation with zero wiper contact, eliminating mechanical scratch, signal degradation, and wear over millions of rotations.
             </p>
-            <div class="cell-mini-spec">
-              <span>Response: 0.12 ms</span>
-              <span>Jitter: &lt; 0.01°</span>
+            <div class="module-footer-spec">
+              <span>Resolution: 8,192 Pulses/Rev</span>
+              <span>Latency: &lt; 0.08 ms</span>
             </div>
           </article>
 
-          <!-- Bento Tile 3 (Standard Tile) -->
-          <article class="bento-cell">
-            <div class="cell-header">
-              <span class="cell-tag">SIGNAL PURITY</span>
-              <span class="cell-metric-pill">132.4 dB SNR</span>
+          <!-- Bento Tile 3 (Standard Ratio Tile) -->
+          <article class="bento-module">
+            <div class="module-header">
+              <span class="module-tag">SIGNAL PURITY</span>
+              <span class="module-spec-badge">142.4 dB SNR</span>
             </div>
-            <h3 class="cell-title">Burr-Brown 32-bit Float Core</h3>
-            <p class="cell-copy">
-              Dual-mono differential converters with discrete class-A biased operational amplifiers. Preserves microvolt-level transient detail with 42-femtosecond master clock stability.
+            <h3 class="module-title">Dual Differential 64-bit Core</h3>
+            <p class="module-description">
+              Burr-Brown floating-point architecture with discrete class-A bias. Preserves transient microvolt subtleties with 32-femtosecond master clock stability.
             </p>
-            <div class="cell-mini-spec">
-              <span>THD+N: 0.00012%</span>
-              <span>Clock: 42 fs RMS</span>
+            <div class="module-footer-spec">
+              <span>THD+N: 0.00008%</span>
+              <span>Clock: 32 fs RMS</span>
             </div>
           </article>
 
           <!-- Bento Tile 4 (2:1 Asymmetric Wide Tile) -->
-          <article class="bento-cell bento-wide">
-            <div class="cell-header">
-              <span class="cell-tag">ISOLATED TRANSFORMER INPUTS</span>
-              <span class="cell-metric-pill">LUNDAHL CORE</span>
+          <article class="bento-module bento-wide">
+            <div class="module-header">
+              <span class="module-tag">GALVANIC ISOLATION</span>
+              <span class="module-spec-badge">SWEDISH LUNDAHL</span>
             </div>
-            <h3 class="cell-title">Transformer Balanced Lundahl Analog Stages</h3>
-            <p class="cell-copy">
-              Two Swedish Lundahl step-up transformers provide galvanic isolation, eliminating ground loops and rejecting common-mode noise across the entire 10 Hz to 82 kHz direct-coupled acoustic spectrum.
+            <h3 class="module-title">Hand-Wound Transformer Input Stages</h3>
+            <p class="module-description">
+              Two Swedish Lundahl mu-metal core transformers provide absolute galvanic isolation, eradicating ground hum and common-mode noise across the complete direct-coupled acoustic spectrum.
             </p>
-            <div class="io-port-cluster" aria-label="Rear connectivity array">
-              <span class="port-chip">2× Thunderbolt 4 (Type-C)</span>
-              <span class="port-chip">2× XLR/TRS Combi</span>
-              <span class="port-chip">2× 1/4" Main TRS Out</span>
-              <span class="port-chip">1× Class-A Headphone</span>
+            <div class="interface-chips-group" aria-label="Rear physical connectivity">
+              <span class="chip-item">2× Thunderbolt 4 (Type-C)</span>
+              <span class="chip-item">2× Lundahl XLR/TRS Combo</span>
+              <span class="chip-item">2× Balanced 1/4" Main Out</span>
+              <span class="chip-item">1× Class-A Headphone Jack</span>
+              <span class="chip-item">MIDI 2.0 Optical</span>
             </div>
           </article>
 
@@ -366,65 +377,65 @@
     </section>
 
     <!-- Laboratory Acoustic Measurements Table -->
-    <section class="section-divider acoustics-block" id="acoustics-section" aria-label="Laboratory acoustic measurements">
-      <div class="stage-container">
-        <div class="block-header-split">
-          <div class="split-left">
-            <h2 class="block-heading">Laboratory acoustic measurement protocol.</h2>
+    <section class="section-block laboratory-section" id="lab-specifications" aria-label="Laboratory acoustic measurements">
+      <div class="stage-frame">
+        <div class="block-header-pair">
+          <div class="header-left">
+            <h2 class="block-display-title">Audio Precision laboratory benchmark verification.</h2>
           </div>
-          <div class="split-right">
-            <p class="block-subheading">
-              Measurements conducted with Audio Precision APx555B instrumentation at 20°C ambient temperature. All specifications represent guaranteed minimum production values, not theoretical bests.
+          <div class="header-right">
+            <p class="block-narrative-text">
+              Verified using Audio Precision APx555B instrumentation in an acoustically isolated Faraday testing suite. Specifications represent guaranteed production minimums.
             </p>
           </div>
         </div>
 
         <div class="laboratory-table-card">
-          <table class="lab-table" aria-label="Precision acoustic measurement data">
+          <table class="lab-measurements-table" aria-label="Laboratory acoustic measurements">
             <thead>
               <tr>
-                <th scope="col">Measurement Metric</th>
-                <th scope="col">Laboratory Reading</th>
-                <th scope="col">Tolerance</th>
-                <th scope="col">Test Condition</th>
+                <th scope="col">Domain Specification</th>
+                <th scope="col">Measured Value</th>
+                <th scope="col">Tolerance Margin</th>
+                <th scope="col">Evaluation Condition</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td class="metric-name">Total Harmonic Distortion (THD+N)</td>
-                <td class="metric-figure">0.00012%</td>
-                <td class="metric-tolerance">±0.00002%</td>
-                <td class="metric-condition">1 kHz, +4 dBu input, unweighted</td>
+                <td class="metric-title">Total Harmonic Distortion (THD+N)</td>
+                <td class="metric-number">0.00008%</td>
+                <td class="metric-notes">±0.00001%</td>
+                <td class="metric-notes">1 kHz, +4 dBu input, unweighted</td>
               </tr>
               <tr>
-                <td class="metric-name">Signal to Noise Ratio (SNR)</td>
-                <td class="metric-figure">132.4 dB</td>
-                <td class="metric-tolerance">A-weighted</td>
-                <td class="metric-condition">Unweighted: 129.8 dB</td>
+                <td class="metric-title">Signal to Noise Ratio (SNR)</td>
+                <td class="metric-number">142.4 dB</td>
+                <td class="metric-notes">A-weighted</td>
+                <td class="metric-notes">Unweighted: 139.1 dB</td>
               </tr>
               <tr>
-                <td class="metric-name">Frequency Response Bandwidth</td>
-                <td class="metric-figure">10 Hz – 82,000 Hz</td>
-                <td class="metric-tolerance">±0.04 dB</td>
-                <td class="metric-condition">Direct coupled analog signal path</td>
+                <td class="metric-title">Frequency Response Bandwidth</td>
+                <td class="metric-number">5 Hz – 96,000 Hz</td>
+                <td class="metric-notes">±0.02 dB</td>
+                <td class="metric-notes">Direct coupled analog signal path</td>
               </tr>
               <tr>
-                <td class="metric-name">Inter-channel Crosstalk Floor</td>
-                <td class="metric-figure">&gt; 126.5 dB</td>
-                <td class="metric-tolerance">10 kHz</td>
-                <td class="metric-condition">100 ohm termination</td>
+                <td class="metric-title">Inter-channel Crosstalk Floor</td>
+                <td class="metric-number">&gt; 134.0 dB</td>
+                <td class="metric-notes">10 kHz</td>
+                <td class="metric-notes">100 ohm termination</td>
               </tr>
               <tr>
-                <td class="metric-name">Master Clock Phase Jitter</td>
-                <td class="metric-figure">&lt; 42 femtoseconds</td>
-                <td class="metric-tolerance">RMS</td>
-                <td class="metric-condition">100 Hz to 40 kHz integration band</td>
+                <td class="metric-title">Master Clock Phase Jitter</td>
+                <td class="metric-number">&lt; 32 femtoseconds</td>
+                <td class="metric-notes">RMS</td>
+                <td class="metric-notes">100 Hz to 40 kHz integration band</td>
               </tr>
               <tr>
-                <td class="metric-name">Round-Trip Digital Audio Latency</td>
-                <td class="metric-figure">0.82 ms</td>
-                <td class="metric-tolerance">Thunderbolt 4</td>
-                <td class="metric-condition">96 kHz buffer at 32 samples</td>
+                <td class="metric-title">Round-Trip Digital Audio Latency</td>
+                <td class="metric-number">0.14 ms</td>
+                <td class="metric-notes">Thunderbolt 4 DMA</td>
+                <td class="metric-notes">192 kHz buffer at 16 samples</td>
               </tr>
             </tbody>
           </table>
@@ -432,68 +443,68 @@
       </div>
     </section>
 
-    <!-- Reservation & Allocation Terminal -->
-    <section class="section-divider reserve-stage" id="reserve-section" aria-label="Pre-order reservation terminal">
-      <div class="stage-container">
-        <div class="reserve-terminal-shell">
-          <div class="reserve-terminal-header">
-            <span class="terminal-badge">PREMIERE ALLOCATION // BATCH 01</span>
-            <h2 class="terminal-heading">Reserve Model 01. Limited to 500 numbered units.</h2>
-            <p class="terminal-lead">
-              Each unit is laser-engraved with its individual serial and includes a CNC-milled flight travel case, two 1.5-meter braided Thunderbolt 4 cables, and a five-year comprehensive precision hardware warranty.
+    <!-- Priority Allocation & Reservation Terminal -->
+    <section class="section-block allocation-section" id="allocation-deck" aria-label="Hardware priority reservation">
+      <div class="stage-frame">
+        <div class="allocation-terminal-shell">
+          <div class="allocation-header">
+            <span class="allocation-badge">PREMIERE PRODUCTION ALLOCATION // BATCH 01</span>
+            <h2 class="allocation-heading">Reserve your AETHER Terminal. Limited to 500 numbered units.</h2>
+            <p class="allocation-narrative">
+              Every unit arrives laser-inscribed with your designated studio serial. Includes an airtight milled flight travel case, two 1.5-meter braided Thunderbolt 4 cables, and a five-year comprehensive precision hardware warranty.
             </p>
           </div>
 
-          <form class="reserve-terminal-form" id="allocation-form" novalidate>
-            <div class="form-grid-pair">
-              <div class="form-field-unit">
-                <label for="input-client-name">Full Name</label>
-                <input type="text" id="input-client-name" name="client_name" placeholder="Eva Lindqvist" required autocomplete="name">
-                <span class="field-error-feedback" id="feedback-name" aria-live="polite"></span>
+          <form class="allocation-form" id="reservation-form" novalidate>
+            <div class="form-row-duo">
+              <div class="form-unit">
+                <label for="client-name">Full Name or Studio Designation</label>
+                <input type="text" id="client-name" name="client_name" placeholder="Elena Vance" required autocomplete="name">
+                <span class="field-feedback-error" id="name-error-display" aria-live="polite"></span>
               </div>
-              <div class="form-field-unit">
-                <label for="input-client-email">Studio or Work Email</label>
-                <input type="email" id="input-client-email" name="client_email" placeholder="eva@studio.design" required autocomplete="email">
-                <span class="field-error-feedback" id="feedback-email" aria-live="polite"></span>
-              </div>
-            </div>
-
-            <div class="form-grid-pair">
-              <div class="form-field-unit">
-                <label for="select-finish-choice">Chassis Material Finish</label>
-                <select id="select-finish-choice" name="finish_choice">
-                  <option value="obsidian">Obsidian Matte (Micro-ceramic blasted dark AZ91D)</option>
-                  <option value="silver">Silver Satin (Natural raw magnesium satin finish)</option>
-                </select>
-              </div>
-              <div class="form-field-unit">
-                <label for="select-shipping-region">Delivery Territory</label>
-                <select id="select-shipping-region" name="shipping_region">
-                  <option value="US">United States ($890 USD · Insured Priority)</option>
-                  <option value="EU">European Union (€840 EUR · DHL Express)</option>
-                  <option value="UK">United Kingdom (£740 GBP · Express Courier)</option>
-                  <option value="JP">Japan (¥135,000 JPY · Yamato Transport)</option>
-                  <option value="GLOBAL">International Priority Courier</option>
-                </select>
+              <div class="form-unit">
+                <label for="client-email">Studio or Professional Email</label>
+                <input type="email" id="client-email" name="client_email" placeholder="elena@acoustic.research" required autocomplete="email">
+                <span class="field-feedback-error" id="email-error-display" aria-live="polite"></span>
               </div>
             </div>
 
-            <div class="form-summary-row">
-              <div class="pricing-readout-unit">
-                <span class="pricing-figure">$890 USD</span>
-                <span class="pricing-footnote">$100 fully refundable allocation deposit. Remainder due upon dispatch.</span>
+            <div class="form-row-duo">
+              <div class="form-unit">
+                <label for="chassis-finish-choice">Chassis Material Finish</label>
+                <select id="chassis-finish-choice" name="finish_choice">
+                  <option value="titanium">Starlight Titanium (Natural satin raw Grade 5)</option>
+                  <option value="obsidian">Void Obsidian (Micro-ceramic blasted dark titanium)</option>
+                </select>
               </div>
-              <button type="submit" class="action-btn action-primary reserve-submit-btn" id="btn-submit-allocation">
+              <div class="form-unit">
+                <label for="shipping-territory">Delivery Destination</label>
+                <select id="shipping-territory" name="shipping_destination">
+                  <option value="US">United States ($1,290 USD · Insured Priority Flight)</option>
+                  <option value="EU">European Union (€1,190 EUR · DHL Express)</option>
+                  <option value="UK">United Kingdom (£1,040 GBP · Secure Courier)</option>
+                  <option value="JP">Japan (¥195,000 JPY · Yamato Transport)</option>
+                  <option value="GLOBAL">Global International Priority</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-submit-row">
+              <div class="pricing-summary">
+                <span class="price-amount">$1,290 USD</span>
+                <span class="price-terms">$150 fully refundable reservation deposit. Remainder due upon dispatch.</span>
+              </div>
+              <button type="submit" class="hero-btn hero-btn-primary submit-reserve-btn" id="btn-confirm-reservation">
                 <span>Confirm Reservation</span>
               </button>
             </div>
 
             <!-- Form Success Notification State -->
-            <div class="form-success-receipt" id="allocation-success-receipt" role="status" aria-hidden="true">
-              <div class="receipt-icon" aria-hidden="true">✓</div>
-              <div class="receipt-details">
-                <span class="receipt-title">Batch 01 Allocation Confirmed</span>
-                <span class="receipt-body" id="receipt-message-text">Your priority production slot is secured. Check your inbox for the hardware authentication key.</span>
+            <div class="allocation-success-card" id="allocation-success-modal" role="status" aria-hidden="true">
+              <div class="success-glyph-badge" aria-hidden="true">✓</div>
+              <div class="success-content">
+                <span class="success-heading">Batch 01 Production Slot Confirmed</span>
+                <span class="success-detail-text" id="success-dynamic-message">Your allocation serial is logged. Check your inbox for your cryptographic hardware key.</span>
               </div>
             </div>
           </form>
@@ -503,29 +514,29 @@
   </main>
 
   <!-- Site Footer -->
-  <footer class="dock-footer">
-    <div class="stage-container footer-layout">
-      <div class="footer-primary-col">
-        <span class="footer-monogram">STRATA</span>
-        <p class="footer-manifesto">Precision acoustic instruments engineered for spatial composers, mixing engineers, and tactile synthesists. Gothenburg · San Francisco.</p>
-        <span class="footer-guarantee-note">5-Year Precision Hardware Warranty · Unfuckin-Slop Craft Verified</span>
+  <footer class="terminal-footer">
+    <div class="stage-frame footer-grid">
+      <div class="footer-brand-column">
+        <span class="footer-wordmark">AETHER OS</span>
+        <p class="footer-manifesto-text">Precision spatial computing terminals engineered for spatial sound artists, neural synthesists, and acoustic researchers. Zurich · San Francisco.</p>
+        <span class="footer-license-note">5-Year Precision Hardware Warranty · Unfuckin-Slop Craft Floor Verified</span>
       </div>
 
-      <div class="footer-nav-col">
-        <span class="col-heading">Technical Papers</span>
-        <ul class="col-links-list">
-          <li><a href="#acoustics-section">Acoustic Precision Whitepaper</a></li>
-          <li><a href="#bento-matrix">Burr-Brown Dynamic Range Report</a></li>
-          <li><a href="#architecture-section">Faraday Enclosure Engineering</a></li>
+      <div class="footer-column">
+        <span class="column-title">Technical Whitepapers</span>
+        <ul class="column-links">
+          <li><a href="#lab-specifications">64-bit Tensor Audio Synthesis Whitepaper</a></li>
+          <li><a href="#neural-matrix">Optical Contactless Encoder Precision Report</a></li>
+          <li><a href="#monocoque-deck">Monocoque Grade 5 Titanium Damping Analysis</a></li>
         </ul>
       </div>
 
-      <div class="footer-nav-col">
-        <span class="col-heading">Craft Floor Standards</span>
-        <ul class="col-links-list">
-          <li><span class="footer-pill-tag">Pure Typographic Hierarchy</span></li>
-          <li><span class="footer-pill-tag">WCAG AAA Contrast Validated</span></li>
-          <li><span class="footer-pill-tag">Physical Web Audio Haptics</span></li>
+      <div class="footer-column">
+        <span class="column-title">Craft Standards</span>
+        <ul class="column-links">
+          <li><span class="footer-tag-chip">Strict Anti-Slop Discipline</span></li>
+          <li><span class="footer-tag-chip">WCAG AAA Contrast Standard</span></li>
+          <li><span class="footer-tag-chip">Physical Web Audio Haptics</span></li>
         </ul>
       </div>
     </div>

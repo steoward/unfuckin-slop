@@ -82,7 +82,7 @@ pub fn print_pack(pack: &Pack<'_>, task: &str, brief: bool) {
         .filter(|id| !pack.cards.iter().any(|c| c.id == *id))
         .collect();
     if let Some(id) = next.first() {
-        println!("next: slop get {id}   (only if the work touches that rule)");
+        println!("next: unfslop get {id}   (only if the work touches that rule)");
     }
 }
 
@@ -137,7 +137,7 @@ pub fn print_card(card: &Card, json: bool) {
     println!();
     println!("{}", card.body);
     if !card.pulls.is_empty() {
-        println!("\nnext: slop get {}   (only if the work touches that rule)", card.pulls[0]);
+        println!("\nnext: unfslop get {}   (only if the work touches that rule)", card.pulls[0]);
     }
 }
 
@@ -182,7 +182,7 @@ pub fn print_cards(cards: &[&Card], total_tokens: usize, json: bool) {
         );
     }
     println!(
-        "\n{} cards · {} tok in the whole library. Never load it whole; use `slop context`.",
+        "\n{} cards · {} tok in the whole library. Never load it whole; use `unfslop context`.",
         cards.len(),
         thousands(total_tokens)
     );
@@ -210,13 +210,13 @@ pub fn print_search(hits: &[(f64, &Card)], query: &str, json: bool) {
         return;
     }
     if hits.is_empty() {
-        println!("no card matches {query:?}. Try a broader word, or `slop cards`.");
+        println!("no card matches {query:?}. Try a broader word, or `unfslop cards`.");
         return;
     }
     for (score, card) in hits {
         println!("{:>5.2}  {}  ·  {} (~{} tok)", score, card.id, card.title, card.tokens);
     }
-    println!("\nload one: slop get <id>");
+    println!("\nload one: unfslop get <id>");
 }
 
 pub fn print_lint(report: &LintReport, json: bool) {

@@ -51,18 +51,22 @@ pub fn install(lib: &Library, target: &Path, force: bool) -> io::Result<usize> {
     if let Ok(exe) = std::env::current_exe() {
         let bin_dir = target.join("bin");
         if fs::create_dir_all(&bin_dir).is_ok() {
+            let unfslop_name = if cfg!(windows) { "unfslop.exe" } else { "unfslop" };
             let slop_name = if cfg!(windows) { "slop.exe" } else { "slop" };
+            let _ = fs::copy(&exe, bin_dir.join(unfslop_name));
             let _ = fs::copy(&exe, bin_dir.join(slop_name));
-            // If slop-mcp sits next to this binary, copy it too.
+            // If unfslop-mcp / slop-mcp sits next to this binary, copy it too.
             if let Some(dir) = exe.parent() {
-                let mcp_name = if cfg!(windows) {
-                    "slop-mcp.exe"
-                } else {
-                    "slop-mcp"
-                };
-                let mcp_src = dir.join(mcp_name);
-                if mcp_src.exists() {
-                    let _ = fs::copy(&mcp_src, bin_dir.join(mcp_name));
+                for mcp_base in ["unfslop-mcp", "slop-mcp"] {
+                    let mcp_name = if cfg!(windows) {
+                        format!("{mcp_base}.exe")
+                    } else {
+                        mcp_base.to_string()
+                    };
+                    let mcp_src = dir.join(&mcp_name);
+                    if mcp_src.exists() {
+                        let _ = fs::copy(&mcp_src, bin_dir.join(&mcp_name));
+                    }
                 }
             }
         }

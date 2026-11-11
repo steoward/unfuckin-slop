@@ -1,7 +1,7 @@
 {
   "mcpServers": {
-    "unfuckin-slop": {
-      "command": "slop-mcp",
+    "unfslop": {
+      "command": "unfslop-mcp",
       "args": []
     },
     "playwright": {

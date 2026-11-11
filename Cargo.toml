@@ -17,6 +17,14 @@ name = "unfuckin-slop"
 path = "src/main.rs"
 
 [[bin]]
+name = "unfslop"
+path = "src/bin/unfslop.rs"
+
+[[bin]]
+name = "unfslop-mcp"
+path = "src/bin/unfslop_mcp.rs"
+
+[[bin]]
 name = "slop"
 path = "src/bin/slop.rs"
 

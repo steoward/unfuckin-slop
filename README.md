@@ -15,31 +15,31 @@ the task in front of you.
 ```
 SKILL.md              always loaded, ~1.6k tok     the protocol + the non-negotiables + the index
      │
-     ├─ slop context "draggable sheet that snaps"   ranks 29 cards, prints 4 that fit 2k tok
+     ├─ unfslop context "draggable sheet that snaps" ranks 29 cards, prints 4 that fit 2k tok
      │      └─ cards/apple.springs.md               one idea, one page, only when asked for
      │
-     └─ slop lint src/                              the mechanical half of the quality floor
+     └─ unfslop lint src/                           the mechanical half of the quality floor
 ```
 
 ## Quick start
 
 ```bash
-cargo build --release          # no dependencies, ~1s incremental
-target/release/slop doctor
-target/release/slop context "settings page with destructive actions"
+cargo build --release          # builds unfslop & unfslop-mcp
+target/release/unfslop doctor
+target/release/unfslop context "settings page with destructive actions"
 ```
 
-Put `slop` (or `slop.exe`) somewhere on `PATH`, or use the copy installed with the skill.
+Put `unfslop` (or `unfslop.exe`) somewhere on `PATH`, or use the copy installed with the skill.
 
 ### Install as an agent skill
 
 ```bash
-slop install                  # → .claude/skills/unfuckin-slop
-slop install --user           # → ~/.claude/skills/unfuckin-slop
-slop install --dir path/to/skills/unfuckin-slop
+unfslop install                  # → .claude/skills/unfuckin-slop
+unfslop install --user           # → ~/.claude/skills/unfuckin-slop
+unfslop install --dir path/to/skills/unfuckin-slop
 ```
 
-That writes `SKILL.md`, all 29 cards, `NOTICE.md`, and a copy of the binary at `bin/slop`, so the
+That writes `SKILL.md`, all 29 cards, `NOTICE.md`, and a copy of the binary at `bin/unfslop`, so the
 skill keeps working on a machine with no Cargo toolchain. Any SKILL.md-compatible agent can use it
 (Claude Code, Codex, Cursor, Copilot, and friends); point it at the folder.
 
@@ -50,19 +50,19 @@ For this repository itself, the skill is already in `skills/unfuckin-slop/`. Age
 
 | Command | What it does |
 | --- | --- |
-| `slop context "<task>"` | The main command. Ranks cards, prints only those that fit the budget. |
+| `unfslop context "<task>"` | The main command. Ranks cards, prints only those that fit the budget. |
 | `--budget N` | Token ceiling for the pack. Default 2000. |
 | `--limit N` | Card ceiling. Default 6. |
 | `--mode M` | Force a mode: `build`, `motion`, `gesture`, `critique`, `polish`, `system`, `a11y`, `native`. |
 | `--brief` | Headers and token costs only, no bodies. |
 | `--all` | Ignore budget and limit (rarely what you want). |
-| `slop get <id>` | One card, full text. |
-| `slop search "<query>"` | BM25 over titles, triggers, ids and bodies. Scores shown. |
-| `slop cards` | The index: id, token cost, title. No bodies. |
-| `slop lint [paths]` | 18 deterministic anti-slop and craft checks. |
-| `slop install` | Write the skill and binary to a skills directory. |
-| `slop doctor` | Library size, thin-layer share, install state. |
-| `slop stats` | Tokens by source, largest cards. |
+| `unfslop get <id>` | One card, full text. |
+| `unfslop search "<query>"` | BM25 over titles, triggers, ids and bodies. Scores shown. |
+| `unfslop cards` | The index: id, token cost, title. No bodies. |
+| `unfslop lint [paths]` | 18 deterministic anti-slop and craft checks. |
+| `unfslop install` | Write the skill and binary to a skills directory. |
+| `unfslop doctor` | Library size, thin-layer share, install state. |
+| `unfslop stats` | Tokens by source, largest cards. |
 | `--json` | Any read command emits structured output. |
 
 ## The cards
@@ -97,7 +97,7 @@ skipped.
 
 ## Lint
 
-`slop lint src/` reports `path:line severity rule`, the problem, and the fix. Exit code 1 on error.
+`unfslop lint src/` reports `path:line severity rule`, the problem, and the fix. Exit code 1 on error.
 
 | Group | Checks |
 | --- | --- |
@@ -114,7 +114,7 @@ stricter, `--fail-on never` is for exploratory runs. Fix the cause, do not mute 
 A `.slopignore` in the working directory excludes unrelated paths (one prefix per line, `#` for
 comments), so tool state and archives do not drown the findings.
 
-`fixtures/` is a deliberate violation set: `slop lint fixtures` finds 19 findings (6 errors).
+`fixtures/` is a deliberate violation set: `unfslop lint fixtures` finds 19 findings (6 errors).
 
 ## Design notes
 
@@ -134,37 +134,41 @@ comments), so tool state and archives do not drown the findings.
 ## Verify
 
 ```bash
-cargo test                     # 14 unit + 6 integration tests
-cargo build --release           # builds slop, slop-mcp (and unfuckin-slop)
-cargo build --release
-target/release/slop context "spring sheet snap" --budget 1200
-target/release/slop lint fixtures; echo "exit=$?"
+cargo test                     # 24 unit + integration tests
+cargo build --release          # builds unfslop, unfslop-mcp (and aliases)
+target/release/unfslop context "spring sheet snap" --budget 1200
+target/release/unfslop lint fixtures; echo "exit=$?"
 ```
 
 ## MCP and inspiration galleries
 
-Unfuckin-Slop is not a single thing. It ships three cooperating pieces:
+Unfuckin-Slop ships cooperating pieces:
 
-1. **The skill** (this folder + 30 cards): design knowledge and the router.
-2. **`slop-mcp`**: an MCP server (stdio) exposing `search_cards`, `get_card`, `list_cards`, `pack`,
-   `detect_mode`, `lint`, `inspiration_sources`, `collectui_categories`, `pixlpin_tags`, and `inspiration_recipe`. Run it with `slop-mcp`.
-3. **Playwright MCP** (`@playwright/mcp`): the browser. Free inspiration galleries (collectui.com,
-   pixlpin.com) are client-rendered SPAs; plain HTTP returns an empty shell.
+1. **The skill** (`skills/unfuckin-slop` + 30 atom cards): design knowledge, rules, and smart router.
+2. **`unfslop-mcp`**: an MCP server (stdio) exposing live scrapers and structured design tools:
+   - `collectui_challenges`: Complete catalog of 50+ Daily UI challenges with exact paths.
+   - `collectui_categories`: Hand-curated pattern map (modals, dashboards, checkouts, settings, etc.).
+   - `collectui_fetch_shots`: Live HTTP scraper extracting curated shots and Dribbble links directly from CollectUI.
+   - `collectui_auth_recipe`: Pro session authentication workflow for CollectUI/Dribbble.
+   - `pixlpin_tags`: Full mobile & web pattern tags directory.
+   - `pixlpin_fetch_screens`: Live HTTP scraper for Pixlpin flow screens.
+   - `pixlpin_auth_recipe`: Pro session authentication workflow for Pixlpin.
+   - `unfslop_pro_workflow`: Step-by-step master workflow for building world-class UI.
+   - `search_cards`, `get_card`, `list_cards`, `pack`, `detect_mode`, and `lint`.
+3. **Playwright MCP** (`@playwright/mcp`): the browser automation pairing for full interactive inspection when needed.
 
 Wire both in your MCP client (see `.mcp.json`):
 
 ```json
 {
   "mcpServers": {
-    "unfuckin-slop": { "command": "slop-mcp" },
+    "unfslop": { "command": "unfslop-mcp" },
     "playwright": { "command": "npx", "args": ["@playwright/mcp@latest"] }
   }
 }
 ```
 
-Workflow: `inspiration_sources` gives direct deep category links for CollectUI and tag filters for Pixlpin → Playwright MCP
-renders them and captures shots with zero logins or paywalls → cross-check against `imp.craft-floor` and `imp.bans` → `slop lint`
-the result.
+Workflow: `inspiration_sources` or `collectui_fetch_shots` fetches real curated shots → analyze spatial layout, hierarchy, and tokens → cross-check against `imp.craft-floor` and `imp.bans` → `unfslop lint` the final implementation.
 
 Respect copyrights: these galleries are reference material, never a source to redistribute.
 

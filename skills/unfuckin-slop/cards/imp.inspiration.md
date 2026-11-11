@@ -15,7 +15,7 @@ from the rules in the other cards.
 ## Mandatory Prerequisite for New Work
 
 Whenever using this skill for the first time in a project, or when building a new screen,
-landing page, or starting a redesign, querying `slop-mcp` and inspecting real curated
+landing page, or starting a redesign, querying `unfslop-mcp` and inspecting real curated
 designs from **CollectUI** and/or **Pixlpin** is a **mandatory necessity**, not an optional luxury.
 Skipping this step leads to generic, uninspired, default designs. Anchor your direction
 in actual world-class work before writing a line of code.
@@ -31,7 +31,7 @@ Both galleries below are **100% free, public, and open**:
 
 ## Fast agent workflow with MCP
 
-1. **Call `inspiration_sources`** or `inspiration_recipe` from the `slop-mcp` server. It resolves your design request directly into exact deep category URLs on CollectUI or tagged queries on Pixlpin.
+1. **Call `inspiration_sources`** or `inspiration_recipe` from the `unfslop-mcp` server. It resolves your design request directly into exact deep category URLs on CollectUI or tagged queries on Pixlpin.
 2. **Browse via Playwright MCP** (`@playwright/mcp`) using `browser_navigate` and `browser_snapshot`. Both sites render interactively without accounts or paywalls.
 3. **Target precise elements**:
    - On **CollectUI**: query `article, .post-card, img` for curated shots.

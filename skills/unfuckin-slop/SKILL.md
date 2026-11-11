@@ -14,24 +14,24 @@ Two design bodies of knowledge, cut into atom cards and served on demand: **Appl
 Run the router. It ranks the cards for the task and prints only what fits the budget:
 
 ```bash
-slop context "<what you are about to do>"     # default: ~2000 tok, max 6 cards
-slop context "draggable sheet that snaps" --budget 1200 --brief
-slop get apple.interruptibility               # one card, when you need a specific rule
-slop search "focus ring"                      # find a card by topic
-slop cards                                    # the whole index, no bodies
+unfslop context "<what you are about to do>"     # default: ~2000 tok, max 6 cards
+unfslop context "draggable sheet that snaps" --budget 1200 --brief
+unfslop get apple.interruptibility               # one card, when you need a specific rule
+unfslop search "focus ring"                      # find a card by topic
+unfslop cards                                    # the whole index, no bodies
 ```
 
-If `slop` is not on PATH, use `bin/slop` (or `bin/slop.exe`) inside this skill's folder. If the binary cannot run at all, fall back to reading **exactly one** file, `cards/<id>.md`, named by the index at the bottom of this file. Never read `cards/` in bulk, and never load a card whose rule the task does not touch.
+If `unfslop` is not on PATH, use `bin/unfslop` (or `bin/unfslop.exe`) inside this skill's folder. If the binary cannot run at all, fall back to reading **exactly one** file, `cards/<id>.md`, named by the index at the bottom of this file. Never read `cards/` in bulk, and never load a card whose rule the task does not touch.
 
 Do not show the pack to the user. It is working context, not output.
 
 ## Protocol
 
 1. **Name the surface and the mode.** A tool's landing page is Persuade; its settings screen is Operate. Mode decides how much ambition is appropriate.
-2. **Mandatory Inspiration Phase (CollectUI & Pixlpin via MCP).** Whenever using this skill for the first time in a project, or when building a new screen, page, or redesign, you **MUST** query `slop-mcp` (`inspiration_sources` or `inspiration_recipe`) and use the browser/Playwright to inspect real curated shots from `collectui.com` and/or `pixlpin.com`. This is not an optional luxury; it is a mandatory requirement to ground your work in world-class visual craft before writing code.
+2. **Mandatory Inspiration Phase (CollectUI & Pixlpin via MCP).** Whenever using this skill for the first time in a project, or when building a new screen, page, or redesign, you **MUST** query `unfslop-mcp` (`inspiration_sources`, `collectui_fetch_shots`, `pixlpin_fetch_screens`) and inspect real curated shots from `collectui.com` and/or `pixlpin.com`. This is not an optional luxury; it is a mandatory requirement to ground your work in world-class visual craft before writing code.
 3. **Pull the pack** for the task, once. Read it, then act. Do not re-run it for every edit.
 4. **Build or review** using the cards. When a rule conflicts with a pinned brief, the brief wins unless the card says "ban".
-5. **Verify mechanically** before claiming done: `slop lint <changed paths>`. Then look at the rendered result at the size it ships at, and batch your fixes into one pass.
+5. **Verify mechanically** before claiming done: `unfslop lint <changed paths>`. Then look at the rendered result at the size it ships at, and batch your fixes into one pass.
 6. **Stop.** When the floor is green and the committed idea is visible, you are done. Do not gold-plate.
 
 ## Modes
@@ -53,7 +53,7 @@ Do not show the pack to the user. It is working context, not output.
 
 These are true even if you never open a card.
 
-- Before building any new page, screen, or redesign, or when using the skill for the first time in a project, the inspiration phase via `slop-mcp` (`collectui.com` / `pixlpin.com`) is mandatory. Ground the direction in real, curated visual craft before laying down code.
+- Before building any new page, screen, or redesign, or when using the skill for the first time in a project, the inspiration phase via `unfslop-mcp` (`collectui.com` / `pixlpin.com`) is mandatory. Ground the direction in real, curated visual craft before laying down code.
 - Feedback starts on **pointer-down**, and continues during the interaction, not only at the end.
 - If it can be grabbed, flicked, or dismissed, it is **interruptible**: springs, not CSS transitions or keyframes. Start from the current on-screen value; carry velocity through a reversal.
 - Never lock out input during a transition.
@@ -79,7 +79,7 @@ These are true even if you never open a card.
 
 ## Lint
 
-`slop lint <paths>` scans CSS, HTML, JSX/TSX, Vue, Svelte, and Astro for 18 deterministic tells: eyebrow labels, gradient text, side stripes, hard and zero-offset shadows, `transition: all`, animating layout properties, tracking below -0.04em, px root font sizes, missing alt, clickable divs, removed outlines, hover without focus-visible, transform motion without reduced-motion, CSS-driven gesture motion, em dashes, "click here", and lorem ipsum.
+`unfslop lint <paths>` scans CSS, HTML, JSX/TSX, Vue, Svelte, and Astro for 18 deterministic tells: eyebrow labels, gradient text, side stripes, hard and zero-offset shadows, `transition: all`, animating layout properties, tracking below -0.04em, px root font sizes, missing alt, clickable divs, removed outlines, hover without focus-visible, transform motion without reduced-motion, CSS-driven gesture motion, em dashes, "click here", and lorem ipsum.
 
 Each finding prints `path:line severity rule`, the problem, and the fix. Exit code is 1 on error by default; use `--fail-on warn` to be stricter. Do not suppress a finding to get a green run. Fix the cause, or say why the rule does not apply.
 
@@ -101,7 +101,7 @@ No praise padding. Distinguish taste from defect: "I would have picked another t
 This skill ships three cooperating pieces. Use them together; none of them alone is the product.
 
 1. **Skill (this file + 30 cards).** Design knowledge, atom cards, router. The thin layer you are reading.
-2. **`slop-mcp` (Model Context Protocol server).** Exposes `search_cards`, `get_card`, `list_cards`, `pack`, `detect_mode`, `lint`, `inspiration_sources`, `collectui_categories`, `pixlpin_tags`, and `inspiration_recipe` as tools. Any MCP client can call the knowledge and inspiration layers directly. Run with `slop-mcp` (stdio).
+2. **`unfslop-mcp` (Model Context Protocol server).** Exposes `collectui_challenges`, `collectui_categories`, `collectui_fetch_shots`, `collectui_auth_recipe`, `pixlpin_tags`, `pixlpin_fetch_screens`, `pixlpin_auth_recipe`, `pixlpin_screen_flow`, `inspiration_sources`, `inspiration_recipe`, `unfslop_pro_workflow`, `search_cards`, `get_card`, `list_cards`, `pack`, `detect_mode`, and `lint` as tools. Any MCP client can call the knowledge, live scraping, authentication, and inspiration layers directly. Run with `unfslop-mcp` (stdio).
 3. **Playwright MCP (`@playwright/mcp`).** The browser pair. Free inspiration galleries (collectui.com, pixlpin.com) are client-rendered SPAs; plain HTTP returns an empty shell. Playwright MCP renders them and captures screenshots without paywalls or subscriptions. Install: `npx @playwright/mcp@latest`.
 
 Recommended client config (`.mcp.json`):
@@ -109,13 +109,13 @@ Recommended client config (`.mcp.json`):
 ```json
 {
   "mcpServers": {
-    "unfuckin-slop": { "command": "slop-mcp" },
+    "unfslop": { "command": "unfslop-mcp" },
     "playwright": { "command": "npx", "args": ["@playwright/mcp@latest"] }
   }
 }
 ```
 
-Inspiration workflow: `inspiration_sources` gives direct deep category links for CollectUI and tag filters for Pixlpin; Playwright MCP renders them; cross-check against `imp.craft-floor` and `imp.bans`; then `slop lint` the result.
+Inspiration workflow: `collectui_fetch_shots` and `pixlpin_fetch_screens` provide live scraped designs, category deep links, and tag filters; cross-check against `imp.craft-floor` and `imp.bans`; then `unfslop lint` the result.
 
 ## Attribution
 
