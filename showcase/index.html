@@ -3,166 +3,463 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AURA Kinetics · Fluid Motion & Kinetic Surface Studio</title>
+  <title>STRATA Model 01 · Tactile Spatial Audio Console</title>
+  <meta name="description" content="Precision analog-digital spatial audio console milled from solid aerospace magnesium billet with magnetic optical rotary controls.">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <!-- Header Bar -->
-  <header class="header-bar">
-    <div class="brand-wrapper">
-      <div class="brand-glyph" aria-hidden="true">AK</div>
-      <span class="brand-title">AURA Kinetics</span>
-    </div>
-    <div class="nav-actions">
-      <button type="button" class="btn" id="theme-toggle" aria-label="Toggle visual theme">
-        <span id="theme-icon" aria-hidden="true">🌙</span>
-        <span id="theme-text">Theme</span>
-      </button>
-      <button type="button" class="btn btn-primary" id="reset-pos-btn">
-        <span>Recenter</span>
-      </button>
+<body data-finish="obsidian">
+  <!-- Global Navigation Bar -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#hero" class="brand-link" aria-label="STRATA Home">
+        <span class="brand-wordmark">STRATA</span>
+        <span class="model-badge">01</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Product navigation">
+        <a href="#acoustics" class="nav-anchor">Acoustics</a>
+        <a href="#architecture" class="nav-anchor">Architecture</a>
+        <a href="#haptics" class="nav-anchor">Haptic Engine</a>
+        <a href="#specs" class="nav-anchor">Specifications</a>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Finish Switcher (Obsidian / Silver) -->
+        <div class="finish-control" role="group" aria-label="Chassis finish selector">
+          <button type="button" class="finish-btn active" id="finish-obsidian" data-finish="obsidian" aria-pressed="true">
+            <span class="finish-swatch swatch-obsidian" aria-hidden="true"></span>
+            <span>Obsidian</span>
+          </button>
+          <button type="button" class="finish-btn" id="finish-silver" data-finish="silver" aria-pressed="false">
+            <span class="finish-swatch swatch-silver" aria-hidden="true"></span>
+            <span>Silver</span>
+          </button>
+        </div>
+
+        <!-- Haptic Sound Toggle -->
+        <button type="button" class="btn btn-icon" id="haptic-audio-toggle" aria-label="Toggle haptic feedback sound" title="Toggle audio feedback">
+          <span id="audio-status-glyph" aria-hidden="true">🔊</span>
+        </button>
+
+        <!-- Primary Reservation Anchor -->
+        <a href="#reserve" class="btn btn-primary nav-reserve-btn">Reserve</a>
+      </div>
     </div>
   </header>
 
-  <!-- Main Showcase Container -->
-  <main class="main-shell">
-    <section class="stage-container" aria-label="Physics playground">
-      <div class="hero-statement">
-        <h1 class="hero-headline">Fluid interface physics without compromise</h1>
-        <p class="hero-description">
-          Experience interruptible spring dynamics, momentum projection, and velocity handoff calibrated directly from Apple Human Interface research.
-        </p>
-      </div>
-
-      <!-- Live Physics Simulation Canvas -->
-      <div class="physics-viewport" id="viewport" role="region" aria-label="Interactive spring canvas">
-        <div class="viewport-grid" aria-hidden="true"></div>
-
-        <!-- Four Target Anchors for Snapping -->
-        <div class="viewport-anchor" style="top: 25%; left: 25%;">
-          <span class="anchor-label">Anchor 1</span>
-        </div>
-        <div class="viewport-anchor" style="top: 25%; left: 75%;">
-          <span class="anchor-label">Anchor 2</span>
-        </div>
-        <div class="viewport-anchor" style="top: 75%; left: 25%;">
-          <span class="anchor-label">Anchor 3</span>
-        </div>
-        <div class="viewport-anchor" style="top: 75%; left: 75%;">
-          <span class="anchor-label">Anchor 4</span>
-        </div>
-
-        <!-- Draggable Kinetic Card -->
-        <div class="kinetic-card" id="card" tabindex="0" role="button" aria-label="Draggable kinetic card, use arrow keys or drag with pointer">
-          <div class="kinetic-header">
-            <span class="kinetic-indicator" id="indicator" aria-hidden="true"></span>
-            <span class="kinetic-status-tag" id="status-tag">RESTING</span>
+  <main id="main-content">
+    <!-- Hero Section -->
+    <section class="hero-section" id="hero" aria-label="Product introduction">
+      <div class="container hero-container">
+        <div class="hero-content">
+          <h1 class="hero-title">The physical instrument for the spatial era.</h1>
+          <p class="hero-lead">
+            Machined from an 8-pound billet of aerospace magnesium. Driven by dual optical brushless rotary controllers with dynamic magnetic detents and zero-latency 32-bit float acoustic conversion.
+          </p>
+          <div class="hero-cta-group">
+            <a href="#reserve" class="btn btn-primary btn-large">Reserve Model 01</a>
+            <a href="#interactive-console" class="btn btn-secondary btn-large">Try Interactive Dial</a>
           </div>
-          <div class="kinetic-body">
-            <div class="kinetic-body-title">Dynamic Surface</div>
-            <div class="kinetic-body-sub">Grab, fling, or catch mid-flight</div>
-          </div>
-          <div class="kinetic-footer">
-            <span id="coord-readout">X: 0 Y: 0</span>
-            <span id="vel-readout">0 px/s</span>
+          <div class="hero-meta-strip">
+            <div class="meta-item">
+              <span class="meta-value">0.82 ms</span>
+              <span class="meta-label">Round-Trip Latency</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-value">32-bit / 384 kHz</span>
+              <span class="meta-label">Burr-Brown Floating ADC</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-value">132 dB</span>
+              <span class="meta-label">Dynamic Headroom</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Real-Time Telemetry Dashboard -->
-      <div class="telemetry-row">
-        <div class="telemetry-cell">
-          <div class="telemetry-title">Velocity Magnitude</div>
-          <div class="telemetry-data" id="tel-velocity">0 px/s</div>
-        </div>
-        <div class="telemetry-cell">
-          <div class="telemetry-title">Projected Target</div>
-          <div class="telemetry-data" id="tel-projection">Anchor 1</div>
-        </div>
-        <div class="telemetry-cell">
-          <div class="telemetry-title">Spring Phase</div>
-          <div class="telemetry-data" id="tel-phase">Equilibrium</div>
-        </div>
-        <div class="telemetry-cell">
-          <div class="telemetry-title">Refresh Rate</div>
-          <div class="telemetry-data" id="tel-fps">60 fps</div>
+        <!-- Interactive Physical Hardware Console Unit -->
+        <div class="hero-hardware-wrapper" id="interactive-console">
+          <div class="console-housing" id="console-chassis" role="region" aria-label="Interactive STRATA Model 01 console interface">
+            
+            <!-- Console Top Deck -->
+            <div class="console-deck">
+              <div class="deck-header">
+                <div class="deck-branding">
+                  <span class="deck-model">STRATA · MODEL 01</span>
+                  <span class="deck-serial">SN-01948 // BILLET MAGNESIUM</span>
+                </div>
+                <div class="deck-telemetry">
+                  <span class="telemetry-pill" id="power-indicator">
+                    <span class="beacon-dot" aria-hidden="true"></span>
+                    <span id="power-state-text">STANDBY 96k</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Main Controller Deck Grid -->
+              <div class="deck-controls-grid">
+                
+                <!-- Left Rotary Controller: Spatial Field Angle -->
+                <div class="rotary-station">
+                  <div class="rotary-dial-assembly" id="dial-spatial" tabindex="0" role="slider" aria-label="Spatial Field Angle Controller" aria-valuemin="0" aria-valuemax="360" aria-valuenow="120">
+                    <div class="rotary-led-ring" id="led-ring-spatial" aria-hidden="true"></div>
+                    <div class="rotary-knob" id="knob-spatial">
+                      <div class="knob-knurled-edge" aria-hidden="true"></div>
+                      <div class="knob-indicator" aria-hidden="true"></div>
+                    </div>
+                  </div>
+                  <div class="rotary-readout">
+                    <span class="rotary-name">Spatial Spread</span>
+                    <span class="rotary-value" id="val-spatial">120°</span>
+                  </div>
+                </div>
+
+                <!-- Center: Live Vector Waveform Display -->
+                <div class="console-display-station">
+                  <div class="screen-frame">
+                    <canvas id="waveform-canvas" width="480" height="200" aria-label="Live acoustic spectrum visualizer"></canvas>
+                    <div class="screen-overlay-info">
+                      <span id="screen-mode">HARMONIC FLUID</span>
+                      <span id="screen-freq">432.0 Hz</span>
+                    </div>
+                  </div>
+                  <!-- Quick Preset Switches -->
+                  <div class="deck-switches" role="radiogroup" aria-label="Harmonic mode selection">
+                    <button type="button" class="switch-toggle active" data-mode="binaural" role="radio" aria-checked="true">
+                      <span>Binaural</span>
+                    </button>
+                    <button type="button" class="switch-toggle" data-mode="harmonic" role="radio" aria-checked="false">
+                      <span>Harmonics</span>
+                    </button>
+                    <button type="button" class="switch-toggle" data-mode="transient" role="radio" aria-checked="false">
+                      <span>Transients</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Right Rotary Controller: Dynamic Impedance Resonance -->
+                <div class="rotary-station">
+                  <div class="rotary-dial-assembly" id="dial-resonance" tabindex="0" role="slider" aria-label="Acoustic Resonance Controller" aria-valuemin="0" aria-valuemax="100" aria-valuenow="42">
+                    <div class="rotary-led-ring" id="led-ring-resonance" aria-hidden="true"></div>
+                    <div class="rotary-knob" id="knob-resonance">
+                      <div class="knob-knurled-edge" aria-hidden="true"></div>
+                      <div class="knob-indicator" aria-hidden="true"></div>
+                    </div>
+                  </div>
+                  <div class="rotary-readout">
+                    <span class="rotary-name">Resonance Q</span>
+                    <span class="rotary-value" id="val-resonance">4.2 dB</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Console Bottom Strip -->
+              <div class="deck-footer">
+                <span class="deck-footnote">Rotate dials or drag to experience magnetic detents and acoustic synthesis</span>
+                <span class="deck-status" id="interaction-hint">READY</span>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Controls & Inspection Sidebar -->
-    <aside class="inspector-panel" aria-label="Configuration and craft checklist">
-      <!-- Physics Calibration Card -->
-      <div class="panel-card">
-        <h2 class="panel-header">Physics Calibration</h2>
-        
-        <div class="preset-group" role="radiogroup" aria-label="Spring interaction presets">
-          <button type="button" class="preset-btn active" data-preset="pip" role="radio" aria-checked="true">
-            <span class="preset-name">Picture in Picture</span>
-            <span class="preset-details">Damping: 1.0 · Response: 0.4s</span>
-          </button>
-          <button type="button" class="preset-btn" data-preset="sheet" role="radio" aria-checked="false">
-            <span class="preset-name">Modal Sheet</span>
-            <span class="preset-details">Damping: 0.8 · Response: 0.3s</span>
-          </button>
-          <button type="button" class="preset-btn" data-preset="rotation" role="radio" aria-checked="false">
-            <span class="preset-name">Momentum Toss</span>
-            <span class="preset-details">Damping: 0.7 · Response: 0.45s</span>
-          </button>
-        </div>
-
-        <div class="slider-group">
-          <div class="slider-unit">
-            <div class="slider-label-row">
-              <label for="damping-slider">Damping Ratio</label>
-              <span class="slider-val-readout" id="damping-val">1.00</span>
-            </div>
-            <input type="range" id="damping-slider" min="0.3" max="1.5" step="0.05" value="1.00">
+    <!-- Physical Architecture & Materiality Section -->
+    <section class="section architecture-section" id="architecture" aria-label="Physical architecture">
+      <div class="container">
+        <div class="section-header-split">
+          <div class="header-left">
+            <h2 class="section-heading">Monobloc magnesium. Zero internal acoustic reflection.</h2>
           </div>
-
-          <div class="slider-unit">
-            <div class="slider-label-row">
-              <label for="response-slider">Response Duration</label>
-              <span class="slider-val-readout" id="response-val">0.40s</span>
-            </div>
-            <input type="range" id="response-slider" min="0.1" max="1.0" step="0.05" value="0.40">
+          <div class="header-right">
+            <p class="section-subtext">
+              Traditional audio gear is assembled from stamped sheet metal that flexes and resonates under acoustic pressure. Model 01 starts as an eight-pound block of AZ91D magnesium, CNC-milled over four hours into a unified acoustic chassis.
+            </p>
           </div>
         </div>
 
-        <button type="button" class="btn sound-toggle-btn" id="audio-toggle">
-          <span id="sound-icon" aria-hidden="true">🔊</span>
-          <span id="sound-text">Haptic Sound: Enabled</span>
-        </button>
-      </div>
+        <div class="architecture-grid">
+          <article class="arch-card">
+            <div class="arch-number" aria-hidden="true">01</div>
+            <h3 class="arch-title">Isolated Dual Analog Vaults</h3>
+            <p class="arch-desc">
+              Input transformers and preamps rest in independent Faraday chambers sealed with pure copper gaskets, completely blocking digital clock harmonics.
+            </p>
+          </article>
 
-      <!-- Craft Floor Standards Verification Card -->
-      <div class="panel-card">
-        <h2 class="panel-header">Craft Floor Guarantee</h2>
-        <div class="checklist-wrapper">
-          <div class="check-item">
-            <span class="check-badge" aria-hidden="true">✓</span>
-            <span>Interruptible mid-flight at any frame</span>
-          </div>
-          <div class="check-item">
-            <span class="check-badge" aria-hidden="true">✓</span>
-            <span>Apple exponential momentum projection</span>
-          </div>
-          <div class="check-item">
-            <span class="check-badge" aria-hidden="true">✓</span>
-            <span>Zero gradient text or kicker labels</span>
-          </div>
-          <div class="check-item">
-            <span class="check-badge" aria-hidden="true">✓</span>
-            <span>Full keyboard navigability with focus rings</span>
-          </div>
-          <div class="check-item">
-            <span class="check-badge" aria-hidden="true">✓</span>
-            <span>Synthesized physical haptic audio</span>
-          </div>
+          <article class="arch-card">
+            <div class="arch-number" aria-hidden="true">02</div>
+            <h3 class="arch-title">Optical Magnetic Dials</h3>
+            <p class="arch-desc">
+              No carbon tracks to wear down. Optical sensor arrays read rotor angles at 4000 pulses per revolution, while programmable electromagnets generate tactile detents.
+            </p>
+          </article>
+
+          <article class="arch-card">
+            <div class="arch-number" aria-hidden="true">03</div>
+            <h3 class="arch-title">Thermal Siphon Dissipation</h3>
+            <p class="arch-desc">
+              The entire magnesium casing functions as a silent, fan-free heatsink, dissipating class-A amplifier thermal energy evenly across the surface.
+            </p>
+          </article>
         </div>
       </div>
-    </aside>
+    </section>
+
+    <!-- Haptic Engine & Multimodal Feedback Section -->
+    <section class="section haptics-section" id="haptics" aria-label="Tactile engineering">
+      <div class="container">
+        <div class="haptics-spotlight-wrapper">
+          <div class="haptics-text-col">
+            <h2 class="section-heading">Programmable magnetic detents. Physical weight you can feel.</h2>
+            <p class="body-text">
+              Digital knobs usually feel weightless and disconnect your ears from your hands. Model 01 embeds a custom neodymium magnetic brake directly inside each rotor. When dialing fine increments, the rotor snaps with crisp 1-degree detents. Switch to continuous spatial sweeps, and the detents instantly dissolve into liquid hydraulic resistance.
+            </p>
+            <ul class="spec-highlights-list">
+              <li>
+                <strong>0 to 120 mN·m</strong>
+                <span>Continuous variable rotational drag</span>
+              </li>
+              <li>
+                <strong>Sub-millisecond handoff</strong>
+                <span>Haptic resistance changes in sync with software DAW parameters</span>
+              </li>
+              <li>
+                <strong>Infinite lifespan</strong>
+                <span>Non-contact optical rotary tracking with zero mechanical friction</span>
+              </li>
+            </ul>
+          </div>
+          <div class="haptics-visual-col">
+            <div class="haptic-spec-box">
+              <div class="spec-box-header">
+                <span>MAGNETIC HYDRAULIC PROFILE</span>
+                <span class="spec-live-pill">CALIBRATED</span>
+              </div>
+              <div class="spec-detent-graph" aria-hidden="true">
+                <div class="detent-notch" style="height: 40%;"></div>
+                <div class="detent-notch" style="height: 65%;"></div>
+                <div class="detent-notch" style="height: 90%;"></div>
+                <div class="detent-notch active" style="height: 100%;"></div>
+                <div class="detent-notch" style="height: 90%;"></div>
+                <div class="detent-notch" style="height: 65%;"></div>
+                <div class="detent-notch" style="height: 40%;"></div>
+              </div>
+              <div class="spec-box-footer">
+                <span>Optical Resolution: 4,096 CPR</span>
+                <span>Response: 0.12 ms</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Acoustic Core & Signal Chain -->
+    <section class="section acoustics-section" id="acoustics" aria-label="Acoustic engineering">
+      <div class="container">
+        <div class="section-header-split">
+          <div class="header-left">
+            <h2 class="section-heading">Analog warmth, digital mathematics. Uncompromised signal purity.</h2>
+          </div>
+          <div class="header-right">
+            <p class="section-subtext">
+              Every capacitor is hand-sorted polypropylene; every operational amplifier operates in discrete class-A bias. We preserve every microvolt of natural acoustic nuance before digital translation.
+            </p>
+          </div>
+        </div>
+
+        <div class="data-table-wrapper">
+          <table class="specs-table" aria-label="Technical measurement table">
+            <thead>
+              <tr>
+                <th scope="col">Domain</th>
+                <th scope="col">Laboratory Measurement</th>
+                <th scope="col">Tolerance</th>
+                <th scope="col">Condition</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Total Harmonic Distortion</td>
+                <td class="tabular-num">0.00012%</td>
+                <td>±0.00002%</td>
+                <td>1 kHz, +4 dBu input</td>
+              </tr>
+              <tr>
+                <td>Signal to Noise Ratio</td>
+                <td class="tabular-num">132.4 dB</td>
+                <td>A-weighted</td>
+                <td>Unweighted: 129.8 dB</td>
+              </tr>
+              <tr>
+                <td>Frequency Response</td>
+                <td class="tabular-num">10 Hz – 82,000 Hz</td>
+                <td>±0.04 dB</td>
+                <td>Direct Coupled Mode</td>
+              </tr>
+              <tr>
+                <td>Channel Separation</td>
+                <td class="tabular-num">&gt; 126 dB</td>
+                <td>10 kHz</td>
+                <td>Inter-channel crosstalk floor</td>
+              </tr>
+              <tr>
+                <td>Analog Conversion Architecture</td>
+                <td>Burr-Brown 32-bit Float</td>
+                <td>384 kHz Max</td>
+                <td>Dual-mono differential array</td>
+              </tr>
+              <tr>
+                <td>Clock Jitter Floor</td>
+                <td class="tabular-num">&lt; 42 femtoseconds</td>
+                <td>RMS</td>
+                <td>Ultra-low phase noise oscillator</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Technical Specifications Section -->
+    <section class="section specs-section" id="specs" aria-label="Comprehensive product specifications">
+      <div class="container">
+        <h2 class="section-heading">Engineered without shortcuts.</h2>
+
+        <div class="specs-bento-grid">
+          <div class="bento-tile bento-large">
+            <h3 class="tile-title">Chassis & Weight</h3>
+            <p class="tile-desc">Monobloc CNC-milled AZ91D structural magnesium with micro-ceramic blasted surface finish.</p>
+            <div class="tile-metric">
+              <span class="metric-num">680</span>
+              <span class="metric-unit">grams net mass</span>
+            </div>
+            <div class="tile-dims">Dimensions: 242 mm × 158 mm × 32 mm</div>
+          </div>
+
+          <div class="bento-tile">
+            <h3 class="tile-title">Connectivity</h3>
+            <ul class="tile-list">
+              <li>Dual Thunderbolt 4 / USB4 (Type-C)</li>
+              <li>2× Lundahl Transformer Balanced XLR/TRS Combi</li>
+              <li>2× Balanced 1/4" Main TRS Outputs</li>
+              <li>1× High-Current Class-A 1/4" Headphone Jack</li>
+              <li>MIDI 2.0 In/Out via 3.5mm TRS Type-A</li>
+            </ul>
+          </div>
+
+          <div class="bento-tile">
+            <h3 class="tile-title">Power Delivery</h3>
+            <ul class="tile-list">
+              <li>Bus-powered over Thunderbolt 4 (15W)</li>
+              <li>Auxiliary DC Barrel Input (12V / 2.5A)</li>
+              <li>Multi-stage linear regulation circuitry</li>
+              <li>Zero digital ripple on analog voltage rails</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reservation & Order Section -->
+    <section class="section reserve-section" id="reserve" aria-label="Pre-order reservation">
+      <div class="container">
+        <div class="reserve-card">
+          <div class="reserve-header">
+            <h2 class="reserve-title">Reserve Model 01. Batch 01 allocation.</h2>
+            <p class="reserve-description">
+              Production is capped at 500 numbered units for the premiere edition. Each console arrives engraved with its individual serial and includes a custom anodized aluminum flight travel case and braided braided Thunderbolt cable.
+            </p>
+          </div>
+
+          <form class="reserve-form" id="reserve-form" novalidate>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="reserve-name">Full Name</label>
+                <input type="text" id="reserve-name" name="name" placeholder="Eva Lindqvist" required autocomplete="name">
+                <span class="input-error-msg" id="name-error" aria-live="polite"></span>
+              </div>
+              <div class="form-group">
+                <label for="reserve-email">Work Email</label>
+                <input type="email" id="reserve-email" name="email" placeholder="eva@studio.design" required autocomplete="email">
+                <span class="input-error-msg" id="email-error" aria-live="polite"></span>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="reserve-finish">Chassis Finish</label>
+                <select id="reserve-finish" name="finish">
+                  <option value="obsidian">Obsidian Matte (Micro-ceramic blasted)</option>
+                  <option value="silver">Silver Satin (Natural raw magnesium)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="reserve-country">Delivery Country</label>
+                <select id="reserve-country" name="country">
+                  <option value="US">United States ($890 USD)</option>
+                  <option value="EU">European Union (€840 EUR)</option>
+                  <option value="UK">United Kingdom (£740 GBP)</option>
+                  <option value="JP">Japan (¥135,000 JPY)</option>
+                  <option value="OTHER">International Global Shipping</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="reserve-footer">
+              <div class="reserve-pricing">
+                <div class="price-value">$890 USD</div>
+                <div class="price-terms">Fully refundable deposit: $100. Balance due upon batch completion.</div>
+              </div>
+              <button type="submit" class="btn btn-primary btn-large reserve-submit-btn" id="submit-reserve-btn">
+                <span>Confirm Reservation</span>
+              </button>
+            </div>
+
+            <!-- Form Success Notification State -->
+            <div class="form-success-banner" id="form-success-banner" role="status" aria-hidden="true">
+              <span class="success-glyph" aria-hidden="true">✓</span>
+              <div class="success-text">
+                <div class="success-title">Reservation Confirmed</div>
+                <div class="success-body" id="success-message-body">Allocation #01948 secured. Confirmation sent to your inbox.</div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-brand-col">
+        <span class="brand-wordmark">STRATA</span>
+        <p class="footer-copy">Precision tactile acoustic hardware. Engineered in Gothenburg and San Francisco.</p>
+        <span class="footer-guarantee">5-Year Precision Hardware Warranty · Worldwide Express Transit</span>
+      </div>
+
+      <div class="footer-links-col">
+        <span class="footer-heading">Documentation</span>
+        <ul class="footer-link-list">
+          <li><a href="#specs">Full Measurement Whitepaper</a></li>
+          <li><a href="#architecture">Faraday Enclosure Architecture</a></li>
+          <li><a href="#haptics">Optical Sensor Calibration</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links-col">
+        <span class="footer-heading">Standards</span>
+        <ul class="footer-link-list">
+          <li><span class="footer-pill">Unfuckin-Slop Verified</span></li>
+          <li><span class="footer-pill">WCAG AAA Contrast</span></li>
+          <li><span class="footer-pill">Zero Bloatware</span></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
 
   <script src="app.js"></script>
 </body>

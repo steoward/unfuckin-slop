@@ -1,16 +1,20 @@
 /**
- * AURA KINETICS - Apple Fluid Physics & Kinetic Surface Engine
- * Calibrated according to WWDC Fluid Interface principles and Unfuckin-Slop guidelines.
+ * STRATA Model 01 - Interactive Product Engine
+ * Built according to Unfuckin-Slop Craft Floor & Apple Fluid Interface guidelines.
  */
 
 (function () {
   'use strict';
 
-  // --- Physical Audio Synthesizer (Web Audio API) ---
+  // --- Multimodal Haptic Audio Synthesizer (Web Audio API) ---
   class HapticAudio {
     constructor() {
       this.ctx = null;
       this.enabled = true;
+      this.droneOsc = null;
+      this.droneGain = null;
+      this.droneFilter = null;
+      this.isDronePlaying = false;
     }
 
     ensureContext() {
@@ -25,7 +29,7 @@
       }
     }
 
-    playGrab() {
+    playDetentTick(frequency = 520) {
       if (!this.enabled) return;
       this.ensureContext();
       if (!this.ctx) return;
@@ -36,57 +40,23 @@
         const gain = this.ctx.createGain();
 
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(280, now);
-        osc.frequency.exponentialRampToValueAtTime(70, now + 0.035);
+        osc.frequency.setValueAtTime(frequency, now);
+        osc.frequency.exponentialRampToValueAtTime(120, now + 0.018);
 
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+        gain.gain.setValueAtTime(0.045, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
 
         osc.start(now);
-        osc.stop(now + 0.035);
+        osc.stop(now + 0.018);
       } catch (err) {
-        // Audio policy ignore
+        // Silently handle audio policy
       }
     }
 
-    playSnap() {
-      if (!this.enabled) return;
-      this.ensureContext();
-      if (!this.ctx) return;
-
-      try {
-        const now = this.ctx.currentTime;
-        const osc1 = this.ctx.createOscillator();
-        const osc2 = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(587.33, now); // D5
-        osc1.frequency.exponentialRampToValueAtTime(880, now + 0.09); // A5
-
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(293.66, now); // D4
-
-        gain.gain.setValueAtTime(0.05, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-
-        osc1.connect(gain);
-        osc2.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        osc1.start(now);
-        osc2.start(now);
-        osc1.stop(now + 0.12);
-        osc2.stop(now + 0.12);
-      } catch (err) {
-        // Audio policy ignore
-      }
-    }
-
-    playBoundary() {
+    playSwitchClick() {
       if (!this.enabled) return;
       this.ensureContext();
       if (!this.ctx) return;
@@ -94,551 +64,559 @@
       try {
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
-        const filter = this.ctx.createBiquadFilter();
         const gain = this.ctx.createGain();
 
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(120, now);
-        osc.frequency.exponentialRampToValueAtTime(40, now + 0.05);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(90, now + 0.025);
 
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(260, now);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
 
-        gain.gain.setValueAtTime(0.04, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-
-        osc.connect(filter);
-        filter.connect(gain);
+        osc.connect(gain);
         gain.connect(this.ctx.destination);
 
         osc.start(now);
-        osc.stop(now + 0.05);
+        osc.stop(now + 0.025);
       } catch (err) {
-        // Audio policy ignore
+        // Silently handle audio policy
+      }
+    }
+
+    playRelayClack() {
+      if (!this.enabled) return;
+      this.ensureContext();
+      if (!this.ctx) return;
+
+      try {
+        const now = this.ctx.currentTime;
+        // Two crisp impulses separated by 14ms
+        [0, 0.014].forEach((offset, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const t = now + offset;
+
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(idx === 0 ? 440 : 280, t);
+          osc.frequency.exponentialRampToValueAtTime(80, t + 0.015);
+
+          gain.gain.setValueAtTime(0.035, t);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.015);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(t);
+          osc.stop(t + 0.015);
+        });
+      } catch (err) {
+        // Silently handle audio policy
+      }
+    }
+
+    playSuccessChime() {
+      if (!this.enabled) return;
+      this.ensureContext();
+      if (!this.ctx) return;
+
+      try {
+        const now = this.ctx.currentTime;
+        const chord = [523.25, 659.25, 783.99, 1046.5]; // C Major
+        chord.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const startT = now + idx * 0.05;
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, startT);
+
+          gain.gain.setValueAtTime(0.04, startT);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startT + 0.35);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(startT);
+          osc.stop(startT + 0.35);
+        });
+      } catch (err) {
+        // Silently handle audio policy
+      }
+    }
+
+    startInteractiveTone(baseFreq = 220) {
+      if (!this.enabled || this.isDronePlaying) return;
+      this.ensureContext();
+      if (!this.ctx) return;
+
+      try {
+        this.droneOsc = this.ctx.createOscillator();
+        this.droneFilter = this.ctx.createBiquadFilter();
+        this.droneGain = this.ctx.createGain();
+
+        this.droneOsc.type = 'sawtooth';
+        this.droneOsc.frequency.setValueAtTime(baseFreq, this.ctx.currentTime);
+
+        this.droneFilter.type = 'lowpass';
+        this.droneFilter.frequency.setValueAtTime(800, this.ctx.currentTime);
+        this.droneFilter.Q.setValueAtTime(3.0, this.ctx.currentTime);
+
+        this.droneGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
+        this.droneGain.gain.exponentialRampToValueAtTime(0.035, this.ctx.currentTime + 0.08);
+
+        this.droneOsc.connect(this.droneFilter);
+        this.droneFilter.connect(this.droneGain);
+        this.droneGain.connect(this.ctx.destination);
+
+        this.droneOsc.start();
+        this.isDronePlaying = true;
+      } catch (err) {
+        // Silently handle audio policy
+      }
+    }
+
+    updateInteractiveTone(freq, cutoff) {
+      if (!this.isDronePlaying || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        if (this.droneOsc) {
+          this.droneOsc.frequency.setTargetAtTime(freq, now, 0.03);
+        }
+        if (this.droneFilter) {
+          this.droneFilter.frequency.setTargetAtTime(cutoff, now, 0.03);
+        }
+      } catch (err) {
+        // Silently handle
+      }
+    }
+
+    stopInteractiveTone() {
+      if (!this.isDronePlaying || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        if (this.droneGain) {
+          this.droneGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+        }
+        setTimeout(() => {
+          if (this.droneOsc) {
+            this.droneOsc.stop();
+            this.droneOsc.disconnect();
+            this.droneOsc = null;
+          }
+          this.isDronePlaying = false;
+        }, 70);
+      } catch (err) {
+        this.isDronePlaying = false;
       }
     }
   }
-
-  // --- Momentum Projection & Spring Math ---
-  // Apple WWDC Momentum Projection: project(velocity, decelerationRate = 0.998)
-  function projectMomentum(velocity, decelerationRate = 0.998) {
-    return (velocity / 1000) * (decelerationRate / (1 - decelerationRate));
-  }
-
-  function rubberBandClamp(val, min, max, factor = 0.3) {
-    if (val < min) {
-      return min - Math.pow(min - val, 0.85) * factor;
-    }
-    if (val > max) {
-      return max + Math.pow(val - max, 0.85) * factor;
-    }
-    return val;
-  }
-
-  // --- DOM References ---
-  const viewport = document.getElementById('viewport');
-  const card = document.getElementById('card');
-  const indicator = document.getElementById('indicator');
-  const statusTag = document.getElementById('status-tag');
-  const coordReadout = document.getElementById('coord-readout');
-  const velReadout = document.getElementById('vel-readout');
-
-  const telVelocity = document.getElementById('tel-velocity');
-  const telProjection = document.getElementById('tel-projection');
-  const telPhase = document.getElementById('tel-phase');
-  const telFps = document.getElementById('tel-fps');
-
-  const dampingSlider = document.getElementById('damping-slider');
-  const dampingVal = document.getElementById('damping-val');
-  const responseSlider = document.getElementById('response-slider');
-  const responseVal = document.getElementById('response-val');
-
-  const themeToggle = document.getElementById('theme-toggle');
-  const themeIcon = document.getElementById('theme-icon');
-  const themeText = document.getElementById('theme-text');
-  const resetPosBtn = document.getElementById('reset-pos-btn');
-  const audioToggle = document.getElementById('audio-toggle');
-  const soundIcon = document.getElementById('sound-icon');
-  const soundText = document.getElementById('sound-text');
-
-  const presetButtons = document.querySelectorAll('.preset-btn');
-  const anchorElements = document.querySelectorAll('.viewport-anchor');
 
   const haptics = new HapticAudio();
 
-  // --- Physics Simulation State ---
-  let dampingRatio = 1.0;
-  let responseDuration = 0.4;
+  // --- State Variables ---
+  let spatialAngle = 120; // 0 to 360 degrees
+  let resonanceQ = 42;    // 0 to 100 (4.2 dB)
+  let activeHarmonicMode = 'binaural';
+  let isInteractingDial = false;
 
-  let posX = 40;
-  let posY = 40;
-  let targetX = 40;
-  let targetY = 40;
-  let velX = 0;
-  let velY = 0;
+  // --- DOM Elements ---
+  const dialSpatial = document.getElementById('dial-spatial');
+  const knobSpatial = document.getElementById('knob-spatial');
+  const valSpatial = document.getElementById('val-spatial');
 
-  let isDragging = false;
-  let dragStartPointerX = 0;
-  let dragStartPointerY = 0;
-  let dragStartPosX = 0;
-  let dragStartPosY = 0;
-  let pointerHistory = [];
+  const dialResonance = document.getElementById('dial-resonance');
+  const knobResonance = document.getElementById('knob-resonance');
+  const valResonance = document.getElementById('val-resonance');
 
-  let lastFrameTime = performance.now();
-  let smoothFps = 60;
-  let activePhase = 'Equilibrium';
-  let hasSnappedAtRest = true;
+  const waveformCanvas = document.getElementById('waveform-canvas');
+  const screenMode = document.getElementById('screen-mode');
+  const screenFreq = document.getElementById('screen-freq');
+  const powerStateText = document.getElementById('power-state-text');
+  const interactionHint = document.getElementById('interaction-hint');
 
-  // --- Anchors Resolution ---
-  function getAnchorPositions() {
-    const vRect = viewport.getBoundingClientRect();
-    const cardW = 200;
-    const cardH = 140;
+  const finishObsidianBtn = document.getElementById('finish-obsidian');
+  const finishSilverBtn = document.getElementById('finish-silver');
+  const hapticAudioToggle = document.getElementById('haptic-audio-toggle');
+  const audioStatusGlyph = document.getElementById('audio-status-glyph');
+  const modeButtons = document.querySelectorAll('.switch-toggle');
 
-    return [
-      { name: 'Anchor 1', x: vRect.width * 0.25 - cardW / 2, y: vRect.height * 0.25 - cardH / 2 },
-      { name: 'Anchor 2', x: vRect.width * 0.75 - cardW / 2, y: vRect.height * 0.25 - cardH / 2 },
-      { name: 'Anchor 3', x: vRect.width * 0.25 - cardW / 75 - cardW / 2, y: vRect.height * 0.75 - cardH / 2 },
-      { name: 'Anchor 4', x: vRect.width * 0.75 - cardW / 2, y: vRect.height * 0.75 - cardH / 2 }
-    ].map((a, i) => {
-      // Precise positions based on anchor style
-      const fx = (i % 2 === 0) ? 0.25 : 0.75;
-      const fy = (i < 2) ? 0.25 : 0.75;
+  const reserveForm = document.getElementById('reserve-form');
+  const reserveFinishSelect = document.getElementById('reserve-finish');
+  const formSuccessBanner = document.getElementById('form-success-banner');
+  const nameError = document.getElementById('name-error');
+  const emailError = document.getElementById('email-error');
+
+  // --- Rotary Controller Class ---
+  class RotaryController {
+    constructor(element, knob, onUpdate, options = {}) {
+      this.element = element;
+      this.knob = knob;
+      this.onUpdate = onUpdate;
+      this.min = options.min ?? 0;
+      this.max = options.max ?? 360;
+      this.step = options.step ?? 1;
+      this.currentVal = options.initial ?? 0;
+      this.isDragging = false;
+      this.lastTickVal = this.currentVal;
+
+      this.init();
+    }
+
+    init() {
+      this.renderAngle();
+
+      this.element.addEventListener('pointerdown', this.onPointerDown.bind(this));
+      window.addEventListener('pointermove', this.onPointerMove.bind(this));
+      window.addEventListener('pointerup', this.onPointerUp.bind(this));
+      window.addEventListener('pointercancel', this.onPointerUp.bind(this));
+
+      this.element.addEventListener('wheel', this.onWheel.bind(this), { passive: false });
+      this.element.addEventListener('keydown', this.onKeyDown.bind(this));
+    }
+
+    getCenter() {
+      const rect = this.element.getBoundingClientRect();
       return {
-        name: `Anchor ${i + 1}`,
-        x: Math.round(vRect.width * fx - cardW / 2),
-        y: Math.round(vRect.height * fy - cardH / 2)
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2
       };
-    });
-  }
+    }
 
-  function getViewportBounds() {
-    const vRect = viewport.getBoundingClientRect();
-    const cardW = 200;
-    const cardH = 140;
-    const padding = 16;
-    return {
-      minX: padding,
-      maxX: Math.max(padding, vRect.width - cardW - padding),
-      minY: padding,
-      maxY: Math.max(padding, vRect.height - cardH - padding)
-    };
-  }
+    calculateAngle(clientX, clientY) {
+      const center = this.getCenter();
+      const dx = clientX - center.x;
+      const dy = clientY - center.y;
+      let deg = Math.atan2(dy, dx) * (180 / Math.PI);
+      deg = (deg + 90 + 360) % 360;
+      return deg;
+    }
 
-  function findNearestAnchor(px, py) {
-    const anchors = getAnchorPositions();
-    let bestDist = Infinity;
-    let bestAnchor = anchors[0];
+    onPointerDown(e) {
+      if (e.button !== 0 && e.pointerType === 'mouse') return;
+      this.isDragging = true;
+      isInteractingDial = true;
+      this.element.setPointerCapture(e.pointerId);
 
-    anchors.forEach(a => {
-      const dx = a.x - px;
-      const dy = a.y - py;
-      const dist = dx * dx + dy * dy;
-      if (dist < bestDist) {
-        bestDist = dist;
-        bestAnchor = a;
+      const deg = this.calculateAngle(e.clientX, e.clientY);
+      this.setValueFromAngle(deg);
+
+      haptics.startInteractiveTone(220 + (this.currentVal / this.max) * 220);
+      haptics.playDetentTick(600);
+      interactionHint.textContent = 'OPTICAL TRACKING ACTIVE';
+    }
+
+    onPointerMove(e) {
+      if (!this.isDragging) return;
+      const deg = this.calculateAngle(e.clientX, e.clientY);
+      this.setValueFromAngle(deg);
+    }
+
+    onPointerUp(e) {
+      if (!this.isDragging) return;
+      this.isDragging = false;
+      isInteractingDial = false;
+      try {
+        this.element.releasePointerCapture(e.pointerId);
+      } catch (err) {
+        // Ignored
       }
-    });
-
-    return bestAnchor;
-  }
-
-  // --- Initial Position Set ---
-  function initPosition() {
-    const anchors = getAnchorPositions();
-    const initial = anchors[0] || { x: 40, y: 40 };
-    posX = initial.x;
-    posY = initial.y;
-    targetX = initial.x;
-    targetY = initial.y;
-    velX = 0;
-    velY = 0;
-    card.style.transform = `translate3d(${posX}px, ${posY}px, 0)`;
-  }
-
-  // --- Pointer Interaction Handlers ---
-  function onPointerDown(e) {
-    if (e.button !== 0 && e.pointerType === 'mouse') return;
-
-    haptics.playGrab();
-    isDragging = true;
-    hasSnappedAtRest = false;
-    card.setPointerCapture(e.pointerId);
-
-    dragStartPointerX = e.clientX;
-    dragStartPointerY = e.clientY;
-    dragStartPosX = posX;
-    dragStartPosY = posY;
-
-    pointerHistory = [{ t: performance.now(), x: posX, y: posY }];
-    velX = 0;
-    velY = 0;
-
-    activePhase = 'Direct Tracking';
-    updateVisualStatus('DRAGGING', '#ffb830');
-  }
-
-  function onPointerMove(e) {
-    if (!isDragging) return;
-
-    const deltaX = e.clientX - dragStartPointerX;
-    const deltaY = e.clientY - dragStartPointerY;
-
-    const bounds = getViewportBounds();
-    const rawX = dragStartPosX + deltaX;
-    const rawY = dragStartPosY + deltaY;
-
-    posX = rubberBandClamp(rawX, bounds.minX, bounds.maxX);
-    posY = rubberBandClamp(rawY, bounds.minY, bounds.maxY);
-
-    const now = performance.now();
-    pointerHistory.push({ t: now, x: posX, y: posY });
-    pointerHistory = pointerHistory.filter(pt => now - pt.t <= 100);
-
-    card.style.transform = `translate3d(${posX}px, ${posY}px, 0)`;
-
-    // Calculate live velocity from pointer buffer
-    if (pointerHistory.length >= 2) {
-      const oldest = pointerHistory[0];
-      const newest = pointerHistory[pointerHistory.length - 1];
-      const dt = (newest.t - oldest.t) / 1000;
-      if (dt > 0.005) {
-        velX = (newest.x - oldest.x) / dt;
-        velY = (newest.y - oldest.y) / dt;
-      }
+      haptics.stopInteractiveTone();
+      interactionHint.textContent = 'READY';
     }
 
-    const currentSpeed = Math.round(Math.sqrt(velX * velX + velY * velY));
-    coordReadout.textContent = `X: ${Math.round(posX)} Y: ${Math.round(posY)}`;
-    velReadout.textContent = `${currentSpeed} px/s`;
-    telVelocity.textContent = `${currentSpeed} px/s`;
-
-    // Live projection estimation
-    const projX = posX + projectMomentum(velX);
-    const projY = posY + projectMomentum(velY);
-    const projectedAnchor = findNearestAnchor(projX, projY);
-    telProjection.textContent = projectedAnchor.name;
-  }
-
-  function onPointerUp(e) {
-    if (!isDragging) return;
-    isDragging = false;
-
-    try {
-      card.releasePointerCapture(e.pointerId);
-    } catch (err) {
-      // Ignored if capture already lost
-    }
-
-    // Velocity computation at release
-    const now = performance.now();
-    pointerHistory = pointerHistory.filter(pt => now - pt.t <= 120);
-
-    if (pointerHistory.length >= 2) {
-      const oldest = pointerHistory[0];
-      const newest = pointerHistory[pointerHistory.length - 1];
-      const dt = (newest.t - oldest.t) / 1000;
-      if (dt > 0.005) {
-        velX = (newest.x - oldest.x) / dt;
-        velY = (newest.y - oldest.y) / dt;
-      }
-    }
-
-    // Velocity clamp to avoid runaway physics
-    const maxSpeed = 3500;
-    const speed = Math.sqrt(velX * velX + velY * velY);
-    if (speed > maxSpeed) {
-      const scale = maxSpeed / speed;
-      velX *= scale;
-      velY *= scale;
-    }
-
-    // Momentum projection
-    const projectedX = posX + projectMomentum(velX);
-    const projectedY = posY + projectMomentum(velY);
-
-    const nearestAnchor = findNearestAnchor(projectedX, projectedY);
-    targetX = nearestAnchor.x;
-    targetY = nearestAnchor.y;
-
-    if (speed > 180) {
-      activePhase = 'Momentum Coasting';
-      updateVisualStatus('COASTING', '#4e75ff');
-    } else {
-      activePhase = 'Spring Settling';
-      updateVisualStatus('SETTLING', '#4e75ff');
-    }
-
-    telProjection.textContent = nearestAnchor.name;
-  }
-
-  // --- Status & Readout Helpers ---
-  function updateVisualStatus(label, color) {
-    statusTag.textContent = label;
-    indicator.style.backgroundColor = color;
-  }
-
-  // --- Keyboard Interaction ---
-  function onKeyDown(e) {
-    const anchors = getAnchorPositions();
-    const currentNearest = findNearestAnchor(posX, posY);
-    let currentIndex = anchors.findIndex(a => a.name === currentNearest.name);
-    if (currentIndex === -1) currentIndex = 0;
-
-    let targetIndex = currentIndex;
-    let handled = false;
-
-    switch (e.key) {
-      case 'ArrowRight':
-        targetIndex = (currentIndex % 2 === 0) ? currentIndex + 1 : currentIndex;
-        handled = true;
-        break;
-      case 'ArrowLeft':
-        targetIndex = (currentIndex % 2 !== 0) ? currentIndex - 1 : currentIndex;
-        handled = true;
-        break;
-      case 'ArrowDown':
-        targetIndex = (currentIndex < 2) ? currentIndex + 2 : currentIndex;
-        handled = true;
-        break;
-      case 'ArrowUp':
-        targetIndex = (currentIndex >= 2) ? currentIndex - 2 : currentIndex;
-        handled = true;
-        break;
-      case 'Enter':
-      case ' ':
-        // Cycle clockwise 0 -> 1 -> 3 -> 2 -> 0
-        const order = [0, 1, 3, 2];
-        const ordPos = order.indexOf(currentIndex);
-        targetIndex = order[(ordPos + 1) % order.length];
-        handled = true;
-        break;
-      default:
-        break;
-    }
-
-    if (handled) {
+    onWheel(e) {
       e.preventDefault();
-      const chosen = anchors[targetIndex];
-      targetX = chosen.x;
-      targetY = chosen.y;
-      
-      // Inject directional velocity for kinetic punch
-      const dirX = targetX - posX;
-      const dirY = targetY - posY;
-      const dist = Math.sqrt(dirX * dirX + dirY * dirY);
-      if (dist > 0) {
-        velX += (dirX / dist) * 450;
-        velY += (dirY / dist) * 450;
-      }
-
-      hasSnappedAtRest = false;
-      activePhase = 'Spring Settling';
-      updateVisualStatus('SETTLING', '#4e75ff');
-      telProjection.textContent = chosen.name;
-    }
-  }
-
-  // --- Main Animation Frame (Spring Integrator) ---
-  function stepPhysics(currentTime) {
-    const rawDelta = (currentTime - lastFrameTime) / 1000;
-    lastFrameTime = currentTime;
-
-    // Framerate smoothing
-    if (rawDelta > 0) {
-      const currentFps = 1 / rawDelta;
-      smoothFps = smoothFps * 0.9 + currentFps * 0.1;
-      telFps.textContent = `${Math.round(smoothFps)} fps`;
+      const delta = e.deltaY < 0 ? this.step * 2 : -this.step * 2;
+      this.setClampedValue(this.currentVal + delta);
     }
 
-    if (!isDragging) {
-      // Apple Spring Equations:
-      // omega0 = 2 * PI / responseDuration
-      // acc = -omega0^2 * (x - targetX) - 2 * dampingRatio * omega0 * vel
-      const omega0 = (2 * Math.PI) / Math.max(responseDuration, 0.05);
-      const omega0Sq = omega0 * omega0;
-      const dampingFactor = 2 * dampingRatio * omega0;
-
-      // Sub-stepping for numerical stability
-      let dtRemaining = Math.min(rawDelta, 0.064);
-      const subStep = 0.008;
-
-      while (dtRemaining > 0) {
-        const dt = Math.min(dtRemaining, subStep);
-
-        const accX = -omega0Sq * (posX - targetX) - dampingFactor * velX;
-        const accY = -omega0Sq * (posY - targetY) - dampingFactor * velY;
-
-        velX += accX * dt;
-        velY += accY * dt;
-
-        posX += velX * dt;
-        posY += velY * dt;
-
-        dtRemaining -= dt;
+    onKeyDown(e) {
+      let handled = false;
+      if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+        this.setClampedValue(this.currentVal + this.step * 3);
+        handled = true;
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+        this.setClampedValue(this.currentVal - this.step * 3);
+        handled = true;
       }
+      if (handled) {
+        e.preventDefault();
+      }
+    }
 
-      // Check resting equilibrium
-      const distTarget = Math.sqrt(Math.pow(posX - targetX, 2) + Math.pow(posY - targetY, 2));
-      const currentSpeed = Math.sqrt(velX * velX + velY * velY);
+    setValueFromAngle(deg) {
+      const ratio = deg / 360;
+      const targetVal = this.min + ratio * (this.max - this.min);
+      this.setClampedValue(targetVal);
+    }
 
-      if (distTarget < 0.35 && currentSpeed < 1.2) {
-        posX = targetX;
-        posY = targetY;
-        velX = 0;
-        velY = 0;
+    setClampedValue(val) {
+      const clamped = Math.max(this.min, Math.min(this.max, val));
+      const stepped = Math.round(clamped / this.step) * this.step;
 
-        if (!hasSnappedAtRest) {
-          hasSnappedAtRest = true;
-          haptics.playSnap();
+      if (stepped !== this.currentVal) {
+        this.currentVal = stepped;
+        this.renderAngle();
+        this.element.setAttribute('aria-valuenow', this.currentVal);
+
+        // Magnetic Detent Tick check
+        if (Math.abs(this.currentVal - this.lastTickVal) >= this.step) {
+          haptics.playDetentTick(480 + (this.currentVal / this.max) * 260);
+          this.lastTickVal = this.currentVal;
         }
 
-        activePhase = 'Equilibrium';
-        updateVisualStatus('RESTING', 'var(--accent-energy)');
-      } else {
-        hasSnappedAtRest = false;
+        haptics.updateInteractiveTone(
+          200 + (this.currentVal / this.max) * 300,
+          600 + (resonanceQ / 100) * 2400
+        );
+
+        this.onUpdate(this.currentVal);
+      }
+    }
+
+    renderAngle() {
+      const ratio = (this.currentVal - this.min) / (this.max - this.min);
+      const deg = ratio * 360;
+      this.knob.style.transform = `rotate(${deg}deg)`;
+    }
+  }
+
+  // --- Initialize Rotary Controls ---
+  new RotaryController(dialSpatial, knobSpatial, val => {
+    spatialAngle = val;
+    valSpatial.textContent = `${Math.round(val)}°`;
+    screenFreq.textContent = `${(300 + (val / 360) * 300).toFixed(1)} Hz`;
+  }, { min: 0, max: 360, step: 2, initial: 120 });
+
+  new RotaryController(dialResonance, knobResonance, val => {
+    resonanceQ = val;
+    valResonance.textContent = `${(val / 10).toFixed(1)} dB`;
+  }, { min: 0, max: 100, step: 1, initial: 42 });
+
+  // --- Waveform Canvas Vector Rendering ---
+  let canvasCtx = null;
+  let wavePhase = 0;
+
+  function initWaveformCanvas() {
+    if (!waveformCanvas) return;
+    canvasCtx = waveformCanvas.getContext('2d');
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    requestAnimationFrame(renderWaveform);
+  }
+
+  function resizeCanvas() {
+    if (!waveformCanvas) return;
+    const rect = waveformCanvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    waveformCanvas.width = rect.width * dpr;
+    waveformCanvas.height = rect.height * dpr;
+    if (canvasCtx) {
+      canvasCtx.scale(dpr, dpr);
+    }
+  }
+
+  function renderWaveform() {
+    if (!canvasCtx || !waveformCanvas) return;
+    const rect = waveformCanvas.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+
+    // Clear background
+    canvasCtx.fillStyle = 'rgba(10, 11, 15, 0.4)';
+    canvasCtx.fillRect(0, 0, w, h);
+
+    // Draw Subtle Grid
+    canvasCtx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
+    canvasCtx.lineWidth = 1;
+    const gridCols = 8;
+    const gridRows = 4;
+    for (let c = 1; c < gridCols; c++) {
+      const gx = (w / gridCols) * c;
+      canvasCtx.beginPath();
+      canvasCtx.moveTo(gx, 0);
+      canvasCtx.lineTo(gx, h);
+      canvasCtx.stroke();
+    }
+    for (let r = 1; r < gridRows; r++) {
+      const gy = (h / gridRows) * r;
+      canvasCtx.beginPath();
+      canvasCtx.moveTo(0, gy);
+      canvasCtx.lineTo(w, gy);
+      canvasCtx.stroke();
+    }
+
+    // Dynamic Waveform Calculation
+    const midY = h / 2;
+    const speed = isInteractingDial ? 0.09 : 0.035;
+    wavePhase += speed;
+
+    const baseFrequency = 0.025 + (spatialAngle / 360) * 0.035;
+    const amplitude = (h * 0.28) * (0.6 + (resonanceQ / 100) * 0.6);
+
+    // Primary Channel (Cyan)
+    canvasCtx.beginPath();
+    canvasCtx.lineWidth = 2;
+    canvasCtx.strokeStyle = '#38bdf8';
+
+    for (let x = 0; x < w; x++) {
+      let y = midY;
+      if (activeHarmonicMode === 'binaural') {
+        const p1 = Math.sin(x * baseFrequency + wavePhase);
+        const p2 = Math.sin(x * baseFrequency * 2.01 + wavePhase * 1.5) * 0.35;
+        y = midY + (p1 + p2) * amplitude;
+      } else if (activeHarmonicMode === 'harmonic') {
+        const fundamental = Math.sin(x * baseFrequency + wavePhase);
+        const secondHarmonic = Math.sin(x * baseFrequency * 2 + wavePhase) * 0.5;
+        const thirdHarmonic = Math.sin(x * baseFrequency * 3 + wavePhase) * 0.25;
+        y = midY + (fundamental + secondHarmonic + thirdHarmonic) * (amplitude * 0.85);
+      } else if (activeHarmonicMode === 'transient') {
+        const decay = Math.exp(-((x % (w / 3)) / (w * 0.12)));
+        const ring = Math.sin(x * baseFrequency * 4 + wavePhase) * decay;
+        y = midY + ring * (amplitude * 1.3);
       }
 
-      card.style.transform = `translate3d(${posX}px, ${posY}px, 0)`;
+      if (x === 0) {
+        canvasCtx.moveTo(x, y);
+      } else {
+        canvasCtx.lineTo(x, y);
+      }
+    }
+    canvasCtx.stroke();
 
-      const roundedSpeed = Math.round(currentSpeed);
-      coordReadout.textContent = `X: ${Math.round(posX)} Y: ${Math.round(posY)}`;
-      velReadout.textContent = `${roundedSpeed} px/s`;
-      telVelocity.textContent = `${roundedSpeed} px/s`;
-      telPhase.textContent = activePhase;
-    } else {
-      telPhase.textContent = activePhase;
+    // Secondary Spatial Channel (Amber / Phase-offset)
+    if (activeHarmonicMode === 'binaural') {
+      canvasCtx.beginPath();
+      canvasCtx.lineWidth = 1.5;
+      canvasCtx.strokeStyle = 'rgba(245, 158, 11, 0.7)';
+      const phaseOffset = (spatialAngle / 360) * Math.PI;
+
+      for (let x = 0; x < w; x++) {
+        const p1 = Math.sin(x * baseFrequency + wavePhase + phaseOffset);
+        const p2 = Math.sin(x * baseFrequency * 1.99 + wavePhase * 1.5 + phaseOffset) * 0.35;
+        const y = midY + (p1 + p2) * (amplitude * 0.9);
+
+        if (x === 0) {
+          canvasCtx.moveTo(x, y);
+        } else {
+          canvasCtx.lineTo(x, y);
+        }
+      }
+      canvasCtx.stroke();
     }
 
-    requestAnimationFrame(stepPhysics);
+    requestAnimationFrame(renderWaveform);
   }
 
-  // --- Preset Switcher ---
-  const PRESETS = {
-    pip: { damping: 1.0, response: 0.4 },
-    sheet: { damping: 0.8, response: 0.3 },
-    rotation: { damping: 0.7, response: 0.45 }
-  };
+  // --- Finish Switcher Handlers ---
+  function setChassisFinish(finish) {
+    document.body.setAttribute('data-finish', finish);
 
-  function applyPreset(key) {
-    const config = PRESETS[key];
-    if (!config) return;
+    const isObsidian = finish === 'obsidian';
+    finishObsidianBtn.classList.toggle('active', isObsidian);
+    finishObsidianBtn.setAttribute('aria-pressed', isObsidian ? 'true' : 'false');
 
-    dampingRatio = config.damping;
-    responseDuration = config.response;
+    finishSilverBtn.classList.toggle('active', !isObsidian);
+    finishSilverBtn.setAttribute('aria-pressed', !isObsidian ? 'true' : 'false');
 
-    dampingSlider.value = dampingRatio.toFixed(2);
-    dampingVal.textContent = dampingRatio.toFixed(2);
+    if (reserveFinishSelect) {
+      reserveFinishSelect.value = finish;
+    }
 
-    responseSlider.value = responseDuration.toFixed(2);
-    responseVal.textContent = `${responseDuration.toFixed(2)}s`;
+    haptics.playRelayClack();
+  }
 
-    presetButtons.forEach(btn => {
-      const isActive = btn.dataset.preset === key;
-      btn.classList.toggle('active', isActive);
-      btn.setAttribute('aria-checked', isActive ? 'true' : 'false');
+  finishObsidianBtn.addEventListener('click', () => setChassisFinish('obsidian'));
+  finishSilverBtn.addEventListener('click', () => setChassisFinish('silver'));
+
+  if (reserveFinishSelect) {
+    reserveFinishSelect.addEventListener('change', e => {
+      setChassisFinish(e.target.value);
     });
   }
 
-  // --- Slider Event Listeners ---
-  dampingSlider.addEventListener('input', e => {
-    dampingRatio = parseFloat(e.target.value);
-    dampingVal.textContent = dampingRatio.toFixed(2);
-    presetButtons.forEach(btn => {
-      btn.classList.remove('active');
-      btn.setAttribute('aria-checked', 'false');
-    });
-  });
-
-  responseSlider.addEventListener('input', e => {
-    responseDuration = parseFloat(e.target.value);
-    responseVal.textContent = `${responseDuration.toFixed(2)}s`;
-    presetButtons.forEach(btn => {
-      btn.classList.remove('active');
-      btn.setAttribute('aria-checked', 'false');
-    });
-  });
-
-  presetButtons.forEach(btn => {
+  // --- Mode Switches Handlers ---
+  modeButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      applyPreset(btn.dataset.preset);
-      haptics.playGrab();
+      const mode = btn.dataset.mode;
+      activeHarmonicMode = mode;
+
+      modeButtons.forEach(b => {
+        const isSelected = b === btn;
+        b.classList.toggle('active', isSelected);
+        b.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+      });
+
+      screenMode.textContent = mode.toUpperCase() + (mode === 'binaural' ? ' SPATIAL' : ' SPECTRUM');
+      haptics.playSwitchClick();
     });
   });
 
-  // --- Theme Toggle ---
-  themeToggle.addEventListener('click', () => {
-    const root = document.documentElement;
-    const isLight = root.getAttribute('data-theme') === 'light';
-
-    if (isLight) {
-      root.removeAttribute('data-theme');
-      themeIcon.textContent = '🌙';
-      themeText.textContent = 'Dark';
-    } else {
-      root.setAttribute('data-theme', 'light');
-      themeIcon.textContent = '☀️';
-      themeText.textContent = 'Light';
-    }
-    haptics.playGrab();
-  });
-
-  // --- Audio Haptics Toggle ---
-  audioToggle.addEventListener('click', () => {
+  // --- Haptic Sound Master Toggle ---
+  hapticAudioToggle.addEventListener('click', () => {
     haptics.enabled = !haptics.enabled;
     if (haptics.enabled) {
-      soundIcon.textContent = '🔊';
-      soundText.textContent = 'Haptic Sound: Enabled';
-      haptics.playGrab();
+      audioStatusGlyph.textContent = '🔊';
+      hapticAudioToggle.setAttribute('title', 'Audio feedback enabled');
+      haptics.playSwitchClick();
+      powerStateText.textContent = 'ACTIVE 96k';
     } else {
-      soundIcon.textContent = '🔇';
-      soundText.textContent = 'Haptic Sound: Disabled';
+      audioStatusGlyph.textContent = '🔇';
+      hapticAudioToggle.setAttribute('title', 'Audio feedback muted');
+      powerStateText.textContent = 'MUTED 96k';
     }
   });
 
-  // --- Recenter Button ---
-  resetPosBtn.addEventListener('click', () => {
-    const vRect = viewport.getBoundingClientRect();
-    const cardW = 200;
-    const cardH = 140;
+  // --- Pre-order Form Submission ---
+  if (reserveForm) {
+    reserveForm.addEventListener('submit', e => {
+      e.preventDefault();
 
-    targetX = Math.round(vRect.width / 2 - cardW / 2);
-    targetY = Math.round(vRect.height / 2 - cardH / 2);
-    velX = 0;
-    velY = 0;
-    hasSnappedAtRest = false;
+      let valid = true;
+      nameError.textContent = '';
+      emailError.textContent = '';
 
-    activePhase = 'Spring Settling';
-    updateVisualStatus('SETTLING', '#4e75ff');
-    telProjection.textContent = 'Center';
-    haptics.playGrab();
-  });
+      const nameInput = document.getElementById('reserve-name');
+      const emailInput = document.getElementById('reserve-email');
 
-  // --- Window Resize & Orientation ---
-  window.addEventListener('resize', () => {
-    const bounds = getViewportBounds();
-    posX = Math.max(bounds.minX, Math.min(bounds.maxX, posX));
-    posY = Math.max(bounds.minY, Math.min(bounds.maxY, posY));
-    targetX = Math.max(bounds.minX, Math.min(bounds.maxX, targetX));
-    targetY = Math.max(bounds.minY, Math.min(bounds.maxY, targetY));
-    card.style.transform = `translate3d(${posX}px, ${posY}px, 0)`;
-  });
+      if (!nameInput.value.trim()) {
+        nameError.textContent = 'Please provide your full name for the allocation registry.';
+        nameInput.focus();
+        valid = false;
+      }
 
-  // --- Bind Event Listeners ---
-  card.addEventListener('pointerdown', onPointerDown);
-  window.addEventListener('pointermove', onPointerMove);
-  window.addEventListener('pointerup', onPointerUp);
-  window.addEventListener('pointercancel', onPointerUp);
-  card.addEventListener('keydown', onKeyDown);
+      const emailVal = emailInput.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailVal || !emailRegex.test(emailVal)) {
+        emailError.textContent = 'Please enter a valid email address for delivery confirmation.';
+        if (valid) emailInput.focus();
+        valid = false;
+      }
 
-  // Initialize
-  window.addEventListener('DOMContentLoaded', () => {
-    initPosition();
-    requestAnimationFrame(stepPhysics);
-  });
+      if (valid) {
+        haptics.playSuccessChime();
+        formSuccessBanner.classList.add('visible');
+        formSuccessBanner.setAttribute('aria-hidden', 'false');
 
-  if (document.readyState !== 'loading') {
-    initPosition();
-    requestAnimationFrame(stepPhysics);
+        const submitBtn = document.getElementById('submit-reserve-btn');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Allocation Secured';
+        }
+
+        const successBody = document.getElementById('success-message-body');
+        if (successBody) {
+          const randomSerial = Math.floor(1000 + Math.random() * 9000);
+          successBody.textContent = `Batch 01 allocation #${randomSerial} confirmed for ${nameInput.value.trim()}. We have transmitted the reservation key to ${emailVal}.`;
+        }
+      }
+    });
+  }
+
+  // --- Startup Initialization ---
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWaveformCanvas);
+  } else {
+    initWaveformCanvas();
   }
 })();
