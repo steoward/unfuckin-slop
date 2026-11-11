@@ -12,6 +12,14 @@ Inspiration is a starting point, not a specification. The point of looking is to
 find a *direction* and a *constraint* you had not considered, then rebuild it
 from the rules in the other cards.
 
+## Mandatory Prerequisite for New Work
+
+Whenever using this skill for the first time in a project, or when building a new screen,
+landing page, or starting a redesign, querying `slop-mcp` and inspecting real curated
+designs from **CollectUI** and/or **Pixlpin** is a **mandatory necessity**, not an optional luxury.
+Skipping this step leads to generic, uninspired, default designs. Anchor your direction
+in actual world-class work before writing a line of code.
+
 ## The free, open galleries
 
 Both galleries below are **100% free, public, and open**:
