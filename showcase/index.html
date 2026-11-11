@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AURA Kinetics · Fluid Motion & Kinetic Surface Studio</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="header-bar">
+    <div class="brand-wrapper">
+      <div class="brand-glyph" aria-hidden="true">AK</div>
+      <span class="brand-title">AURA Kinetics</span>
+    </div>
+    <div class="nav-actions">
+      <button type="button" class="btn" id="theme-toggle" aria-label="Toggle visual theme">
+        <span id="theme-icon" aria-hidden="true">🌙</span>
+        <span id="theme-text">Theme</span>
+      </button>
+      <button type="button" class="btn btn-primary" id="reset-pos-btn">
+        <span>Recenter</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Showcase Container -->
+  <main class="main-shell">
+    <section class="stage-container" aria-label="Physics playground">
+      <div class="hero-statement">
+        <h1 class="hero-headline">Fluid interface physics without compromise</h1>
+        <p class="hero-description">
+          Experience interruptible spring dynamics, momentum projection, and velocity handoff calibrated directly from Apple Human Interface research.
+        </p>
+      </div>
+
+      <!-- Live Physics Simulation Canvas -->
+      <div class="physics-viewport" id="viewport" role="region" aria-label="Interactive spring canvas">
+        <div class="viewport-grid" aria-hidden="true"></div>
+
+        <!-- Four Target Anchors for Snapping -->
+        <div class="viewport-anchor" style="top: 25%; left: 25%;">
+          <span class="anchor-label">Anchor 1</span>
+        </div>
+        <div class="viewport-anchor" style="top: 25%; left: 75%;">
+          <span class="anchor-label">Anchor 2</span>
+        </div>
+        <div class="viewport-anchor" style="top: 75%; left: 25%;">
+          <span class="anchor-label">Anchor 3</span>
+        </div>
+        <div class="viewport-anchor" style="top: 75%; left: 75%;">
+          <span class="anchor-label">Anchor 4</span>
+        </div>
+
+        <!-- Draggable Kinetic Card -->
+        <div class="kinetic-card" id="card" tabindex="0" role="button" aria-label="Draggable kinetic card, use arrow keys or drag with pointer">
+          <div class="kinetic-header">
+            <span class="kinetic-indicator" id="indicator" aria-hidden="true"></span>
+            <span class="kinetic-status-tag" id="status-tag">RESTING</span>
+          </div>
+          <div class="kinetic-body">
+            <div class="kinetic-body-title">Dynamic Surface</div>
+            <div class="kinetic-body-sub">Grab, fling, or catch mid-flight</div>
+          </div>
+          <div class="kinetic-footer">
+            <span id="coord-readout">X: 0 Y: 0</span>
+            <span id="vel-readout">0 px/s</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Telemetry Dashboard -->
+      <div class="telemetry-row">
+        <div class="telemetry-cell">
+          <div class="telemetry-title">Velocity Magnitude</div>
+          <div class="telemetry-data" id="tel-velocity">0 px/s</div>
+        </div>
+        <div class="telemetry-cell">
+          <div class="telemetry-title">Projected Target</div>
+          <div class="telemetry-data" id="tel-projection">Anchor 1</div>
+        </div>
+        <div class="telemetry-cell">
+          <div class="telemetry-title">Spring Phase</div>
+          <div class="telemetry-data" id="tel-phase">Equilibrium</div>
+        </div>
+        <div class="telemetry-cell">
+          <div class="telemetry-title">Refresh Rate</div>
+          <div class="telemetry-data" id="tel-fps">60 fps</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Controls & Inspection Sidebar -->
+    <aside class="inspector-panel" aria-label="Configuration and craft checklist">
+      <!-- Physics Calibration Card -->
+      <div class="panel-card">
+        <h2 class="panel-header">Physics Calibration</h2>
+        
+        <div class="preset-group" role="radiogroup" aria-label="Spring interaction presets">
+          <button type="button" class="preset-btn active" data-preset="pip" role="radio" aria-checked="true">
+            <span class="preset-name">Picture in Picture</span>
+            <span class="preset-details">Damping: 1.0 · Response: 0.4s</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="sheet" role="radio" aria-checked="false">
+            <span class="preset-name">Modal Sheet</span>
+            <span class="preset-details">Damping: 0.8 · Response: 0.3s</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="rotation" role="radio" aria-checked="false">
+            <span class="preset-name">Momentum Toss</span>
+            <span class="preset-details">Damping: 0.7 · Response: 0.45s</span>
+          </button>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-unit">
+            <div class="slider-label-row">
+              <label for="damping-slider">Damping Ratio</label>
+              <span class="slider-val-readout" id="damping-val">1.00</span>
+            </div>
+            <input type="range" id="damping-slider" min="0.3" max="1.5" step="0.05" value="1.00">
+          </div>
+
+          <div class="slider-unit">
+            <div class="slider-label-row">
+              <label for="response-slider">Response Duration</label>
+              <span class="slider-val-readout" id="response-val">0.40s</span>
+            </div>
+            <input type="range" id="response-slider" min="0.1" max="1.0" step="0.05" value="0.40">
+          </div>
+        </div>
+
+        <button type="button" class="btn sound-toggle-btn" id="audio-toggle">
+          <span id="sound-icon" aria-hidden="true">🔊</span>
+          <span id="sound-text">Haptic Sound: Enabled</span>
+        </button>
+      </div>
+
+      <!-- Craft Floor Standards Verification Card -->
+      <div class="panel-card">
+        <h2 class="panel-header">Craft Floor Guarantee</h2>
+        <div class="checklist-wrapper">
+          <div class="check-item">
+            <span class="check-badge" aria-hidden="true">✓</span>
+            <span>Interruptible mid-flight at any frame</span>
+          </div>
+          <div class="check-item">
+            <span class="check-badge" aria-hidden="true">✓</span>
+            <span>Apple exponential momentum projection</span>
+          </div>
+          <div class="check-item">
+            <span class="check-badge" aria-hidden="true">✓</span>
+            <span>Zero gradient text or kicker labels</span>
+          </div>
+          <div class="check-item">
+            <span class="check-badge" aria-hidden="true">✓</span>
+            <span>Full keyboard navigability with focus rings</span>
+          </div>
+          <div class="check-item">
+            <span class="check-badge" aria-hidden="true">✓</span>
+            <span>Synthesized physical haptic audio</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,534 @@
+/* 
+  AURA KINETICS - Dynamic Surface & Fluid Motion Studio
+  Engineered under Unfuckin-Slop Craft Floor & Apple Fluid Interface guidelines.
+*/
+
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
+  
+  /* Precision Palette (WCAG AAA / AA Compliant) */
+  --bg-primary: #0a0a0c;
+  --bg-secondary: #131317;
+  --bg-surface: #1b1b22;
+  --bg-surface-elevated: #24242e;
+  --bg-overlay: rgba(10, 10, 12, 0.85);
+
+  --border-subtle: #272733;
+  --border-strong: #3b3b4d;
+  --border-focus: #5d7aff;
+
+  --text-primary: #f6f6f9;
+  --text-secondary: #a8a8ba;
+  --text-tertiary: #75758a;
+  
+  --accent-spring: #4e75ff;
+  --accent-spring-hover: #3d64f0;
+  --accent-energy: #00dfa2;
+  --accent-warning: #ffb830;
+  
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* Natural Depth System with soft blur & positive offset */
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="light"] {
+  --bg-primary: #f8f9fc;
+  --bg-secondary: #edeff5;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #fcfcfd;
+  --bg-overlay: rgba(248, 249, 252, 0.88);
+
+  --border-subtle: #d8dce8;
+  --border-strong: #b8bfd4;
+  --border-focus: #2855e6;
+
+  --text-primary: #0f121d;
+  --text-secondary: #484f68;
+  --text-tertiary: #6e7796;
+  
+  --accent-spring: #2554f5;
+  --accent-spring-hover: #1943da;
+  --accent-energy: #008f65;
+  --accent-warning: #b36b00;
+
+  --shadow-sm: 0 2px 8px rgba(15, 18, 29, 0.08);
+  --shadow-md: 0 10px 30px rgba(15, 18, 29, 0.12);
+  --shadow-lg: 0 20px 50px rgba(15, 18, 29, 0.16);
+}
+
+html {
+  font-size: 100%;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  letter-spacing: -0.015em;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Accessible Global Focus States */
+:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 3px;
+}
+
+/* Header & Navigation */
+.header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bg-overlay);
+  backdrop-filter: blur(16px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brand-glyph {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--accent-spring);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.brand-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Controls & Buttons */
+.btn {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.12s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:hover {
+  background-color: var(--bg-surface-elevated);
+  border-color: var(--border-strong);
+}
+
+.btn:active {
+  opacity: 0.85;
+}
+
+.btn-primary {
+  background-color: var(--accent-spring);
+  border-color: var(--accent-spring);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-spring-hover);
+  border-color: var(--accent-spring-hover);
+}
+
+/* Main Container */
+.main-shell {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 2rem;
+}
+
+@media (max-width: 900px) {
+  .main-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Playground Viewport */
+.stage-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.hero-statement {
+  margin-bottom: 0.5rem;
+}
+
+.hero-headline {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.hero-description {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  max-width: 65ch;
+}
+
+/* Physical Simulation Canvas Frame */
+.physics-viewport {
+  position: relative;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  height: 480px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  user-select: none;
+  touch-action: none;
+}
+
+.viewport-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border-subtle) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.viewport-anchor {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--border-strong);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.anchor-label {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+/* The Interactive Kinetic Element */
+.kinetic-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 140px;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-lg);
+  cursor: grab;
+  will-change: transform;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.25rem;
+  touch-action: none;
+}
+
+.kinetic-card:active {
+  cursor: grabbing;
+}
+
+.kinetic-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kinetic-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--accent-energy);
+}
+
+.kinetic-status-tag {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.kinetic-body {
+  margin: auto 0;
+}
+
+.kinetic-body-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.kinetic-body-sub {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.kinetic-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-tertiary);
+}
+
+/* Telemetry Ribbon */
+.telemetry-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .telemetry-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.telemetry-cell {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.875rem 1rem;
+}
+
+.telemetry-title {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.telemetry-data {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Side Inspection Panel */
+.inspector-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.panel-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.panel-header {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.preset-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.preset-btn {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.preset-btn:hover {
+  background-color: var(--bg-surface-elevated);
+  border-color: var(--border-strong);
+}
+
+.preset-btn.active {
+  border-color: var(--accent-spring);
+  background-color: var(--bg-surface-elevated);
+}
+
+.preset-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.preset-details {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+}
+
+/* Physics Sliders */
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.slider-unit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.slider-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.slider-val-readout {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background-color: var(--border-subtle);
+  border-radius: var(--radius-full);
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: var(--accent-spring);
+  cursor: pointer;
+  border: 2px solid var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background-color: var(--accent-spring-hover);
+  box-shadow: 0 2px 8px rgba(78, 117, 255, 0.45);
+}
+
+/* Craft Floor Checklist Card */
+.checklist-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.check-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--accent-energy);
+  color: #000000;
+  font-size: 0.625rem;
+  font-weight: 800;
+}
+
+/* Sound Toggle */
+.sound-toggle-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+/* Reduced Motion Fallback */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
