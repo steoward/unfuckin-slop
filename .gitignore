@@ -1,0 +1,4 @@
+/target
+attic/
+.slop-cache/
+*.log

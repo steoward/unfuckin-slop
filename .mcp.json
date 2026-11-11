@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "unfuckin-slop": {
+      "command": "slop-mcp",
+      "args": []
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    }
+  }
+}

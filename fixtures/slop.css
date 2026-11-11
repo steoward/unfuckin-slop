@@ -1,0 +1,34 @@
+:root {
+  font-size: 14px;
+}
+
+.hero {
+  background: linear-gradient(90deg, #7c3aed, #3b82f6);
+  -webkit-background-clip: text;
+  color: transparent;
+  letter-spacing: -0.06em;
+  box-shadow: 4px 4px 0 #111;
+  transition: all 300ms ease;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+}
+
+.card {
+  border-left: 4px solid #7c3aed;
+  transition: height 200ms ease;
+}
+
+.button {
+  outline: none;
+}
+
+.button:hover {
+  background: #eee;
+}
+
+.sheet {
+  transition: transform 220ms ease;
+  box-shadow: 0 0 32px rgba(124, 58, 237, 0.4);
+}

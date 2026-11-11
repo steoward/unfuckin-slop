@@ -1,0 +1,3 @@
+# Path prefixes excluded from `slop lint`. One per line, # for comments.
+threads/
+attic/
