@@ -1,910 +1,653 @@
 /**
- * AETHER OS - Spatial Neural Computing Workstation Engine
- * Engineered under Unfuckin-Slop discipline and CollectUI / Pixlpin inspirations.
+ * flunds · Interactive Studio, Phone Simulator, and Agent MCP Engine
+ * Craft Floor: Apple Design & Impeccable Philosophy (Unfuckin-Slop)
  */
 
 (function () {
   'use strict';
 
-  // --- Multimodal Haptic Audio Synthesizer (Web Audio API) ---
-  class HapticAudioEngine {
+  // ---------------------------------------------------------------------------
+  // 1. Audio Engine (Tactile Web Audio API)
+  // ---------------------------------------------------------------------------
+  class AudioEngine {
     constructor() {
       this.ctx = null;
-      this.enabled = true;
-      this.droneOsc = null;
-      this.droneFilter = null;
-      this.droneGain = null;
-      this.isDroneActive = false;
+      this.enabled = false;
     }
 
-    ensureContext() {
-      if (!this.ctx && typeof window !== 'undefined') {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (AudioContextClass) {
-          this.ctx = new AudioContextClass();
-        }
+    init() {
+      if (!this.ctx && typeof window.AudioContext !== 'undefined') {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioCtx();
       }
       if (this.ctx && this.ctx.state === 'suspended') {
         this.ctx.resume();
       }
     }
 
-    playDetentTick(freq = 560) {
-      if (!this.enabled) return;
-      this.ensureContext();
-      if (!this.ctx) return;
-
-      try {
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, now);
-        osc.frequency.exponentialRampToValueAtTime(140, now + 0.016);
-
-        gain.gain.setValueAtTime(0.045, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.016);
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        osc.start(now);
-        osc.stop(now + 0.016);
-      } catch (err) {
-        // Silently catch audio policy blocks
-      }
+    toggle() {
+      this.init();
+      this.enabled = !this.enabled;
+      return this.enabled;
     }
 
-    playSwitchClick() {
-      if (!this.enabled) return;
-      this.ensureContext();
-      if (!this.ctx) return;
+    playTap() {
+      if (!this.enabled || !this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const now = this.ctx.currentTime;
 
-      try {
-        const now = this.ctx.currentTime;
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(140, now + 0.04);
+
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.04);
+    }
+
+    playKey() {
+      if (!this.enabled || !this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const now = this.ctx.currentTime;
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(800 + Math.random() * 300, now);
+
+      gain.gain.setValueAtTime(0.03, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.025);
+    }
+
+    playSuccessChime() {
+      if (!this.enabled || !this.ctx) return;
+      const now = this.ctx.currentTime;
+      const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+
+      notes.forEach((freq, idx) => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
+        const noteStart = now + idx * 0.07;
 
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(380, now);
-        osc.frequency.exponentialRampToValueAtTime(95, now + 0.022);
+        osc.frequency.setValueAtTime(freq, noteStart);
 
-        gain.gain.setValueAtTime(0.055, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.022);
+        gain.gain.setValueAtTime(0.06, noteStart);
+        gain.gain.exponentialRampToValueAtTime(0.001, noteStart + 0.35);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
 
-        osc.start(now);
-        osc.stop(now + 0.022);
-      } catch (err) {
-        // Silently catch audio policy blocks
-      }
-    }
-
-    playRelayClack() {
-      if (!this.enabled) return;
-      this.ensureContext();
-      if (!this.ctx) return;
-
-      try {
-        const now = this.ctx.currentTime;
-        [0, 0.012].forEach((offset, idx) => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          const t = now + offset;
-
-          osc.type = 'square';
-          osc.frequency.setValueAtTime(idx === 0 ? 480 : 280, t);
-          osc.frequency.exponentialRampToValueAtTime(75, t + 0.015);
-
-          gain.gain.setValueAtTime(0.035, t);
-          gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.015);
-
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-
-          osc.start(t);
-          osc.stop(t + 0.015);
-        });
-      } catch (err) {
-        // Silently catch audio policy blocks
-      }
-    }
-
-    playAllocationChime() {
-      if (!this.enabled) return;
-      this.ensureContext();
-      if (!this.ctx) return;
-
-      try {
-        const now = this.ctx.currentTime;
-        const chord = [523.25, 659.25, 783.99, 1046.5, 1318.5]; // C Major 9
-        chord.forEach((freq, idx) => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          const startT = now + idx * 0.045;
-
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, startT);
-
-          gain.gain.setValueAtTime(0.04, startT);
-          gain.gain.exponentialRampToValueAtTime(0.0001, startT + 0.45);
-
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-
-          osc.start(startT);
-          osc.stop(startT + 0.45);
-        });
-      } catch (err) {
-        // Silently catch audio policy blocks
-      }
-    }
-
-    startAcousticTone(freq = 260) {
-      if (!this.enabled || this.isDroneActive) return;
-      this.ensureContext();
-      if (!this.ctx) return;
-
-      try {
-        this.droneOsc = this.ctx.createOscillator();
-        this.droneFilter = this.ctx.createBiquadFilter();
-        this.droneGain = this.ctx.createGain();
-
-        this.droneOsc.type = 'sawtooth';
-        this.droneOsc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-
-        this.droneFilter.type = 'lowpass';
-        this.droneFilter.frequency.setValueAtTime(900, this.ctx.currentTime);
-        this.droneFilter.Q.setValueAtTime(3.8, this.ctx.currentTime);
-
-        this.droneGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
-        this.droneGain.gain.exponentialRampToValueAtTime(0.03, this.ctx.currentTime + 0.06);
-
-        this.droneOsc.connect(this.droneFilter);
-        this.droneFilter.connect(this.droneGain);
-        this.droneGain.connect(this.ctx.destination);
-
-        this.droneOsc.start();
-        this.isDroneActive = true;
-      } catch (err) {
-        // Silently catch
-      }
-    }
-
-    updateAcousticTone(freq, cutoff) {
-      if (!this.isDroneActive || !this.ctx) return;
-      try {
-        const now = this.ctx.currentTime;
-        if (this.droneOsc) {
-          this.droneOsc.frequency.setTargetAtTime(freq, now, 0.03);
-        }
-        if (this.droneFilter) {
-          this.droneFilter.frequency.setTargetAtTime(cutoff, now, 0.03);
-        }
-      } catch (err) {
-        // Silently catch
-      }
-    }
-
-    stopAcousticTone() {
-      if (!this.isDroneActive || !this.ctx) return;
-      try {
-        const now = this.ctx.currentTime;
-        if (this.droneGain) {
-          this.droneGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
-        }
-        setTimeout(() => {
-          if (this.droneOsc) {
-            this.droneOsc.stop();
-            this.droneOsc.disconnect();
-            this.droneOsc = null;
-          }
-          this.isDroneActive = false;
-        }, 60);
-      } catch (err) {
-        this.isDroneActive = false;
-      }
-    }
-  }
-
-  const haptics = new HapticAudioEngine();
-
-  // --- Workstation State Variables ---
-  let orbitalAngle = 140; // 0 to 360 deg
-  let resonanceQ = 48;    // 0 to 100 (4.8 dB)
-  let activeAlgorithm = 'neural';
-  let isManipulatingDial = false;
-
-  // --- 3D Spatial Vector Matrix Math ---
-  let rotX = 0.25;
-  let rotY = 0.45;
-  let targetRotX = 0.25;
-  let targetRotY = 0.45;
-  let velRotX = 0;
-  let velRotY = 0;
-  let isDraggingCanvas = false;
-  let lastMouseX = 0;
-  let lastMouseY = 0;
-
-  // --- DOM Elements ---
-  const cosmicCanvas = document.getElementById('cosmic-canvas');
-  const spatialCanvas = document.getElementById('spatial-canvas');
-  const hudModeReadout = document.getElementById('hud-mode-readout');
-  const hudTensorFrequency = document.getElementById('hud-tensor-frequency');
-  const hudCoordinates = document.getElementById('hud-coordinates');
-  const hudFpsCounter = document.getElementById('hud-fps-counter');
-  const busMeter = document.getElementById('bus-meter');
-
-  const dialOrbital = document.getElementById('dial-orbital');
-  const rotorOrbital = document.getElementById('rotor-orbital');
-  const metricOrbitalAngle = document.getElementById('metric-orbital-angle');
-
-  const dialResonance = document.getElementById('dial-resonance');
-  const rotorResonance = document.getElementById('rotor-resonance');
-  const metricResonanceQ = document.getElementById('metric-resonance-q');
-
-  const finishTitaniumBtn = document.getElementById('finish-titanium');
-  const finishObsidianBtn = document.getElementById('finish-obsidian');
-  const chassisFinishChoice = document.getElementById('chassis-finish-choice');
-  const hapticAudioSwitch = document.getElementById('haptic-audio-switch');
-  const audioStateGlyph = document.getElementById('audio-state-glyph');
-
-  const modeSwitchButtons = document.querySelectorAll('.mode-switch-btn');
-  const explorerTabs = document.querySelectorAll('.explorer-tab');
-
-  const reservationForm = document.getElementById('reservation-form');
-  const clientNameInput = document.getElementById('client-name');
-  const clientEmailInput = document.getElementById('client-email');
-  const nameErrorDisplay = document.getElementById('name-error-display');
-  const emailErrorDisplay = document.getElementById('email-error-display');
-  const allocationSuccessModal = document.getElementById('allocation-success-modal');
-  const successDynamicMessage = document.getElementById('success-dynamic-message');
-  const btnConfirmReservation = document.getElementById('btn-confirm-reservation');
-
-  // --- Rotary Knob Controller ---
-  class RotaryKnob {
-    constructor(element, rotor, onChange, options = {}) {
-      this.element = element;
-      this.rotor = rotor;
-      this.onChange = onChange;
-      this.min = options.min ?? 0;
-      this.max = options.max ?? 360;
-      this.step = options.step ?? 1;
-      this.value = options.initial ?? 0;
-      this.lastTickVal = this.value;
-      this.isDragging = false;
-
-      this.init();
-    }
-
-    init() {
-      this.render();
-      this.element.addEventListener('pointerdown', this.onDown.bind(this));
-      window.addEventListener('pointermove', this.onMove.bind(this));
-      window.addEventListener('pointerup', this.onUp.bind(this));
-      window.addEventListener('pointercancel', this.onUp.bind(this));
-      this.element.addEventListener('wheel', this.onWheel.bind(this), { passive: false });
-      this.element.addEventListener('keydown', this.onKey.bind(this));
-    }
-
-    getCenter() {
-      const rect = this.element.getBoundingClientRect();
-      return {
-        x: rect.left + rect.width / 2,
-        y: rect.top + rect.height / 2
-      };
-    }
-
-    getAngle(clientX, clientY) {
-      const c = this.getCenter();
-      const dx = clientX - c.x;
-      const dy = clientY - c.y;
-      let deg = Math.atan2(dy, dx) * (180 / Math.PI);
-      deg = (deg + 90 + 360) % 360;
-      return deg;
-    }
-
-    onDown(e) {
-      if (e.button !== 0 && e.pointerType === 'mouse') return;
-      this.isDragging = true;
-      isManipulatingDial = true;
-      this.element.setPointerCapture(e.pointerId);
-
-      const deg = this.getAngle(e.clientX, e.clientY);
-      this.updateAngle(deg);
-
-      haptics.startAcousticTone(240 + (this.value / this.max) * 240);
-      haptics.playDetentTick(620);
-    }
-
-    onMove(e) {
-      if (!this.isDragging) return;
-      const deg = this.getAngle(e.clientX, e.clientY);
-      this.updateAngle(deg);
-    }
-
-    onUp(e) {
-      if (!this.isDragging) return;
-      this.isDragging = false;
-      isManipulatingDial = false;
-      try {
-        this.element.releasePointerCapture(e.pointerId);
-      } catch (err) {
-        // Ignored
-      }
-      haptics.stopAcousticTone();
-    }
-
-    onWheel(e) {
-      e.preventDefault();
-      const delta = e.deltaY < 0 ? this.step * 2 : -this.step * 2;
-      this.setClamped(this.value + delta);
-    }
-
-    onKey(e) {
-      let handled = false;
-      if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
-        this.setClamped(this.value + this.step * 3);
-        handled = true;
-      } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
-        this.setClamped(this.value - this.step * 3);
-        handled = true;
-      }
-      if (handled) {
-        e.preventDefault();
-      }
-    }
-
-    updateAngle(deg) {
-      const ratio = deg / 360;
-      const target = this.min + ratio * (this.max - this.min);
-      this.setClamped(target);
-    }
-
-    setClamped(target) {
-      const clamped = Math.max(this.min, Math.min(this.max, target));
-      const stepped = Math.round(clamped / this.step) * this.step;
-
-      if (stepped !== this.value) {
-        this.value = stepped;
-        this.render();
-        this.element.setAttribute('aria-valuenow', this.value);
-
-        if (Math.abs(this.value - this.lastTickVal) >= this.step) {
-          haptics.playDetentTick(500 + (this.value / this.max) * 280);
-          this.lastTickVal = this.value;
-        }
-
-        haptics.updateAcousticTone(
-          220 + (this.value / this.max) * 360,
-          700 + (resonanceQ / 100) * 2600
-        );
-
-        this.onChange(this.value);
-      }
-    }
-
-    render() {
-      const ratio = (this.value - this.min) / (this.max - this.min);
-      const deg = ratio * 360;
-      this.rotor.style.transform = `rotate(${deg}deg)`;
-    }
-  }
-
-  // --- Initialize Rotary Dials ---
-  new RotaryKnob(dialOrbital, rotorOrbital, val => {
-    orbitalAngle = val;
-    metricOrbitalAngle.textContent = `${Math.round(val)}°`;
-    hudTensorFrequency.textContent = `RESONANCE: ${(320 + (val / 360) * 340).toFixed(1)} Hz`;
-    targetRotY = (val / 360) * Math.PI * 2;
-  }, { min: 0, max: 360, step: 2, initial: 140 });
-
-  new RotaryKnob(dialResonance, rotorResonance, val => {
-    resonanceQ = val;
-    metricResonanceQ.textContent = `${(val / 10).toFixed(1)} dB`;
-  }, { min: 0, max: 100, step: 1, initial: 48 });
-
-  // --- Background Cosmic Coordinate Matrix ---
-  let cosmicCtx = null;
-  const cosmicNodes = [];
-
-  function initCosmicBackdrop() {
-    if (!cosmicCanvas) return;
-    cosmicCtx = cosmicCanvas.getContext('2d');
-    resizeCosmicCanvas();
-    window.addEventListener('resize', resizeCosmicCanvas);
-
-    for (let i = 0; i < 48; i++) {
-      cosmicNodes.push({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        radius: Math.random() * 1.5 + 0.5
+        osc.start(noteStart);
+        osc.stop(noteStart + 0.35);
       });
     }
-
-    renderCosmic();
   }
 
-  function resizeCosmicCanvas() {
-    if (!cosmicCanvas) return;
-    cosmicCanvas.width = window.innerWidth;
-    cosmicCanvas.height = window.innerHeight;
-  }
+  const audio = new AudioEngine();
 
-  function renderCosmic() {
-    if (!cosmicCtx || !cosmicCanvas) return;
-    const w = cosmicCanvas.width;
-    const h = cosmicCanvas.height;
-
-    cosmicCtx.clearRect(0, 0, w, h);
-    cosmicCtx.fillStyle = 'rgba(167, 139, 250, 0.4)';
-    cosmicCtx.strokeStyle = 'rgba(45, 212, 191, 0.04)';
-    cosmicCtx.lineWidth = 1;
-
-    for (let i = 0; i < cosmicNodes.length; i++) {
-      const n = cosmicNodes[i];
-      n.x += n.vx;
-      n.y += n.vy;
-
-      if (n.x < 0) n.x = w;
-      if (n.x > w) n.x = 0;
-      if (n.y < 0) n.y = h;
-      if (n.y > h) n.y = 0;
-
-      cosmicCtx.beginPath();
-      cosmicCtx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
-      cosmicCtx.fill();
-
-      for (let j = i + 1; j < cosmicNodes.length; j++) {
-        const n2 = cosmicNodes[j];
-        const dx = n.x - n2.x;
-        const dy = n.y - n2.y;
-        const dist = dx * dx + dy * dy;
-        if (dist < 14000) {
-          cosmicCtx.beginPath();
-          cosmicCtx.moveTo(n.x, n.y);
-          cosmicCtx.lineTo(n2.x, n2.y);
-          cosmicCtx.stroke();
-        }
+  // ---------------------------------------------------------------------------
+  // 2. Application Presets & Mock Data
+  // ---------------------------------------------------------------------------
+  const PRESETS = {
+    habits: {
+      name: 'Orbit Habit PWA',
+      shortName: 'Orbit',
+      category: 'Productivity',
+      url: 'flunds.dev/@steoward/orbit',
+      iconSvg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>',
+      iconBg: 'linear-gradient(135deg, #10b981, #059669)',
+      prompt: 'Build an offline habit tracker with daily streaks, haptics, and instant PWA manifest.',
+      terminalLogs: [
+        { time: '00:01', agent: 'Agent', tool: 'flunds_create_app', text: 'Initializing PWA "Orbit" with standalone display and orientation portrait.' },
+        { time: '00:03', agent: 'Agent', tool: 'flunds_generate_icons', text: 'Rendered adaptive maskable 192x192 & 512x512 icons in emerald-green.' },
+        { time: '00:06', agent: 'Agent', tool: 'flunds_configure_sw', text: 'Configured offline CacheStorage strategy: StaleWhileRevalidate for local habits.' },
+        { time: '00:09', agent: 'Agent', tool: 'flunds_deploy_pwa', text: 'Deployed PWA to edge! Install link: flunds.dev/@steoward/orbit (Size: 420 KB)' }
+      ],
+      renderScreen: function () {
+        return `
+          <div class="sim-pwa-view">
+            <div class="sim-app-header">
+              <span class="sim-app-title">Today's Orbit</span>
+              <span class="sim-pwa-badge">PWA Active</span>
+            </div>
+            <div class="habit-list">
+              <div class="habit-row" role="button" tabindex="0" data-habit="1">
+                <div class="habit-info">
+                  <span class="habit-title">Morning Deep Work</span>
+                  <span class="habit-streak">18-day streak</span>
+                </div>
+                <div class="habit-checkbox checked">✓</div>
+              </div>
+              <div class="habit-row" role="button" tabindex="0" data-habit="2">
+                <div class="habit-info">
+                  <span class="habit-title">Hydration 2.5L</span>
+                  <span class="habit-streak">12-day streak</span>
+                </div>
+                <div class="habit-checkbox checked">✓</div>
+              </div>
+              <div class="habit-row" role="button" tabindex="0" data-habit="3">
+                <div class="habit-info">
+                  <span class="habit-title">Cold Plunge / Cardio</span>
+                  <span class="habit-streak">4-day streak</span>
+                </div>
+                <div class="habit-checkbox"></div>
+              </div>
+              <div class="habit-row" role="button" tabindex="0" data-habit="4">
+                <div class="habit-info">
+                  <span class="habit-title">Review Code Pull Requests</span>
+                  <span class="habit-streak">29-day streak</span>
+                </div>
+                <div class="habit-checkbox"></div>
+              </div>
+            </div>
+          </div>
+        `;
       }
-    }
-
-    requestAnimationFrame(renderCosmic);
-  }
-
-  // --- 3D Interactive Spatial Orbital Vector Canvas ---
-  let spatialCtx = null;
-  let lastFrameTime = performance.now();
-  let smoothFps = 120;
-
-  // Generate 3D Orbital Points
-  const SPATIAL_POINTS = [];
-  const TOTAL_POINTS = 160;
-  for (let i = 0; i < TOTAL_POINTS; i++) {
-    const theta = Math.acos(1 - 2 * (i / TOTAL_POINTS));
-    const phi = Math.PI * (1 + Math.sqrt(5)) * i;
-    const r = 95;
-    SPATIAL_POINTS.push({
-      ox: r * Math.sin(theta) * Math.cos(phi),
-      oy: r * Math.sin(theta) * Math.sin(phi),
-      oz: r * Math.cos(theta),
-      phase: Math.random() * Math.PI * 2
-    });
-  }
-
-  function initSpatialCanvas() {
-    if (!spatialCanvas) return;
-    spatialCtx = spatialCanvas.getContext('2d');
-    resizeSpatialCanvas();
-    window.addEventListener('resize', resizeSpatialCanvas);
-
-    // Mouse drag rotation on 3D canvas
-    spatialCanvas.addEventListener('pointerdown', e => {
-      isDraggingCanvas = true;
-      lastMouseX = e.clientX;
-      lastMouseY = e.clientY;
-      spatialCanvas.setPointerCapture(e.pointerId);
-      haptics.playSwitchClick();
-    });
-
-    window.addEventListener('pointermove', e => {
-      if (!isDraggingCanvas) return;
-      const dx = e.clientX - lastMouseX;
-      const dy = e.clientY - lastMouseY;
-      lastMouseX = e.clientX;
-      lastMouseY = e.clientY;
-
-      velRotY = dx * 0.008;
-      velRotX = dy * 0.008;
-      targetRotY += velRotY;
-      targetRotX += velRotX;
-    });
-
-    const stopDrag = e => {
-      if (isDraggingCanvas) {
-        isDraggingCanvas = false;
-        try {
-          spatialCanvas.releasePointerCapture(e.pointerId);
-        } catch (err) {}
-      }
-    };
-    window.addEventListener('pointerup', stopDrag);
-    window.addEventListener('pointercancel', stopDrag);
-
-    requestAnimationFrame(renderSpatial);
-  }
-
-  function resizeSpatialCanvas() {
-    if (!spatialCanvas) return;
-    const rect = spatialCanvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    spatialCanvas.width = rect.width * dpr;
-    spatialCanvas.height = rect.height * dpr;
-    if (spatialCtx) {
-      spatialCtx.scale(dpr, dpr);
-    }
-  }
-
-  function renderSpatial(now) {
-    if (!spatialCtx || !spatialCanvas) return;
-
-    // Delta time & FPS calculation
-    const delta = (now - lastFrameTime) / 1000;
-    lastFrameTime = now;
-    if (delta > 0) {
-      const instantFps = 1 / delta;
-      smoothFps = smoothFps * 0.92 + instantFps * 0.08;
-      if (hudFpsCounter) {
-        hudFpsCounter.textContent = `${Math.round(smoothFps)} FPS NATIVE`;
-      }
-    }
-
-    const rect = spatialCanvas.getBoundingClientRect();
-    const w = rect.width;
-    const h = rect.height;
-    const cx = w / 2;
-    const cy = h / 2;
-
-    // Clear frame
-    spatialCtx.fillStyle = 'rgba(5, 6, 8, 0.4)';
-    spatialCtx.fillRect(0, 0, w, h);
-
-    // Draw Graticule Grid
-    spatialCtx.strokeStyle = 'rgba(167, 139, 250, 0.06)';
-    spatialCtx.lineWidth = 1;
-    const gridDivs = 8;
-    for (let c = 1; c < gridDivs; c++) {
-      const gx = (w / gridDivs) * c;
-      spatialCtx.beginPath();
-      spatialCtx.moveTo(gx, 0);
-      spatialCtx.lineTo(gx, h);
-      spatialCtx.stroke();
-    }
-    for (let r = 1; r < 4; r++) {
-      const gy = (h / 4) * r;
-      spatialCtx.beginPath();
-      spatialCtx.moveTo(0, gy);
-      spatialCtx.lineTo(w, gy);
-      spatialCtx.stroke();
-    }
-
-    // Auto-spin velocity & damping
-    if (!isDraggingCanvas) {
-      targetRotY += 0.005 + (orbitalAngle / 360) * 0.008;
-    }
-
-    // Spring damping interpolation toward target rotation
-    rotX += (targetRotX - rotX) * 0.12;
-    rotY += (targetRotY - rotY) * 0.12;
-
-    if (hudCoordinates) {
-      hudCoordinates.textContent = `VECTOR [X: ${rotX.toFixed(2)}, Y: ${rotY.toFixed(2)}, Z: 1.00]`;
-    }
-
-    // 3D Rotation Matrix Calculation
-    const cosY = Math.cos(rotY);
-    const sinY = Math.sin(rotY);
-    const cosX = Math.cos(rotX);
-    const sinX = Math.sin(rotX);
-
-    const projected = [];
-    const focalLength = 320;
-    const pulseRate = now * 0.003;
-    const qFactor = 0.8 + (resonanceQ / 100) * 0.6;
-
-    for (let i = 0; i < SPATIAL_POINTS.length; i++) {
-      const p = SPATIAL_POINTS[i];
-      let { ox, oy, oz } = p;
-
-      // Mode-specific deformation
-      if (activeAlgorithm === 'neural') {
-        const wave = Math.sin(p.phase + pulseRate) * 6 * qFactor;
-        ox += wave;
-        oy += wave;
-      } else if (activeAlgorithm === 'tensor') {
-        const torusWave = Math.sin(ox * 0.05 + pulseRate * 2) * 12;
-        oy += torusWave;
-      } else if (activeAlgorithm === 'kinetic') {
-        const spinWave = Math.cos(pulseRate * 3 + p.phase) * 16 * qFactor;
-        oz += spinWave;
-      }
-
-      // Rotate Y
-      const x1 = ox * cosY - oz * sinY;
-      const z1 = ox * sinY + oz * cosY;
-
-      // Rotate X
-      const y2 = oy * cosX - z1 * sinX;
-      const z2 = oy * sinX + z1 * cosX;
-
-      // Perspective Projection
-      const depth = z2 + 280;
-      if (depth > 10) {
-        const scale = focalLength / depth;
-        const px = cx + x1 * scale;
-        const py = cy + y2 * scale;
-        projected.push({
-          x: px,
-          y: py,
-          z: z2,
-          scale: scale,
-          rawZ: depth
-        });
-      }
-    }
-
-    // Sort by depth (painter's algorithm)
-    projected.sort((a, b) => b.z - a.z);
-
-    // Connect Neighboring Lines
-    spatialCtx.lineWidth = 1;
-    for (let i = 0; i < projected.length; i++) {
-      const p1 = projected[i];
-      for (let j = i + 1; j < projected.length; j++) {
-        const p2 = projected[j];
-        const dx = p1.x - p2.x;
-        const dy = p1.y - p2.y;
-        const d2 = dx * dx + dy * dy;
-        if (d2 < 1200) {
-          const alpha = (1 - d2 / 1200) * 0.28 * (p1.scale / 1.5);
-          spatialCtx.strokeStyle = activeAlgorithm === 'kinetic'
-            ? `rgba(45, 212, 191, ${alpha})`
-            : `rgba(167, 139, 250, ${alpha})`;
-          spatialCtx.beginPath();
-          spatialCtx.moveTo(p1.x, p1.y);
-          spatialCtx.lineTo(p2.x, p2.y);
-          spatialCtx.stroke();
-        }
-      }
-    }
-
-    // Draw Projected Nodes
-    for (let i = 0; i < projected.length; i++) {
-      const p = projected[i];
-      const radius = Math.max(1, p.scale * 2.5);
-      const alpha = Math.min(1, Math.max(0.2, (p.z + 100) / 200));
-
-      spatialCtx.fillStyle = activeAlgorithm === 'neural'
-        ? `rgba(167, 139, 250, ${alpha})`
-        : activeAlgorithm === 'tensor'
-        ? `rgba(243, 232, 203, ${alpha})`
-        : `rgba(45, 212, 191, ${alpha})`;
-
-      spatialCtx.beginPath();
-      spatialCtx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-      spatialCtx.fill();
-    }
-
-    requestAnimationFrame(renderSpatial);
-  }
-
-  // --- Segmented Neural VU Meter Pulse ---
-  function updateNeuralBusMeter() {
-    if (!busMeter) return;
-    const cells = busMeter.querySelectorAll('.meter-cell');
-    const energy = 0.45 + (resonanceQ / 100) * 0.45;
-    const activeCount = Math.min(7, Math.floor(energy * 6 + Math.random() * 2));
-
-    cells.forEach((cell, idx) => {
-      cell.classList.toggle('active', idx < activeCount);
-    });
-  }
-  setInterval(updateNeuralBusMeter, 110);
-
-  // --- Algorithm Mode Switcher ---
-  modeSwitchButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const mode = btn.dataset.mode;
-      activeAlgorithm = mode;
-
-      modeSwitchButtons.forEach(b => {
-        const isSelected = b === btn;
-        b.classList.toggle('active', isSelected);
-        b.setAttribute('aria-checked', isSelected ? 'true' : 'false');
-      });
-
-      if (hudModeReadout) {
-        hudModeReadout.textContent = `ALGORITHM: ${
-          mode === 'neural' ? 'NEURAL TENSOR MESH' : mode === 'tensor' ? 'HARMONIC TENSOR TORUS' : 'KINETIC QUANTUM VOID'
-        }`;
-      }
-
-      haptics.playSwitchClick();
-    });
-  });
-
-  // --- Material Finish Switcher ---
-  function setWorkstationFinish(finish) {
-    document.body.setAttribute('data-finish', finish);
-
-    const isTitanium = finish === 'titanium';
-    finishTitaniumBtn.classList.toggle('active', isTitanium);
-    finishTitaniumBtn.setAttribute('aria-pressed', isTitanium ? 'true' : 'false');
-
-    finishObsidianBtn.classList.toggle('active', !isTitanium);
-    finishObsidianBtn.setAttribute('aria-pressed', !isTitanium ? 'true' : 'false');
-
-    if (chassisFinishChoice) {
-      chassisFinishChoice.value = finish;
-    }
-
-    haptics.playRelayClack();
-  }
-
-  finishTitaniumBtn.addEventListener('click', () => setWorkstationFinish('titanium'));
-  finishObsidianBtn.addEventListener('click', () => setWorkstationFinish('obsidian'));
-
-  if (chassisFinishChoice) {
-    chassisFinishChoice.addEventListener('change', e => {
-      setWorkstationFinish(e.target.value);
-    });
-  }
-
-  // --- Architecture Explorer Tabs ---
-  const ARCHITECTURE_DATA = {
-    monocoque: {
-      id: 'STRUCTURAL ARCHITECTURE // LAYER 01',
-      spec: 'MACHINING TOLERANCE ±0.010 mm',
-      title: 'Solid Monobloc Grade 5 Titanium Monocoque',
-      desc: 'Titanium Grade 5 provides twice the tensile strength of 6061 aluminum with superior vibrational damping characteristics. Eliminates microphonic distortion, resonance ringing, and electromagnetic interference across high-frequency acoustic bands.',
-      stats: [
-        { val: '940 g', label: 'Chassis Structural Mass' },
-        { val: '280 × 175 × 28 mm', label: 'Exterior Monolith Footprint' },
-        { val: '0.00008%', label: 'Residual Harmonic Distortion' }
-      ]
     },
-    vault: {
-      id: 'FARADAY ISOLATION // LAYER 02',
-      spec: 'SHIELDING REJECTION > 125 dB',
-      title: 'Hermetically Sealed Oxygen-Free Copper Vault',
-      desc: 'Differential Burr-Brown floating converters rest in an isolated pure copper sub-chassis. Gasket-sealed with gold-plated conductive mesh to completely isolate high-speed digital clock jitter from delicate analog preamplifiers.',
-      stats: [
-        { val: '142.4 dB', label: 'Signal to Noise Ratio' },
-        { val: '< 32 fs', label: 'Master Clock Jitter Floor' },
-        { val: '> 134.0 dB', label: 'Inter-channel Separation' }
-      ]
+    wallet: {
+      name: 'Krypton Pay PWA',
+      shortName: 'Krypton',
+      category: 'Fintech',
+      url: 'flunds.dev/@steoward/krypton',
+      iconSvg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>',
+      iconBg: 'linear-gradient(135deg, #38bdf8, #0284c7)',
+      prompt: 'Construct a non-custodial crypto wallet PWA with biometric WebAuthn authorization.',
+      terminalLogs: [
+        { time: '00:01', agent: 'Agent', tool: 'flunds_create_app', text: 'Initializing PWA "Krypton" with secure hardware key storage and WebAuthn API.' },
+        { time: '00:04', agent: 'Agent', tool: 'flunds_generate_manifest', text: 'Set secure origin requirements, theme_color #0c0e14, and standalone window.' },
+        { time: '00:07', agent: 'Agent', tool: 'flunds_configure_sw', text: 'Isolated encrypted local state into IndexedDB with zero cloud credentials leak.' },
+        { time: '00:10', agent: 'Agent', tool: 'flunds_deploy_pwa', text: 'Bundle published! Ready for iPhone & Android home screen installation. (Size: 890 KB)' }
+      ],
+      renderScreen: function () {
+        return `
+          <div class="sim-pwa-view">
+            <div class="sim-app-header">
+              <span class="sim-app-title">Krypton Vault</span>
+              <span class="sim-pwa-badge">Biometric</span>
+            </div>
+            <div class="wallet-balance-card">
+              <span style="font-size: 0.75rem; color: #94a3b8;">Total Available Balance</span>
+              <div class="wallet-balance-num">$14,892.40</div>
+              <span style="font-size: 0.75rem; color: #10b981;">+ 4.82% today</span>
+            </div>
+            <div class="wallet-quick-actions">
+              <button type="button" class="wallet-btn" id="wallet-send">Send</button>
+              <button type="button" class="wallet-btn" id="wallet-receive">Receive</button>
+              <button type="button" class="wallet-btn" id="wallet-swap">Swap</button>
+            </div>
+          </div>
+        `;
+      }
     },
-    rotors: {
-      id: 'TACTILE ACTUATION // LAYER 03',
-      spec: 'OPTICAL CPR: 8,192 PULSES',
-      title: 'Neodymium Electromagnetic Rotor Assembly',
-      desc: 'Precision diamond-knurled dials with programmable magnetic detent coils. Non-contact optical sensors read micro-rotations at 8,192 counts per revolution with zero mechanical friction or potentiometer scratch.',
-      stats: [
-        { val: '0 to 140 mN·m', label: 'Variable Magnetic Resistance' },
-        { val: '< 0.08 ms', label: 'Encoder Latency' },
-        { val: 'Infinite', label: 'Contactless Lifespan' }
-      ]
+    ambient: {
+      name: 'Solara Audio PWA',
+      shortName: 'Solara',
+      category: 'Soundscapes',
+      url: 'flunds.dev/@steoward/solara',
+      iconSvg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>',
+      iconBg: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+      prompt: 'Develop an ambient generative audio soundscape PWA running completely offline via Web Audio.',
+      terminalLogs: [
+        { time: '00:01', agent: 'Agent', tool: 'flunds_create_app', text: 'Initializing PWA "Solara" with background audio session policy.' },
+        { time: '00:04', agent: 'Agent', tool: 'flunds_generate_manifest', text: 'Registered mediaSession playback controls for iOS Dynamic Island and Android lockscreen.' },
+        { time: '00:07', agent: 'Agent', tool: 'flunds_configure_sw', text: 'Cached generative audio synthesis oscillators and sound models into Service Worker.' },
+        { time: '00:10', agent: 'Agent', tool: 'flunds_deploy_pwa', text: 'Edge deploy complete! Installable directly from Safari/Chrome. (Size: 380 KB)' }
+      ],
+      renderScreen: function () {
+        return `
+          <div class="sim-pwa-view">
+            <div class="sim-app-header">
+              <span class="sim-app-title">Solara Sound</span>
+              <span class="sim-pwa-badge">Offline Audio</span>
+            </div>
+            <div class="audio-player-card">
+              <span style="font-size: 0.8rem; font-weight: 600;">Active Frequency</span>
+              <div style="font-size: 1.1rem; font-family: monospace; color: #a855f7;">432 Hz Harmonic Rain</div>
+              <div class="soundscape-selector">
+                <div class="sound-chip active" role="button" tabindex="0">
+                  <span>Deep Forest Rain</span>
+                  <span>Active</span>
+                </div>
+                <div class="sound-chip" role="button" tabindex="0">
+                  <span>Night Cosmic Wind</span>
+                  <span>Ready</span>
+                </div>
+                <div class="sound-chip" role="button" tabindex="0">
+                  <span>Binaural Focus Alpha</span>
+                  <span>Ready</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
     },
-    thermal: {
-      id: 'CRYOGENIC CONDUCTION // LAYER 04',
-      spec: 'HEAT PIPING 24 W / m·K',
-      title: 'Passive Cryogenic Siphon Heatpipe',
-      desc: 'Sintered copper powder heatpipes disperse class-A amplifier thermal loads directly through the titanium chassis. 100% silent solid-state dissipation with zero fans or pump vibration.',
-      stats: [
-        { val: '0.0 dBA', label: 'Acoustic Sound Floor' },
-        { val: '36° C', label: 'Nominal Operating Temperature' },
-        { val: '20 W', label: 'Thunderbolt 4 Bus Power' }
-      ]
+    notes: {
+      name: 'Quill Markdown PWA',
+      shortName: 'Quill',
+      category: 'Notes',
+      url: 'flunds.dev/@steoward/quill',
+      iconSvg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>',
+      iconBg: 'linear-gradient(135deg, #f59e0b, #d97706)',
+      prompt: 'Build a distraction-free mobile markdown notebook with instant local export and offline cache.',
+      terminalLogs: [
+        { time: '00:01', agent: 'Agent', tool: 'flunds_create_app', text: 'Initializing PWA "Quill" with text-editor view and hardware keyboard support.' },
+        { time: '00:03', agent: 'Agent', tool: 'flunds_generate_manifest', text: 'Registered file_handlers for .md and .txt files directly from native OS share sheet.' },
+        { time: '00:06', agent: 'Agent', tool: 'flunds_configure_sw', text: 'Configured local snapshot sync and offline IndexedDB persistence.' },
+        { time: '00:09', agent: 'Agent', tool: 'flunds_deploy_pwa', text: 'Edge deployment live! Installable on home screen in 1 click. (Size: 510 KB)' }
+      ],
+      renderScreen: function () {
+        return `
+          <div class="sim-pwa-view">
+            <div class="sim-app-header">
+              <span class="sim-app-title">Quill Notes</span>
+              <span class="sim-pwa-badge">Local Sync</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="padding: 10px; background: rgba(255,255,255,0.04); border-radius: 8px; font-size: 0.85rem;">
+                <strong>Architecture notes</strong>
+                <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">Service workers allow full offline capability on phone screens...</p>
+              </div>
+              <div style="padding: 10px; background: rgba(255,255,255,0.04); border-radius: 8px; font-size: 0.85rem;">
+                <strong>Next Sprint Milestones</strong>
+                <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">Connect flunds MCP to autonomous Claude Code agent...</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }
     }
   };
 
-  explorerTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const layer = tab.dataset.layer;
-      const data = ARCHITECTURE_DATA[layer];
-      if (!data) return;
+  // State
+  let currentPresetKey = 'habits';
+  let isHomeScreenView = false;
+  let installedApps = new Set();
 
-      explorerTabs.forEach(t => {
-        const isSelected = t === tab;
-        t.classList.toggle('active', isSelected);
-        t.setAttribute('aria-selected', isSelected ? 'true' : 'false');
-      });
+  // Elements
+  const audioToggle = document.getElementById('audio-toggle');
+  const terminalStream = document.getElementById('terminal-stream');
+  const promptInput = document.getElementById('prompt-input');
+  const promptRunBtn = document.getElementById('prompt-run-btn');
+  const phoneScreen = document.getElementById('phone-screen');
+  const phoneHomeBtn = document.getElementById('phone-home-btn');
+  const installPwaBtn = document.getElementById('install-pwa-btn');
+  const simulatorUrlDisplay = document.getElementById('simulator-url-display');
+  const phoneClock = document.getElementById('phone-clock');
+  const toastNotify = document.getElementById('toast-notify');
 
-      document.getElementById('layer-badge-id').textContent = data.id;
-      document.getElementById('layer-badge-spec').textContent = data.spec;
-      document.getElementById('layer-heading').textContent = data.title;
-      document.getElementById('layer-body-copy').textContent = data.desc;
-
-      const cluster = document.getElementById('layer-metrics-cluster');
-      cluster.innerHTML = '';
-      data.stats.forEach(s => {
-        const div = document.createElement('div');
-        div.className = 'metric-unit';
-        div.innerHTML = `<span class="unit-val">${s.val}</span><span class="unit-label">${s.label}</span>`;
-        cluster.appendChild(div);
-      });
-
-      haptics.playSwitchClick();
+  // ---------------------------------------------------------------------------
+  // 3. Audio Toggle Setup
+  // ---------------------------------------------------------------------------
+  if (audioToggle) {
+    audioToggle.addEventListener('click', () => {
+      const active = audio.toggle();
+      audioToggle.setAttribute('aria-pressed', String(active));
+      const label = audioToggle.querySelector('.audio-btn-label');
+      if (label) {
+        label.textContent = active ? 'Sound On' : 'Sound Off';
+      }
+      showToast(active ? 'Tactile Interface Audio Enabled' : 'Tactile Audio Muted');
+      if (active) audio.playTap();
     });
-  });
+  }
 
-  // --- Haptic Audio Switch ---
-  hapticAudioSwitch.addEventListener('click', () => {
-    haptics.enabled = !haptics.enabled;
-    if (haptics.enabled) {
-      audioStateGlyph.textContent = '🔊';
-      hapticAudioSwitch.setAttribute('title', 'Audio feedback enabled');
-      haptics.playSwitchClick();
+  // ---------------------------------------------------------------------------
+  // 4. Phone Clock Updater
+  // ---------------------------------------------------------------------------
+  function updatePhoneClock() {
+    if (!phoneClock) return;
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    hours = hours % 12 || 12;
+    phoneClock.textContent = `${hours}:${minutes}`;
+  }
+  setInterval(updatePhoneClock, 30000);
+  updatePhoneClock();
+
+  // ---------------------------------------------------------------------------
+  // 5. Toast Notification System
+  // ---------------------------------------------------------------------------
+  let toastTimer = null;
+  function showToast(message) {
+    if (!toastNotify) return;
+    toastNotify.textContent = message;
+    toastNotify.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toastNotify.classList.remove('visible');
+    }, 2800);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 6. Terminal Code Stream Simulation
+  // ---------------------------------------------------------------------------
+  function streamTerminalLogs(logs) {
+    if (!terminalStream) return;
+    terminalStream.innerHTML = '';
+    let delay = 0;
+
+    logs.forEach((log) => {
+      setTimeout(() => {
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `
+          <span class="log-time">[${log.time}]</span>
+          <span class="log-agent">${log.agent}</span>
+          <span class="log-tool">&gt; ${log.tool}:</span>
+          <span class="log-content">${log.text}</span>
+        `;
+        terminalStream.appendChild(entry);
+        terminalStream.scrollTop = terminalStream.scrollHeight;
+        audio.playKey();
+      }, delay);
+      delay += 350;
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // 7. Phone Screen & App Rendering
+  // ---------------------------------------------------------------------------
+  function renderPhoneContent() {
+    if (!phoneScreen) return;
+
+    if (isHomeScreenView) {
+      // Render Simulated SpringBoard / Home Screen
+      let appIconsHtml = `
+        <div class="sim-springboard-view">
+          <div class="springboard-grid">
+      `;
+
+      // Render default phone apps
+      const defaultApps = [
+        { name: 'Safari', bg: '#0284c7', icon: '🌐' },
+        { name: 'Messages', bg: '#10b981', icon: '💬' },
+        { name: 'Settings', bg: '#64748b', icon: '⚙️' },
+        { name: 'Camera', bg: '#334155', icon: '📷' }
+      ];
+
+      defaultApps.forEach((app) => {
+        appIconsHtml += `
+          <div class="app-icon-slot" tabindex="0" role="button" aria-label="Open ${app.name}">
+            <div class="app-icon-box" style="background: ${app.bg}; color: #fff; font-size: 1.4rem;">
+              ${app.icon}
+            </div>
+            <span class="app-icon-name">${app.name}</span>
+          </div>
+        `;
+      });
+
+      // Render installed PWAs
+      Object.keys(PRESETS).forEach((key) => {
+        const preset = PRESETS[key];
+        const isInstalled = installedApps.has(key);
+        if (isInstalled) {
+          appIconsHtml += `
+            <div class="app-icon-slot" tabindex="0" role="button" data-launch="${key}" aria-label="Launch installed PWA ${preset.shortName}">
+              <div class="app-icon-box new-installed" style="background: ${preset.iconBg};">
+                ${preset.iconSvg}
+                <span class="pwa-indicator-badge">PWA</span>
+              </div>
+              <span class="app-icon-name">${preset.shortName}</span>
+            </div>
+          `;
+        }
+      });
+
+      appIconsHtml += `
+          </div>
+        </div>
+      `;
+
+      phoneScreen.innerHTML = appIconsHtml;
+
+      // Attach launch click handlers for installed PWAs
+      phoneScreen.querySelectorAll('[data-launch]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const targetKey = btn.getAttribute('data-launch');
+          launchPwa(targetKey);
+        });
+      });
     } else {
-      audioStateGlyph.textContent = '🔇';
-      hapticAudioSwitch.setAttribute('title', 'Audio feedback muted');
+      // Render the current PWA
+      const preset = PRESETS[currentPresetKey];
+      phoneScreen.innerHTML = preset.renderScreen();
+      attachAppInteractions();
     }
+  }
+
+  function launchPwa(key) {
+    audio.playTap();
+    currentPresetKey = key;
+    isHomeScreenView = false;
+    updateSimulatorMeta();
+    renderPhoneContent();
+  }
+
+  function attachAppInteractions() {
+    // Habit checkbox toggle
+    phoneScreen.querySelectorAll('.habit-row').forEach((row) => {
+      row.addEventListener('click', () => {
+        audio.playTap();
+        const box = row.querySelector('.habit-checkbox');
+        if (box) {
+          const isChecked = box.classList.contains('checked');
+          box.classList.toggle('checked');
+          box.textContent = isChecked ? '' : '✓';
+        }
+      });
+    });
+
+    // Sound chips toggle
+    phoneScreen.querySelectorAll('.sound-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        audio.playTap();
+        phoneScreen.querySelectorAll('.sound-chip').forEach((c) => c.classList.remove('active'));
+        chip.classList.add('active');
+        const textSpan = chip.querySelectorAll('span')[1];
+        if (textSpan) textSpan.textContent = 'Active';
+      });
+    });
+
+    // Wallet buttons
+    const sendBtn = phoneScreen.querySelector('#wallet-send');
+    if (sendBtn) {
+      sendBtn.addEventListener('click', () => {
+        audio.playTap();
+        showToast('Krypton PWA: Biometric confirmation approved!');
+      });
+    }
+  }
+
+  function updateSimulatorMeta() {
+    const preset = PRESETS[currentPresetKey];
+    if (simulatorUrlDisplay) {
+      simulatorUrlDisplay.textContent = preset.url;
+    }
+    if (promptInput) {
+      promptInput.value = preset.prompt;
+    }
+    // Update active preset buttons
+    document.querySelectorAll('.preset-btn').forEach((btn) => {
+      btn.classList.toggle('active', btn.getAttribute('data-preset') === currentPresetKey);
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // 8. Preset Switcher Logic
+  // ---------------------------------------------------------------------------
+  function loadPreset(key) {
+    if (!PRESETS[key]) return;
+    audio.playTap();
+    currentPresetKey = key;
+    isHomeScreenView = false;
+    updateSimulatorMeta();
+    renderPhoneContent();
+    streamTerminalLogs(PRESETS[key].terminalLogs);
+  }
+
+  document.querySelectorAll('.preset-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const key = btn.getAttribute('data-preset');
+      loadPreset(key);
+    });
   });
 
-  // --- Pre-Order Reservation Form ---
-  if (reservationForm) {
-    reservationForm.addEventListener('submit', e => {
+  document.querySelectorAll('.gallery-item-card button, .gallery-item-card').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      const presetKey = el.getAttribute('data-preset');
+      if (presetKey) {
+        loadPreset(presetKey);
+        const studioEl = document.getElementById('studio');
+        if (studioEl) {
+          studioEl.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // 9. Phone Home Button & PWA Install Simulation
+  // ---------------------------------------------------------------------------
+  if (phoneHomeBtn) {
+    phoneHomeBtn.addEventListener('click', () => {
+      audio.playTap();
+      isHomeScreenView = !isHomeScreenView;
+      renderPhoneContent();
+    });
+  }
+
+  if (installPwaBtn) {
+    installPwaBtn.addEventListener('click', () => {
+      audio.playSuccessChime();
+      installedApps.add(currentPresetKey);
+      const preset = PRESETS[currentPresetKey];
+      showToast(`Installed "${preset.shortName}" to Phone Home Screen!`);
+      // Animate to home screen to reveal the installed PWA
+      isHomeScreenView = true;
+      renderPhoneContent();
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // 10. Agent Tab Switcher & Prompt Dispatcher
+  // ---------------------------------------------------------------------------
+  const agentStatusText = document.getElementById('agent-status-text');
+  document.querySelectorAll('.agent-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      audio.playTap();
+      document.querySelectorAll('.agent-tab').forEach((t) => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      const agentName = tab.textContent;
+      if (agentStatusText) {
+        agentStatusText.textContent = `${agentName} connected to flunds MCP`;
+      }
+      showToast(`${agentName} agent active`);
+    });
+  });
+
+  if (promptRunBtn && promptInput) {
+    promptRunBtn.addEventListener('click', () => {
+      audio.playTap();
+      const val = promptInput.value.trim();
+      if (!val) return;
+      const customLogs = [
+        { time: '00:01', agent: 'Agent', tool: 'flunds_create_app', text: `Analyzing prompt: "${val.slice(0, 48)}..."` },
+        { time: '00:04', agent: 'Agent', tool: 'flunds_generate_manifest', text: 'Compiling responsive touch viewport, webmanifest, and splash screens.' },
+        { time: '00:07', agent: 'Agent', tool: 'flunds_configure_sw', text: 'Building offline Service Worker with dynamic background sync.' },
+        { time: '00:10', agent: 'Agent', tool: 'flunds_deploy_pwa', text: 'Deployment published! Ready for one-tap home screen install.' }
+      ];
+      streamTerminalLogs(customLogs);
+      showToast('Agent building & deploying PWA...');
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // 11. MCP Config Tabs & Copy Buttons
+  // ---------------------------------------------------------------------------
+  document.querySelectorAll('.config-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      audio.playTap();
+      document.querySelectorAll('.config-tab').forEach((t) => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+
+      const targetId = tab.getAttribute('data-target');
+      document.querySelectorAll('.config-content').forEach((content) => {
+        content.classList.toggle('active', content.id === targetId);
+      });
+    });
+  });
+
+  const copyHeroBtn = document.getElementById('copy-mcp-hero-btn');
+  const copyActiveBtn = document.getElementById('copy-active-snippet-btn');
+
+  function copyMcpSnippet() {
+    const activeContent = document.querySelector('.config-content.active pre code');
+    const textToCopy = activeContent ? activeContent.textContent : '{\n  "mcpServers": {\n    "flunds": {\n      "command": "flunds-mcp"\n    }\n  }\n}';
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        audio.playTap();
+        showToast('flunds MCP Configuration copied to clipboard!');
+      }).catch(() => {
+        showToast('MCP Configuration copied!');
+      });
+    } else {
+      showToast('MCP Configuration ready to paste!');
+    }
+  }
+
+  if (copyHeroBtn) copyHeroBtn.addEventListener('click', copyMcpSnippet);
+  if (copyActiveBtn) copyActiveBtn.addEventListener('click', copyMcpSnippet);
+
+  // ---------------------------------------------------------------------------
+  // 12. Developer Handle Reservation Form
+  // ---------------------------------------------------------------------------
+  const claimForm = document.getElementById('claim-handle-form');
+  const handleInput = document.getElementById('handle-input');
+  const claimReceipt = document.getElementById('claim-receipt');
+  const receiptNamespace = document.getElementById('receipt-namespace');
+  const receiptToken = document.getElementById('receipt-token');
+
+  if (claimForm && handleInput && claimReceipt) {
+    claimForm.addEventListener('submit', (e) => {
       e.preventDefault();
+      const rawHandle = handleInput.value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+      if (!rawHandle) return;
 
-      let valid = true;
-      nameErrorDisplay.textContent = '';
-      emailErrorDisplay.textContent = '';
+      audio.playSuccessChime();
+      const randomHex = Math.random().toString(16).substring(2, 10) + Math.random().toString(16).substring(2, 10);
+      if (receiptNamespace) receiptNamespace.textContent = `flunds.dev/@${rawHandle}`;
+      if (receiptToken) receiptToken.textContent = `flunds_live_sec_${randomHex}`;
 
-      if (!clientNameInput.value.trim()) {
-        nameErrorDisplay.textContent = 'Please enter your name or studio designation.';
-        clientNameInput.focus();
-        valid = false;
-      }
-
-      const emailVal = clientEmailInput.value.trim();
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailVal || !emailRegex.test(emailVal)) {
-        emailErrorDisplay.textContent = 'Please provide a valid professional email address for delivery confirmation.';
-        if (valid) clientEmailInput.focus();
-        valid = false;
-      }
-
-      if (valid) {
-        haptics.playAllocationChime();
-        allocationSuccessModal.classList.add('visible');
-        allocationSuccessModal.setAttribute('aria-hidden', 'false');
-
-        if (btnConfirmReservation) {
-          btnConfirmReservation.disabled = true;
-          btnConfirmReservation.textContent = 'Allocation Secured';
-        }
-
-        if (successDynamicMessage) {
-          const randomSerial = Math.floor(100 + Math.random() * 900);
-          successDynamicMessage.textContent = `Batch 01 production serial #00${randomSerial} registered for ${clientNameInput.value.trim()}. Verification transmitted to ${emailVal}.`;
-        }
-      }
+      claimReceipt.classList.remove('hidden');
+      showToast(`Handle @${rawHandle} secured!`);
     });
   }
 
-  // --- Boot Sequence ---
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      initCosmicBackdrop();
-      initSpatialCanvas();
-    });
-  } else {
-    initCosmicBackdrop();
-    initSpatialCanvas();
-  }
+  // ---------------------------------------------------------------------------
+  // Initial Boot
+  // ---------------------------------------------------------------------------
+  loadPreset('habits');
 })();
