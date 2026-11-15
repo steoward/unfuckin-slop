@@ -1,13 +1,22 @@
 ---
 name: unfuckin-slop
-description: Design and review frontend interfaces with Apple-grade motion craft and Impeccable's direction discipline. Use when building, redesigning, critiquing, or polishing any UI (websites, landing pages, dashboards, app screens, components, design systems), or when working on gesture and spring interactions, typography, colour, layout, motion, accessibility, states, and anti-slop review. Retrieves only the rules the current task needs.
+description: "Autonomous 3D & Kinetic UI Design Engine for Coding Agents: Model-grounded inspiration via EmbeddingGemma 2 motion vectors, Apple-grade physical craft, and deterministic anti-slop floor."
 version: 1.1.0
 license: MIT
 ---
 
 # Unfuckin-Slop
 
-Two design bodies of knowledge, cut into atom cards and served on demand: **Apple Design** (fluid interfaces, physical motion, WWDC craft) and **Impeccable** (direction, craft floor, anti-slop discipline). This file is the thin layer that is always loaded. The cards are not.
+Autonomous 3D & Kinetic UI Design Engine for Coding Agents: Model-grounded inspiration via EmbeddingGemma 2 motion vectors, Apple-grade physical craft, and deterministic anti-slop floor.
+
+This file is the thin layer that is always loaded. The cards are not.
+
+## Workflow Philosophy: Model Leads, Quality Floor Follows
+
+**The Embedded Model (EmbeddingGemma 2 UI motion retriever) LEADS the creative vision as the Creative Director. The skill cards and linting FOLLOW as the Engineering Quality Floor.**
+
+- **Model as Creative Director:** When told to "build a site/screen of your choice" or given any creative brief, coding agents must **FIRST** run `python search_design_showcases.py` (with `--3d` or creative keywords like `"3d spatial hero"`, `"kinetic typography"`, `"interactive canvas"`, `"particle orbit"`) to ground the design in high-impact 3D, WebGL canvas, spatial depth, particle fields, or kinetic typography from the 622 video showcases. Never default to generic, flat templates.
+- **Skill as Engineering Floor:** The skill rules (Apple craft, contrast ≥ 4.5:1, keyboard focus, custom scrollbar) then verify, constrain, and polish the implementation **without killing creativity**. High-ambition 3D and kinetic designs must run at 60fps, remain keyboard accessible, and react with authentic physical spring physics.
 
 ## Rule 0 — do not read the cards directly
 
@@ -27,12 +36,12 @@ Do not show the pack to the user. It is working context, not output.
 
 ## Protocol
 
-1. **Name the surface and the mode.** A tool's landing page is Persuade; its settings screen is Operate. Mode decides how much ambition is appropriate.
-2. **Establish the design direction.** When designing or animating a component, query the curated UI motion retriever: `python search_design_showcases.py "<query>" --json`. It supplies visual hierarchy, real MP4 video references, and exact spring physics (`stiffness`, `damping`, `mass`) without requiring external MCP servers.
-3. **Pull the pack** for the task, once. Read it, then act. Do not re-run it for every edit.
-4. **Build or review** using the cards. When a rule conflicts with a pinned brief, the brief wins unless the card says "ban".
-5. **Verify mechanically** before claiming done: `unfslop lint <changed paths>`. Then look at the rendered result at the size it ships at, and batch your fixes into one pass.
-6. **Stop.** When the floor is green and the committed idea is visible, you are done. Do not gold-plate.
+1. **Creative Grounding (Model as Director):** For open-ended briefs or landing pages, FIRST run `python search_design_showcases.py` (with `--3d` or creative keywords) to ground the design in 3D canvas, spatial depth, particle fields, or kinetic typography before writing code.
+2. **Name the surface and mode:** `Persuade` and `Experience` demand maximum ambition (3D canvas, liquid glass, kinetic type, spatial tilt). `Operate` and `Read` demand precision, density, and restraint.
+3. **Pull the pack** once: `unfslop context "<what you are about to do>"`. Read the cards to calibrate craft rules.
+4. **Build the experience:** Implement the 3D/kinetic visual anchor; layer Apple physical craft (pointer-down response, spring physics, interruptibility).
+5. **Verify mechanically:** Run `unfslop lint <changed paths>` to catch hard defects without suppressing creative ambition.
+6. **Stop:** When the floor is green and the committed 3D/kinetic idea is visible, you are done. Do not gold-plate.
 
 ## Modes
 
@@ -53,11 +62,12 @@ Do not show the pack to the user. It is working context, not output.
 
 These are true even if you never open a card.
 
-- Ground the direction in real, physical craft and intentional layout before laying down code.
+- Ground open-ended designs in high-impact 3D, spatial depth, or kinetic motion via the retriever before writing code.
+- 3D Canvas, WebGL, particle fields, ambient lighting, and liquid glass are celebrated in `Experience` and `Persuade` modes — never treated as slop when authored as the central interactive experience.
 - Feedback starts on **pointer-down**, and continues during the interaction, not only at the end.
 - If it can be grabbed, flicked, or dismissed, it is **interruptible**: springs, not CSS transitions or keyframes. Start from the current on-screen value; carry velocity through a reversal.
 - Never lock out input during a transition.
-- Body text ≥4.5:1, large text ≥3:1. A visible `:focus-visible` ring. Every `:hover` has a focus twin.
+- Body text ≥4.5:1, large text ≥3:1. A visible `:focus-visible` ring. Every `:hover` has a focus twin. Custom scrollbars match background and thumb contrast.
 - Every interactive element has default, hover, active, focus, disabled, loading, error. Every collection has empty, one, many, loading, error.
 - No kicker/eyebrow above a heading. No gradient text. No coloured side stripe above 1px. No nested cards. No `transition: all`.
 - One authored motion moment, not the same entrance on every section.
@@ -98,15 +108,15 @@ No praise padding. Distinguish taste from defect: "I would have picked another t
 
 ## Model-Grounded Inspiration Architecture
 
-This skill operates completely self-contained with **zero external MCP dependencies**:
+Self-contained with **zero external MCP dependencies**:
 
-1. **Skill (this file + 30 cards).** Core design principles, physical motion rules, quality floor, and router. The thin layer you are reading.
-2. **Context Router (`unfslop`).** Rust CLI that serves relevant cards on-demand without context bloat (`unfslop context "<task>"`).
-3. **EmbeddingGemma 2 UI Motion Retriever.** A curated vector index of 600+ real UI motion designs and high-fidelity video streams fine-tuned with EmbeddingGemma 2.
-   - Run: `python search_design_showcases.py "<query>" [--limit 3] [--json]`
-   - Returns: Exact visual layout hierarchy, spring physics parameters (`stiffness`, `damping`, `mass`), CSS cubic-bezier curves with timing, and direct MP4 video references.
-   - Bridges the gap for LLMs and coding agents that do not ingest video directly, giving them mathematically grounded parameters and visual layout references before writing code.
-4. **Mechanical Floor (`unfslop lint`).** 18 deterministic checks catching eyebrow headings, fake icon costumes, `transition: all`, and generic slop.
+1. **EmbeddingGemma 2 UI Motion Retriever (Creative Director):** 622 UI motion designs fine-tuned with EmbeddingGemma 2 (~740M multimodal params).
+   - Run: `python search_design_showcases.py "<query>" [--3d] [--limit 3] [--json]`
+   - Broad or empty queries return 5 distinct creative archetypes (3D Spatial Hero, Kinetic Type & Liquid Glass, 3D Bento Tilt, Cybernetic Interface, Camera Orbit).
+   - Returns: Three.js/Canvas scaffolds, spatial depth (`perspective: 1200px`), spring physics (`stiffness`, `damping`), CSS curves, and direct MP4 URLs.
+2. **Skill (this file + 30 cards):** Thin layer and on-demand atom cards.
+3. **Context Router (`unfslop`):** Serves relevant cards without context bloat (`unfslop context "<task>"`).
+4. **Mechanical Floor (`unfslop lint`):** 18 deterministic checks catching eyebrow headings, fake icons, `transition: all`, and generic slop.
 
 ## Attribution
 

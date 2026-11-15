@@ -27,3 +27,12 @@ A page is slop when you can predict the next section from the previous one.
 2. Name the axis you are deciding: structure, type, colour, material, or motion. One is enough, but it must be visible in the first viewport.
 3. Commit, then **remove one thing**. The extra gradient, the extra card row, the extra border. Subtraction is the cheapest way out of the template.
 4. Re-check the craft floor. Bold choices do not excuse broken contrast or missing states.
+
+# What is NOT slop: Authored 3D & Kinetic Experiences
+
+**3D Canvas, WebGL, particle fields, ambient lighting, and liquid glass are NOT slop when authored as the central interactive experience in `Experience` or `Persuade` modes.**
+
+The difference between slop and craft is intentionality and physical causality:
+- **Slop:** A generic template of three white cards with a purple-to-blue linear gradient and random floating blur blobs that ignore user input.
+- **Craft:** An interactive Three.js particle canvas reacting to cursor physics, a 3D bento grid with spring tilt (`perspective: 1200px`), dynamic specular lighting, or liquid glass refraction computed on pointer coordinates.
+- **Rule of thumb:** If the immersive 3D/kinetic element reacts dynamically to user physics at 60fps and defines the visual world, it is the creative anchor, not slop.

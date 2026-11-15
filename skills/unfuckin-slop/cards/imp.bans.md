@@ -24,7 +24,7 @@ The only ban with no exceptions. Everything below is a category default: the bri
 **Surface habits**
 
 - Gradient text. Emphasis comes from weight or size.
-- Glass and blur as decoration rather than a specific material effect.
+- Glass and blur as mindless decoration rather than a specific physical material effect. *(Note: Liquid glass, optical refraction, and dynamic specular highlights are NOT slop when authored as a central interactive material in `Experience` or `Persuade` modes).*
 - A coloured `border-left`/`border-right` above 1px on cards, list items, callouts, or alerts.
 - Hard offset shadows (`4px 4px 0`) outside a world that is genuinely neobrutalist.
 - Sparklines, progress rings, and soft rounded rectangles standing in for content.
@@ -33,6 +33,17 @@ The only ban with no exceptions. Everything below is a category default: the bri
 - Unicode glyphs or emoji as the icon system. Icons come from a real library or authored SVG, in one consistent stroke and weight.
 - Geometric masks standing in for organic contours. A circle or radial-gradient cutout approximating a photographic edge reads worse than omitting the effect.
 - Light or dark picked by category. Pick it from the use scene: who, where, under what ambient light.
+
+# Authored 3D & Kinetic Immersion (Not Banned)
+
+**3D Canvas, WebGL, particle fields, ambient lighting, and liquid glass are NOT slop.**
+
+When authored as the central interactive experience in `Experience` or `Persuade` modes, immersive visual systems are celebrated:
+- Interactive WebGL/Three.js canvases with mouse-reactive particles.
+- 3D spatial tilt on cards (`perspective: 1200px`, `transform-style: preserve-3d`).
+- Physical refraction shaders and realistic ambient lighting models.
+
+The ban is on unmotivated, generic decoration that masks lazy composition. Authored 3D environments that react to input physics and run at 60fps are genuine craft.
 
 # How to refuse
 

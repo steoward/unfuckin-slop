@@ -12,31 +12,37 @@ Inspiration is a starting point, not a specification. The point of looking is to
 find a *direction* and a *constraint* you had not considered, then rebuild it
 from the rules in the other cards.
 
-## Grounding Design Direction
+## Creative Grounding (Model as Creative Director)
 
-Whenever building a new screen, landing page, or starting a redesign, study high-grade
-curated designs and production mobile/web flows. Anchor your direction in actual world-class
-work before writing code, avoiding generic AI presets.
+The Embedded Model (EmbeddingGemma 2 UI motion retriever) **LEADS** the creative vision as Creative Director.
+Whenever told to "build a site/screen of your choice" or given a creative brief, you must **FIRST** run `python search_design_showcases.py` (with `--3d` or creative keywords) to ground the design in high-impact 3D, WebGL canvas, spatial depth, particle fields, or kinetic typography from the 622 video showcases. Avoid falling back to generic AI presets.
 
 ## Zero-MCP Showcase & Motion Retriever
 
-No external MCP is required. A curated local index of 600+ real UI motion designs and video assets
+No external MCP is required. A curated local index of 622 real UI motion designs and video assets
 is available directly via the workspace retriever script:
 
 ```bash
 # Query design patterns, exact spring physics, and video assets
-python search_design_showcases.py "<query>" [--limit 3] [--json]
+python search_design_showcases.py "<query>" [--3d] [--limit 3] [--json]
+
+# Empty or broad queries return 5 distinct jaw-dropping creative archetypes
+python search_design_showcases.py ""
+
+# Filter exclusively for 3D/WebGL/Kinetic showcases
+python search_design_showcases.py --3d
 ```
 
 ### Examples:
-- `python search_design_showcases.py "dark mode analytics dashboard"`
-- `python search_design_showcases.py "slider toggle step micro-interaction"`
-- `python search_design_showcases.py "ai chat drawer frosted"`
+- `python search_design_showcases.py --3d` (3D Spatial Heroes, WebGL particles, camera orbits)
+- `python search_design_showcases.py "kinetic typography liquid glass refraction"`
+- `python search_design_showcases.py "3d bento grid spatial tilt physics"`
+- `python search_design_showcases.py "futuristic cybernetic fintech interface"`
 
 Each result provides:
-- **Title & Breakdown**: Layout hierarchy, colors, contrast, and visual rhythm.
+- **Title & Breakdown**: Layout hierarchy, surface elevation, typography, and 3D Canvas setups.
 - **Direct Video Asset**: High-fidelity MP4 link showing the motion in action.
-- **Motion Spec**: Exact spring physics (`stiffness`, `damping`, `mass`) and CSS cubic-bezier transition curves with duration.
+- **Motion Spec**: Exact spring physics (`stiffness`, `damping`, `mass`), CSS cubic-bezier transition curves, and CSS 3D rules (`perspective: 1200px`).
 - **Principle**: The physical interaction rule governing the animation.
 
 ## The Open Galleries
@@ -50,6 +56,7 @@ If exploring further or browsing live:
 
 ## Rules
 
+- **3D Canvas & Kinetic Immersion are NOT slop.** In `Experience` or `Persuade` modes, authoring an interactive 3D canvas with Three.js, particle fields, ambient lighting, or liquid glass elevates the interface above flat template slop. The quality floor ensures it remains accessible and performs at 60fps.
 - **Reference only.** Showcases and videos are created by independent designers. Use them for conceptual direction and structural layout inspiration — never copy assets or clone verbatim.
 - **Do not average.** Looking at three references should not produce a compromised, blander mashup. Pick the most coherent direction and commit to it (see `imp.modes`).
 - **Measure numbers, not vibes.** If a reference feels right, identify the mathematical reason (type hierarchy ratio, padding scale, spring response) and encode that into your design system.

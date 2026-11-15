@@ -1,10 +1,10 @@
 # Unfuckin-Slop
 
-Design knowledge that costs only what the moment needs.
+Autonomous 3D & Kinetic UI Design Engine for Coding Agents: Model-grounded inspiration via EmbeddingGemma 2 motion vectors, Apple-grade physical craft, and deterministic anti-slop floor.
 
 Two of the best frontend design skills, **Apple Design** (Emil Kowalski, distilled from Apple's
 WWDC interface talks) and **Impeccable** (Paul Bakaus, Apache-2.0), fused into **30 atom cards** and
-served on demand by a **zero-dependency Rust binary** — paired with a curated 600+ UI motion vector index
+served on demand by a **zero-dependency Rust binary** — paired with a curated 622 UI motion vector index
 fine-tuned with Google DeepMind's **EmbeddingGemma 2**.
 
 The problem it solves is not knowledge. It is context. Loading both skills means ~10,000 tokens
@@ -140,31 +140,41 @@ target/release/unfslop context "spring sheet snap" --budget 1200
 target/release/unfslop lint fixtures; echo "exit=$?"
 ```
 
-## Model-Grounded UI Motion & Video Retriever
+## Autonomous 3D & Kinetic UI Design Engine
 
 Unfuckin-Slop operates completely self-contained with **zero external MCP dependencies**.
 
-Coding agents often cannot ingest video files directly. To bridge this, a curated index of **622 real UI motion designs** with high-fidelity MP4 video streams was indexed and fine-tuned with Google DeepMind's **EmbeddingGemma 2** (~740M multimodal parameters) on GPU.
+### Workflow Philosophy: Model Leads, Skill Floor Follows
+1. **The Embedded Model LEADS as Creative Director:**
+   When told to "build a site/screen of your choice" or given a creative brief, coding agents must **FIRST** run `python search_design_showcases.py` (with `--3d` or creative keywords) to ground the design in high-impact 3D, WebGL canvas, spatial depth, particle fields, or kinetic typography from the 622 video showcases.
+2. **The Skill Rules and Lint FOLLOW as the Engineering Quality Floor:**
+   Apple-grade physical craft, contrast ≥ 4.5:1, keyboard focus, custom scrollbar, and state matrices verify and polish the implementation **without killing creativity**. High-ambition 3D and kinetic designs run at 60fps and stay accessible.
 
 ### How agents use it:
 ```bash
-# Query any design pattern, layout, or motion interaction
-python search_design_showcases.py "dark mode analytics dashboard" [--limit 3] [--json]
+# Query any design pattern, layout, or 3D/kinetic interaction
+python search_design_showcases.py "3d spatial hero" [--3d] [--limit 3] [--json]
+
+# Empty or open-ended query returns 5 distinct jaw-dropping creative archetypes
+python search_design_showcases.py ""
+
+# Filter exclusively for 3D/WebGL/Kinetic showcases
+python search_design_showcases.py --3d
 ```
 
 ### What it provides:
-- **Visual hierarchy & layout breakdown**: Surface contrast, elevation, typography.
+- **Visual hierarchy & layout breakdown**: Surface contrast, spatial elevation, typography, and 3D Canvas scaffolds.
 - **Physical Spring Parameters**: Exact `stiffness`, `damping`, and `mass` for Framer Motion / Apple springs.
-- **CSS Curves**: Exact cubic-bezier curve and duration in milliseconds.
+- **CSS Curves & 3D Perspective**: Exact cubic-bezier curve, duration, and CSS 3D transforms (`perspective: 1200px`, `transform-style: preserve-3d`).
 - **Direct Video Reference**: Direct link to the high-frame-rate interaction video.
 
 ```text
-[1] Dark Mode Financial Analytics Dashboard: Finance App Design
-    - Description:     Dark mode financial dashboard web app showing KPI metric cards, transaction logs, invoices, and analytical bar and line charts.
+[1] 3D Interactive Spatial Hero Showcase: WebGL Particle Mesh
+    - Description:     Interactive 3D particle orbit canvas with mouse reactivity, depth perspective, and dynamic lighting.
     - Video Asset:     https://pixlpin.com/media/designs/01M4ZS1VWX3QCFM5EPFDACYAES/mp4-9b621cdc.mp4
-    - Motion Type:     Data Visualization Stagger
-    - Spring Config:   stiffness=300, damping=28
-    - CSS Transition:  transition: all 450ms cubic-bezier(0.25, 1, 0.5, 1)
+    - Motion Type:     Spatial 3D Canvas / Particle Orbit
+    - Spring Config:   stiffness=280, damping=22
+    - CSS Perspective: perspective: 1200px; transform-style: preserve-3d;
 ```
 
 The agent uses these concrete mathematical specs to generate production-grade UI code, then verifies it with `unfslop lint` against the 18 anti-slop rules.
