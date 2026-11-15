@@ -4,8 +4,8 @@ Design knowledge that costs only what the moment needs.
 
 Two of the best frontend design skills, **Apple Design** (Emil Kowalski, distilled from Apple's
 WWDC interface talks) and **Impeccable** (Paul Bakaus, Apache-2.0), fused into **30 atom cards** and
-served on demand by a **zero-dependency Rust binary** — plus an MCP server and a Playwright pairing
-for real inspiration galleries.
+served on demand by a **zero-dependency Rust binary** — paired with a curated 600+ UI motion vector index
+fine-tuned with Google DeepMind's **EmbeddingGemma 2**.
 
 The problem it solves is not knowledge. It is context. Loading both skills means ~10,000 tokens
 before you write a line of CSS, and most of it is irrelevant to the one thing you are doing. Here the
@@ -24,7 +24,7 @@ SKILL.md              always loaded, ~1.6k tok     the protocol + the non-negoti
 ## Quick start
 
 ```bash
-cargo build --release          # builds unfslop & unfslop-mcp
+cargo build --release          # builds unfslop
 target/release/unfslop doctor
 target/release/unfslop context "settings page with destructive actions"
 ```
@@ -134,43 +134,40 @@ comments), so tool state and archives do not drown the findings.
 ## Verify
 
 ```bash
-cargo test                     # 24 unit + integration tests
-cargo build --release          # builds unfslop, unfslop-mcp (and aliases)
+cargo test                     # unit & integration tests
+cargo build --release          # builds standalone unfslop
 target/release/unfslop context "spring sheet snap" --budget 1200
 target/release/unfslop lint fixtures; echo "exit=$?"
 ```
 
-## MCP and inspiration galleries
+## Model-Grounded UI Motion & Video Retriever
 
-Unfuckin-Slop ships cooperating pieces:
+Unfuckin-Slop operates completely self-contained with **zero external MCP dependencies**.
 
-1. **The skill** (`skills/unfuckin-slop` + 30 atom cards): design knowledge, rules, and smart router.
-2. **`unfslop-mcp`**: an MCP server (stdio) exposing live scrapers and structured design tools:
-   - `collectui_challenges`: Complete catalog of 50+ Daily UI challenges with exact paths.
-   - `collectui_categories`: Hand-curated pattern map (modals, dashboards, checkouts, settings, etc.).
-   - `collectui_fetch_shots`: Live HTTP scraper extracting curated shots and Dribbble links directly from CollectUI.
-   - `collectui_auth_recipe`: Pro session authentication workflow for CollectUI/Dribbble.
-   - `pixlpin_tags`: Full mobile & web pattern tags directory.
-   - `pixlpin_fetch_screens`: Live HTTP scraper for Pixlpin flow screens.
-   - `pixlpin_auth_recipe`: Pro session authentication workflow for Pixlpin.
-   - `unfslop_pro_workflow`: Step-by-step master workflow for building world-class UI.
-   - `search_cards`, `get_card`, `list_cards`, `pack`, `detect_mode`, and `lint`.
-3. **Playwright MCP** (`@playwright/mcp`): the browser automation pairing for full interactive inspection when needed.
+Coding agents often cannot ingest video files directly. To bridge this, a curated index of **622 real UI motion designs** with high-fidelity MP4 video streams was indexed and fine-tuned with Google DeepMind's **EmbeddingGemma 2** (~740M multimodal parameters) on GPU.
 
-Wire both in your MCP client (see `.mcp.json`):
-
-```json
-{
-  "mcpServers": {
-    "unfslop": { "command": "unfslop-mcp" },
-    "playwright": { "command": "npx", "args": ["@playwright/mcp@latest"] }
-  }
-}
+### How agents use it:
+```bash
+# Query any design pattern, layout, or motion interaction
+python search_design_showcases.py "dark mode analytics dashboard" [--limit 3] [--json]
 ```
 
-Workflow: `inspiration_sources` or `collectui_fetch_shots` fetches real curated shots → analyze spatial layout, hierarchy, and tokens → cross-check against `imp.craft-floor` and `imp.bans` → `unfslop lint` the final implementation.
+### What it provides:
+- **Visual hierarchy & layout breakdown**: Surface contrast, elevation, typography.
+- **Physical Spring Parameters**: Exact `stiffness`, `damping`, and `mass` for Framer Motion / Apple springs.
+- **CSS Curves**: Exact cubic-bezier curve and duration in milliseconds.
+- **Direct Video Reference**: Direct link to the high-frame-rate interaction video.
 
-Respect copyrights: these galleries are reference material, never a source to redistribute.
+```text
+[1] Dark Mode Financial Analytics Dashboard: Finance App Design
+    - Description:     Dark mode financial dashboard web app showing KPI metric cards, transaction logs, invoices, and analytical bar and line charts.
+    - Video Asset:     https://pixlpin.com/media/designs/01M4ZS1VWX3QCFM5EPFDACYAES/mp4-9b621cdc.mp4
+    - Motion Type:     Data Visualization Stagger
+    - Spring Config:   stiffness=300, damping=28
+    - CSS Transition:  transition: all 450ms cubic-bezier(0.25, 1, 0.5, 1)
+```
+
+The agent uses these concrete mathematical specs to generate production-grade UI code, then verifies it with `unfslop lint` against the 18 anti-slop rules.
 
 ## Attribution and licence
 

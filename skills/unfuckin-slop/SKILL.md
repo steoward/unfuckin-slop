@@ -28,7 +28,7 @@ Do not show the pack to the user. It is working context, not output.
 ## Protocol
 
 1. **Name the surface and the mode.** A tool's landing page is Persuade; its settings screen is Operate. Mode decides how much ambition is appropriate.
-2. **Establish the design direction.** Ground your work in world-class visual craft, physical motion principles, and tactile interaction design before writing code.
+2. **Establish the design direction.** When designing or animating a component, query the curated UI motion retriever: `python search_design_showcases.py "<query>" --json`. It supplies visual hierarchy, real MP4 video references, and exact spring physics (`stiffness`, `damping`, `mass`) without requiring external MCP servers.
 3. **Pull the pack** for the task, once. Read it, then act. Do not re-run it for every edit.
 4. **Build or review** using the cards. When a rule conflicts with a pinned brief, the brief wins unless the card says "ban".
 5. **Verify mechanically** before claiming done: `unfslop lint <changed paths>`. Then look at the rendered result at the size it ships at, and batch your fixes into one pass.
@@ -96,26 +96,17 @@ Scores:    hierarchy, clarity, craft, a11y, coherence (1-5, one line each)
 
 No praise padding. Distinguish taste from defect: "I would have picked another typeface" is not a finding; "tracking is -0.06em, letters touch" is.
 
-## Unfuckin-Slop is a bundle, not a single thing
+## Model-Grounded Inspiration Architecture
 
-This skill ships three cooperating pieces. Use them together; none of them alone is the product.
+This skill operates completely self-contained with **zero external MCP dependencies**:
 
-1. **Skill (this file + 30 cards).** Design knowledge, atom cards, router. The thin layer you are reading.
-2. **`unfslop-mcp` (Model Context Protocol server).** Exposes `collectui_challenges`, `collectui_categories`, `collectui_fetch_shots`, `collectui_auth_recipe`, `pixlpin_tags`, `pixlpin_fetch_screens`, `pixlpin_auth_recipe`, `pixlpin_screen_flow`, `inspiration_sources`, `inspiration_recipe`, `unfslop_pro_workflow`, `search_cards`, `get_card`, `list_cards`, `pack`, `detect_mode`, and `lint` as tools. Any MCP client can call the knowledge, live scraping, authentication, and inspiration layers directly. Run with `unfslop-mcp` (stdio).
-3. **Playwright MCP (`@playwright/mcp`).** The browser pair. Free inspiration galleries (collectui.com, pixlpin.com) are client-rendered SPAs; plain HTTP returns an empty shell. Playwright MCP renders them and captures screenshots without paywalls or subscriptions. Install: `npx @playwright/mcp@latest`.
-
-Recommended client config (`.mcp.json`):
-
-```json
-{
-  "mcpServers": {
-    "unfslop": { "command": "unfslop-mcp" },
-    "playwright": { "command": "npx", "args": ["@playwright/mcp@latest"] }
-  }
-}
-```
-
-Inspiration workflow: `collectui_fetch_shots` and `pixlpin_fetch_screens` provide live scraped designs, category deep links, and tag filters; cross-check against `imp.craft-floor` and `imp.bans`; then `unfslop lint` the result.
+1. **Skill (this file + 30 cards).** Core design principles, physical motion rules, quality floor, and router. The thin layer you are reading.
+2. **Context Router (`unfslop`).** Rust CLI that serves relevant cards on-demand without context bloat (`unfslop context "<task>"`).
+3. **EmbeddingGemma 2 UI Motion Retriever.** A curated vector index of 600+ real UI motion designs and high-fidelity video streams fine-tuned with EmbeddingGemma 2.
+   - Run: `python search_design_showcases.py "<query>" [--limit 3] [--json]`
+   - Returns: Exact visual layout hierarchy, spring physics parameters (`stiffness`, `damping`, `mass`), CSS cubic-bezier curves with timing, and direct MP4 video references.
+   - Bridges the gap for LLMs and coding agents that do not ingest video directly, giving them mathematically grounded parameters and visual layout references before writing code.
+4. **Mechanical Floor (`unfslop lint`).** 18 deterministic checks catching eyebrow headings, fake icon costumes, `transition: all`, and generic slop.
 
 ## Attribution
 

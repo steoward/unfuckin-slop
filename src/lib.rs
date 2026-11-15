@@ -12,7 +12,6 @@ pub mod install;
 pub mod lint;
 pub mod pack;
 pub mod render;
-pub mod mcp;
 
 pub fn run(args: &[String]) -> i32 {
     cli::run(args)
