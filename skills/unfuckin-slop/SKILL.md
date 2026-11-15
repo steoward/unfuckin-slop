@@ -28,7 +28,7 @@ Do not show the pack to the user. It is working context, not output.
 ## Protocol
 
 1. **Name the surface and the mode.** A tool's landing page is Persuade; its settings screen is Operate. Mode decides how much ambition is appropriate.
-2. **Mandatory Inspiration Phase (CollectUI & Pixlpin via MCP).** Whenever using this skill for the first time in a project, or when building a new screen, page, or redesign, you **MUST** query `unfslop-mcp` (`inspiration_sources`, `collectui_fetch_shots`, `pixlpin_fetch_screens`) and inspect real curated shots from `collectui.com` and/or `pixlpin.com`. This is not an optional luxury; it is a mandatory requirement to ground your work in world-class visual craft before writing code.
+2. **Establish the design direction.** Ground your work in world-class visual craft, physical motion principles, and tactile interaction design before writing code.
 3. **Pull the pack** for the task, once. Read it, then act. Do not re-run it for every edit.
 4. **Build or review** using the cards. When a rule conflicts with a pinned brief, the brief wins unless the card says "ban".
 5. **Verify mechanically** before claiming done: `unfslop lint <changed paths>`. Then look at the rendered result at the size it ships at, and batch your fixes into one pass.
@@ -53,7 +53,7 @@ Do not show the pack to the user. It is working context, not output.
 
 These are true even if you never open a card.
 
-- Before building any new page, screen, or redesign, or when using the skill for the first time in a project, the inspiration phase via `unfslop-mcp` (`collectui.com` / `pixlpin.com`) is mandatory. Ground the direction in real, curated visual craft before laying down code.
+- Ground the direction in real, physical craft and intentional layout before laying down code.
 - Feedback starts on **pointer-down**, and continues during the interaction, not only at the end.
 - If it can be grabbed, flicked, or dismissed, it is **interruptible**: springs, not CSS transitions or keyframes. Start from the current on-screen value; carry velocity through a reversal.
 - Never lock out input during a transition.

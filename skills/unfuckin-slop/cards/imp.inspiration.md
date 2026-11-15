@@ -1,7 +1,7 @@
 ---
 id: imp.inspiration
-title: Inspiration sources — galleries, MCPs, and how to use them
-triggers: inspiration, reference, example, gallery, collectui, pixlpin, screenshot, shot, dribbble, behance, design example, like, pattern, ui pattern, screen, flow
+title: Inspiration sources — galleries, zero-MCP vector search, and how to use them
+triggers: inspiration, reference, example, gallery, collectui, pixlpin, screenshot, shot, dribbble, behance, design example, like, pattern, ui pattern, screen, flow, motion reference, video
 pulls: imp.craft-floor, imp.bans, imp.modes
 weight: 7
 ---
@@ -12,36 +12,45 @@ Inspiration is a starting point, not a specification. The point of looking is to
 find a *direction* and a *constraint* you had not considered, then rebuild it
 from the rules in the other cards.
 
-## Mandatory Prerequisite for New Work
+## Grounding Design Direction
 
-Whenever using this skill for the first time in a project, or when building a new screen,
-landing page, or starting a redesign, querying `unfslop-mcp` and inspecting real curated
-designs from **CollectUI** and/or **Pixlpin** is a **mandatory necessity**, not an optional luxury.
-Skipping this step leads to generic, uninspired, default designs. Anchor your direction
-in actual world-class work before writing a line of code.
+Whenever building a new screen, landing page, or starting a redesign, study high-grade
+curated designs and production mobile/web flows. Anchor your direction in actual world-class
+work before writing code, avoiding generic AI presets.
 
-## The free, open galleries
+## Zero-MCP Showcase & Motion Retriever
 
-Both galleries below are **100% free, public, and open**:
+No external MCP is required. A curated local index of 600+ real UI motion designs and video assets
+is available directly via the workspace retriever script:
+
+```bash
+# Query design patterns, exact spring physics, and video assets
+python search_design_showcases.py "<query>" [--limit 3] [--json]
+```
+
+### Examples:
+- `python search_design_showcases.py "dark mode analytics dashboard"`
+- `python search_design_showcases.py "slider toggle step micro-interaction"`
+- `python search_design_showcases.py "ai chat drawer frosted"`
+
+Each result provides:
+- **Title & Breakdown**: Layout hierarchy, colors, contrast, and visual rhythm.
+- **Direct Video Asset**: High-fidelity MP4 link showing the motion in action.
+- **Motion Spec**: Exact spring physics (`stiffness`, `damping`, `mass`) and CSS cubic-bezier transition curves with duration.
+- **Principle**: The physical interaction rule governing the animation.
+
+## The Open Galleries
+
+If exploring further or browsing live:
 
 | Source | Access | What it is good for |
 | --- | --- | --- |
-| **collectui.com** | Free, public, client-rendered SPA | Curated component and pattern shots (modals, nav, checkout, empty states, pricing, login, 404). Deep category links via `/designs/<pattern>-ui-design-inspiration`. |
-| **pixlpin.com** | Free, public | Real app screens, user flows, motion, and production mobile/web graphics. Filterable by platform and tags (`/tags/<tag>`). |
-
-## Fast agent workflow with MCP
-
-1. **Call `inspiration_sources`** or `inspiration_recipe` from the `unfslop-mcp` server. It resolves your design request directly into exact deep category URLs on CollectUI or tagged queries on Pixlpin.
-2. **Browse via Playwright MCP** (`@playwright/mcp`) using `browser_navigate` and `browser_snapshot`. Both sites render interactively without accounts or paywalls.
-3. **Target precise elements**:
-   - On **CollectUI**: query `article, .post-card, img` for curated shots.
-   - On **Pixlpin**: query `.pin-card, [data-pin], img` for flow screens.
-4. **Extract what matters**: title, visual rhythm, the single interaction or layout detail that solves your challenge. Do not scrape or clone the full screen.
-5. **Cross-check** every idea against `imp.craft-floor` and `imp.bans` before writing code. A stylish pattern that breaks accessibility or adds banned decoration is rejected.
+| **pixlpin.com** | Free, public | Real app screens, user flows, motion, and production mobile/web graphics (`/designs/motion/...`). |
+| **collectui.com** | Free, public | Curated component and pattern shots (modals, nav, checkout, empty states, pricing, login, 404). |
 
 ## Rules
 
-- **Reference only.** CollectUI shots and Pixlpin screens are created by independent designers. Use them for conceptual direction and structural layout inspiration — never copy assets or clone verbatim.
+- **Reference only.** Showcases and videos are created by independent designers. Use them for conceptual direction and structural layout inspiration — never copy assets or clone verbatim.
 - **Do not average.** Looking at three references should not produce a compromised, blander mashup. Pick the most coherent direction and commit to it (see `imp.modes`).
 - **Measure numbers, not vibes.** If a reference feels right, identify the mathematical reason (type hierarchy ratio, padding scale, spring response) and encode that into your design system.
 - **One authored moment.** Do not combine conflicting animations from multiple references.
