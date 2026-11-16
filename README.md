@@ -1,11 +1,11 @@
 # Unfuckin-Slop
 
-Autonomous 3D & Kinetic UI Design Engine for Coding Agents: Model-grounded inspiration via EmbeddingGemma 2 motion vectors, Apple-grade physical craft, and deterministic anti-slop floor.
+Autonomous UI & Kinetic Design System for Coding Agents: Production-grade component library, model-grounded inspiration, and anti-slop quality floor.
 
 Two of the best frontend design skills, **Apple Design** (Emil Kowalski, distilled from Apple's
 WWDC interface talks) and **Impeccable** (Paul Bakaus, Apache-2.0), fused into **30 atom cards** and
-served on demand by a **zero-dependency Rust binary** — paired with a curated 622 UI motion vector index
-fine-tuned with Google DeepMind's **EmbeddingGemma 2**.
+served on demand by a **zero-dependency Rust binary** — paired with a curated 950 UI design system showcase library
+(622 Pixlpin visual showcases + 328 MotionSites full prompt blueprints) fine-tuned with Google DeepMind's **EmbeddingGemma 2**.
 
 The problem it solves is not knowledge. It is context. Loading both skills means ~10,000 tokens
 before you write a line of CSS, and most of it is irrelevant to the one thing you are doing. Here the
@@ -140,44 +140,45 @@ target/release/unfslop context "spring sheet snap" --budget 1200
 target/release/unfslop lint fixtures; echo "exit=$?"
 ```
 
-## Autonomous 3D & Kinetic UI Design Engine
+## Autonomous UI & Kinetic Design System
 
 Unfuckin-Slop operates completely self-contained with **zero external MCP dependencies**.
 
-### Workflow Philosophy: Model Leads, Skill Floor Follows
-1. **The Embedded Model LEADS as Creative Director:**
-   When told to "build a site/screen of your choice" or given a creative brief, coding agents must **FIRST** run `python search_design_showcases.py` (with `--3d` or creative keywords) to ground the design in high-impact 3D, WebGL canvas, spatial depth, particle fields, or kinetic typography from the 622 video showcases.
-2. **The Skill Rules and Lint FOLLOW as the Engineering Quality Floor:**
-   Apple-grade physical craft, contrast ≥ 4.5:1, keyboard focus, custom scrollbar, and state matrices verify and polish the implementation **without killing creativity**. High-ambition 3D and kinetic designs run at 60fps and stay accessible.
+### Workflow Philosophy: Component Library & Design Architecture First
+1. **Designs & Components First:**
+   When told to build any site, screen, dashboard, or landing page, coding agents **FIRST** query `python search_design_showcases.py` (with `--components`, `--category <name>`, or search terms) to pull real UI architecture: Hero layouts, Navbars, Bento cards, Button styles, Lighting & Atmosphere tokens, and Color systems from the 950 curated showcase library (622 Pixlpin visual showcases + 328 MotionSites full prompt blueprints).
+2. **Visual Hierarchy & Styling:**
+   Assemble the page with distinct typographic scale, dark/light surface tokens, and ambient lighting.
+3. **Organic Physics:**
+   Transitions and springs are natural, quiet implementation details (duration, cubic-bezier curves, or spring stiffness/damping). Websites and web apps do NOT use audio, sound effects, or vibration gimmicks.
+4. **Mechanical Anti-Slop Quality Floor:**
+   Run `unfslop lint` to verify the implementation against 18 deterministic checks: contrast ≥ 4.5:1, keyboard focus rings, no kicker eyebrows, no gradient text, no side stripes, and no `transition: all`.
 
 ### How agents use it:
 ```bash
-# Query any design pattern, layout, or 3D/kinetic interaction
-python search_design_showcases.py "3d spatial hero" [--3d] [--limit 3] [--json]
+# Pull ready-to-use production UI component tokens (Buttons, Bento Cards, Navbars, Atmosphere)
+python search_design_showcases.py --components
 
-# Empty or open-ended query returns 5 distinct jaw-dropping creative archetypes
+# Open-ended or empty queries return 6 industry-standard website archetypes with concrete component blueprints
 python search_design_showcases.py ""
 
-# Filter exclusively for 3D/WebGL/Kinetic showcases
-python search_design_showcases.py --3d
+# Query specific UI patterns, SaaS dashboards, or fintech interfaces
+python search_design_showcases.py "SaaS analytics dashboard" --limit 3
+
+# Filter by category (e.g. Hero, Bento, SaaS, Ecommerce, Portfolio)
+python search_design_showcases.py --category SaaS
+
+# Extract full prompt blueprints with verbatim code, fonts, and Tailwind classes
+python search_design_showcases.py "liquid glass" --full
 ```
 
 ### What it provides:
-- **Visual hierarchy & layout breakdown**: Surface contrast, spatial elevation, typography, and 3D Canvas scaffolds.
-- **Physical Spring Parameters**: Exact `stiffness`, `damping`, and `mass` for Framer Motion / Apple springs.
-- **CSS Curves & 3D Perspective**: Exact cubic-bezier curve, duration, and CSS 3D transforms (`perspective: 1200px`, `transform-style: preserve-3d`).
+- **Production UI Component Tokens (`--components`)**: Ready-to-use button primitives (glow CTA, ghost), Bento card surface elevations, floating pill navigation bars, and radial atmosphere lighting tokens.
+- **Visual hierarchy & layout breakdown**: Surface contrast, spatial elevation, typography scale, and color systems.
+- **Physical Spring & Motion Parameters**: Exact `stiffness`, `damping`, durations, and CSS cubic-bezier curves.
 - **Direct Video Reference**: Direct link to the high-frame-rate interaction video.
 
-```text
-[1] 3D Interactive Spatial Hero Showcase: WebGL Particle Mesh
-    - Description:     Interactive 3D particle orbit canvas with mouse reactivity, depth perspective, and dynamic lighting.
-    - Video Asset:     https://pixlpin.com/media/designs/01M4ZS1VWX3QCFM5EPFDACYAES/mp4-9b621cdc.mp4
-    - Motion Type:     Spatial 3D Canvas / Particle Orbit
-    - Spring Config:   stiffness=280, damping=22
-    - CSS Perspective: perspective: 1200px; transform-style: preserve-3d;
-```
-
-The agent uses these concrete mathematical specs to generate production-grade UI code, then verifies it with `unfslop lint` against the 18 anti-slop rules.
+The agent uses these concrete UI blueprints to build production-grade interfaces, then mechanically verifies them with `unfslop lint`.
 
 ## Attribution and licence
 

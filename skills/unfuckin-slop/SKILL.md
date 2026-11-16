@@ -1,22 +1,23 @@
 ---
 name: unfuckin-slop
-description: "Autonomous 3D & Kinetic UI Design Engine for Coding Agents: Model-grounded inspiration via EmbeddingGemma 2 motion vectors, Apple-grade physical craft, and deterministic anti-slop floor."
+description: "Autonomous UI & Kinetic Design System for Coding Agents: Production-grade component library, model-grounded inspiration, and anti-slop quality floor."
 version: 1.1.0
 license: MIT
 ---
 
 # Unfuckin-Slop
 
-Autonomous 3D & Kinetic UI Design Engine for Coding Agents: Model-grounded inspiration via EmbeddingGemma 2 motion vectors, Apple-grade physical craft, and deterministic anti-slop floor.
+Autonomous UI & Kinetic Design System for Coding Agents: Production-grade component library, model-grounded inspiration, and anti-slop quality floor.
 
 This file is the thin layer that is always loaded. The cards are not.
 
-## Workflow Philosophy: Model Leads, Quality Floor Follows
+## Workflow Philosophy: Component Library & Design Architecture First
 
-**The Embedded Model (EmbeddingGemma 2 UI motion retriever) LEADS the creative vision as the Creative Director. The skill cards and linting FOLLOW as the Engineering Quality Floor.**
+**Production-grade UI component architecture and visual hierarchy lead. Clean kinetic craft and mechanical anti-slop linting follow as the engineering floor.**
 
-- **Model as Creative Director:** When told to "build a site/screen of your choice" or given any creative brief, coding agents must **FIRST** run `python search_design_showcases.py` (with `--3d`, `--liquid-glass`, `--category <name>`, or creative keywords like `"liquid glass"`, `"3d spatial hero"`, `"kinetic typography"`, `"interactive canvas"`, `"particle orbit"`) to ground the design in high-impact 3D, WebGL canvas, spatial depth, particle fields, liquid glass refraction, or kinetic typography from the 950 curated visual showcases (622 Pixlpin showcases + 328 MotionSites full prompt blueprints). Pass `--full` to extract verbatim, production-grade implementation blueprints (including font links, Tailwind classes, video scrub listeners, typewriter hooks, and exact CSS/shader formulas). Never default to generic, flat templates.
-- **Skill as Engineering Floor:** The skill rules (Apple craft, contrast ≥ 4.5:1, keyboard focus, custom scrollbar) then verify, constrain, and polish the implementation **without killing creativity**. High-ambition 3D, liquid glass, and kinetic designs must run at 60fps, remain keyboard accessible, and react with authentic physical spring physics.
+- **Real UI Architecture First:** When tasked with building any website, interface, dashboard, or landing page, coding agents must **FIRST** pull concrete UI components and layout blueprints: Hero layouts, Navigation bars, Bento feature grids, Button styles, Lighting & Atmosphere tokens, and Color systems. Query `python search_design_showcases.py` (with `--components`, `--category <name>`, or search terms) to ground the interface in 950 production-grade design showcases (622 curated visual showcases + 328 MotionSites full prompt blueprints). Pass `--full` when you need verbatim code blueprints (font imports, Tailwind classes, exact CSS/shader formulas). Never default to generic, unstyled, or flat templates.
+- **Organic Physics (Quiet Implementation Details):** Transitions and springs are natural, quiet implementation details (smooth 60fps Framer Motion or CSS cubic-bezier curves). Websites and web apps do NOT use audio, sound effects, or vibration gimmicks.
+- **Skill as Engineering Floor:** The skill rules (contrast ≥ 4.5:1, keyboard focus, custom scrollbars, state matrices) verify and polish the implementation without suppressing design ambition.
 
 ## Rule 0 — do not read the cards directly
 
@@ -36,12 +37,11 @@ Do not show the pack to the user. It is working context, not output.
 
 ## Protocol
 
-1. **Creative Grounding (Model as Director):** For open-ended briefs or landing pages, FIRST run `python search_design_showcases.py` (with `--3d` or creative keywords) to ground the design in 3D canvas, spatial depth, particle fields, or kinetic typography before writing code.
-2. **Name the surface and mode:** `Persuade` and `Experience` demand maximum ambition (3D canvas, liquid glass, kinetic type, spatial tilt). `Operate` and `Read` demand precision, density, and restraint.
-3. **Pull the pack** once: `unfslop context "<what you are about to do>"`. Read the cards to calibrate craft rules.
-4. **Build the experience:** Implement the 3D/kinetic visual anchor; layer Apple physical craft (pointer-down response, spring physics, interruptibility).
-5. **Verify mechanically:** Run `unfslop lint <changed paths>` to catch hard defects without suppressing creative ambition.
-6. **Stop:** When the floor is green and the committed 3D/kinetic idea is visible, you are done. Do not gold-plate.
+1. **Designs & Components First:** Query `python search_design_showcases.py` (or pass `--components`, `--category <name>`) to pull real UI architecture: Hero layouts, Navbars, Bento cards, Button styles, Lighting & Atmosphere tokens, and Color systems. Pass `--full` when you need verbatim prompt blueprints.
+2. **Visual Hierarchy & Styling:** Assemble the page with distinct typographic scale, dark/light surface tokens, and ambient lighting. Select surface mode (`Persuade`, `Experience`, `Operate`, or `Read`).
+3. **Organic Physics:** Transitions and springs are natural, quiet implementation details (no sound/haptic gimmicks, no `transition: all`). Feedback starts on pointer-down.
+4. **Mechanical Verification:** Run `unfslop lint <changed paths>` to ensure zero slop (contrast ≥ 4.5:1, keyboard focus rings, no eyebrows, no gradient text, no side stripes).
+5. **Stop:** When the floor is green, components are fully styled, and the design is cohesive, you are done. Do not gold-plate.
 
 ## Modes
 
@@ -62,10 +62,10 @@ Do not show the pack to the user. It is working context, not output.
 
 These are true even if you never open a card.
 
-- Ground open-ended designs in high-impact 3D, spatial depth, or kinetic motion via the retriever before writing code.
-- 3D Canvas, WebGL, particle fields, ambient lighting, and liquid glass are celebrated in `Experience` and `Persuade` modes — never treated as slop when authored as the central interactive experience.
+- Ground interfaces in real UI architecture and component blueprints via the retriever before writing code.
+- Ambient lighting, glowing accents, Bento grids, and tactile depth are celebrated — never treated as slop when authored with intentional hierarchy.
 - Feedback starts on **pointer-down**, and continues during the interaction, not only at the end.
-- If it can be grabbed, flicked, or dismissed, it is **interruptible**: springs, not CSS transitions or keyframes. Start from the current on-screen value; carry velocity through a reversal.
+- If it can be grabbed, flicked, or dismissed, it is **interruptible**: springs, not linear CSS keyframes. Start from the current on-screen value; carry velocity through a reversal.
 - Never lock out input during a transition.
 - Body text ≥4.5:1, large text ≥3:1. A visible `:focus-visible` ring. Every `:hover` has a focus twin. Custom scrollbars match background and thumb contrast.
 - Every interactive element has default, hover, active, focus, disabled, loading, error. Every collection has empty, one, many, loading, error.
@@ -73,6 +73,7 @@ These are true even if you never open a card.
 - One authored motion moment, not the same entrance on every section.
 - Reduced motion gets a cross-fade, not a slower slide.
 - Controls name their action; errors name the problem and the recovery; no em dashes in copy.
+- No audio, sound effects, or vibration gimmicks on standard web interfaces.
 - Refinement preserves; redesign replaces. Never silently repair drifted product context.
 - Verify at shipped sizes. The weakest axis is the verdict; do not average it away.
 - When two directions are live, commit. Splitting the difference is how slop is made.
@@ -106,16 +107,16 @@ Scores:    hierarchy, clarity, craft, a11y, coherence (1-5, one line each)
 
 No praise padding. Distinguish taste from defect: "I would have picked another typeface" is not a finding; "tracking is -0.06em, letters touch" is.
 
-## Model-Grounded Inspiration Architecture
+## UI Design System & Component Library Architecture
 
 Self-contained with **zero external MCP dependencies**:
 
-1. **EmbeddingGemma 2 UI Motion & Design Library Engine (Creative Director):** 950 curated visual showcases (622 Pixlpin motion showcases + 328 MotionSites full prompt blueprints) fine-tuned with EmbeddingGemma 2 (~740M multimodal params).
-   - Run: `python search_design_showcases.py "<query>" [--3d] [--liquid-glass] [--category <name>] [--list-categories] [--limit 3] [--full] [--json]`
-   - Full Blueprints: Pass `--full` to receive complete, production-grade blueprints (including font links, Tailwind classes, video scrub event listeners, typewriter hooks, and exact CSS/shader formulas) so agents can directly copy-paste or execute the implementation (e.g. `python search_design_showcases.py "liquid glass" --full`).
-   - Broad or empty queries return 5 distinct creative archetypes (3D Spatial Hero, Kinetic Type & Liquid Glass, 3D Bento Tilt, Cybernetic Interface, Camera Orbit).
-   - Dedicated Liquid Glass preset with exact specular highlights, backdrop blur (`24px`), saturation (`190%`), contrast (`115%`), and chromatic lens distortion values.
-   - Returns: Three.js/Canvas scaffolds, spatial depth (`perspective: 1200px`), spring physics (`stiffness`, `damping`), CSS curves, and direct MP4 URLs.
+1. **EmbeddingGemma 2 UI Design System & Component Engine:** 950 curated visual showcases (622 Pixlpin motion showcases + 328 MotionSites full prompt blueprints) fine-tuned with EmbeddingGemma 2 (~740M multimodal params).
+   - Component Library: Pass `--components` to get production-ready UI tokens (Button Primitives, Card & Bento Primitives, Navigation Primitives, Lighting & Atmosphere Primitives).
+   - Search: `python search_design_showcases.py "<query>" [--components] [--category <name>] [--list-categories] [--3d] [--liquid-glass] [--limit 3] [--full] [--json]`
+   - Full Blueprints: Pass `--full` to receive complete, production-grade blueprints (including font links, Tailwind classes, video scrub event listeners, typewriter hooks, and exact CSS/shader formulas).
+   - Open-ended or empty queries return 6 industry-standard website archetypes (Modern SaaS, Fintech & Data, High-End Ecommerce, Creative Studio, Developer Tools, AI-Native Platform).
+   - Quiet motion specs: Clean durations and cubic-beziers alongside layout tokens and MP4 asset links.
 2. **Skill (this file + 30 cards):** Thin layer and on-demand atom cards.
 3. **Context Router (`unfslop`):** Serves relevant cards without context bloat (`unfslop context "<task>"`).
 4. **Mechanical Floor (`unfslop lint`):** 18 deterministic checks catching eyebrow headings, fake icons, `transition: all`, and generic slop.

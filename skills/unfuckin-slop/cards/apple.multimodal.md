@@ -1,17 +1,17 @@
 ---
 id: apple.multimodal
-title: Multimodal feedback — causality, harmony, utility
-triggers: haptics, sound, vibration, feedback, audio, vibration api, toggle, snap, success, error, notification
+title: Native mobile haptics — causality, harmony, utility
+triggers: native haptics, mobile haptics, taptic engine, core haptics, device vibration, tactile haptic
 pulls: apple.response
 weight: 4
 ---
 
-# Multimodal feedback
+# Native tactile feedback
 
-Three rules for combining senses:
+Three rules for hardware tactile pulses in native applications:
 
-1. **Causality.** It must be obvious what caused the feedback. Trigger on the actual causal event (the toggle flipping, the item snapping home) and match its character to the action's physicality.
-2. **Harmony.** Visual, sound, and haptic fire on the **same frame**. Latency between them destroys the illusion. Do not let a CSS transition lag the audio or the Vibration API call.
-3. **Utility.** Add feedback only where it earns its place. Reserve haptics and sound for meaningful moments: success, error, commit, snap. Over-feedback trains people to ignore all of it.
+1. **Causality.** It must be obvious what caused the physical impulse. Trigger on the actual causal event (crossing a detent or committing an action) and match its intensity to the interaction.
+2. **Harmony.** Visual and tactile impulses fire on the **exact same frame**. Latency between screen updates and hardware motors destroys the physical illusion.
+3. **Utility.** Add tactile impulses only where they earn their place. Reserve hardware impulses for critical boundaries: physical threshold pass, item release, or state commit. Overuse desensitizes the hand.
 
-On the web this is usually a silent no-op by design: sound and vibration without an explicit user gesture are blocked or hostile. Use it only in installable, deliberate contexts, and never as the only signal that something happened.
+> **CRITICAL PLATFORM BOUNDARY:** Hardware haptic motors belong exclusively to native mobile environments (e.g. iOS Core Haptics or Android HapticFeedback). Browser screens must remain completely calm; never inject artificial sensory effects into desktop or browser interfaces.

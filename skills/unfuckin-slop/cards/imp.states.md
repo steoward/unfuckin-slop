@@ -1,7 +1,7 @@
 ---
 id: imp.states
 title: States and edge cases — the half of the UI nobody draws
-triggers: states, hover, focus, disabled, loading, error, empty, skeleton, edge cases, i18n, rtl, offline, error message, harden
+triggers: states, hover, focus, disabled, loading, error, empty, skeleton, edge cases, i18n, rtl, offline, error message, harden, toggle, switch
 pulls: imp.a11y, imp.copy
 weight: 9
 ---

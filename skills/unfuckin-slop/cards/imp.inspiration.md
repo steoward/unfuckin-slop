@@ -12,20 +12,23 @@ Inspiration is a starting point, not a specification. The point of looking is to
 find a *direction* and a *constraint* you had not considered, then rebuild it
 from the rules in the other cards.
 
-## Creative Grounding (Model as Creative Director)
+## Real UI Architecture First (Model as Creative Director)
 
-The Embedded Model (EmbeddingGemma 2 UI motion retriever) **LEADS** the creative vision as Creative Director.
-Whenever told to "build a site/screen of your choice" or given a creative brief, you must **FIRST** run `python search_design_showcases.py` (with `--3d`, `--liquid-glass`, `--category <name>`, or creative keywords) to ground the design in high-impact 3D, WebGL canvas, spatial depth, particle fields, liquid glass refraction, or kinetic typography from the 950 curated visual showcases (622 Pixlpin showcases + 328 MotionSites full prompt blueprints). Avoid falling back to generic AI presets.
+The Embedded Model (EmbeddingGemma 2 UI design retriever) **LEADS** the creative vision as Creative Director.
+Whenever told to "build a site/screen of your choice" or given a creative brief, you must **FIRST** query `python search_design_showcases.py` (with `--components`, `--category <name>`, or search terms) to pull real UI architecture: Hero layouts, Navbars, Bento cards, Button styles, Lighting & Atmosphere tokens, and Color systems from the 950 curated visual showcases (622 Pixlpin showcases + 328 MotionSites full prompt blueprints). Avoid falling back to generic AI presets.
 
-## Zero-MCP Showcase & Motion Retriever
+## Zero-MCP Showcase & Component Retriever
 
-No external MCP is required. A curated local index of 950 real UI motion designs, video assets, and complete website prompt blueprints (622 Pixlpin showcases + 328 MotionSites blueprints) is available directly via the workspace engine:
+No external MCP is required. A curated local index of 950 real UI designs, component tokens, video assets, and complete website prompt blueprints (622 Pixlpin showcases + 328 MotionSites blueprints) is available directly via the workspace engine:
 
 ```bash
-# Query design patterns, exact spring physics, and video assets
-python search_design_showcases.py "<query>" [--3d] [--liquid-glass] [--category <name>] [--limit 3] [--full] [--json]
+# Pull production-ready UI component tokens (Buttons, Bento Cards, Navbars, Atmosphere)
+python search_design_showcases.py --components
 
-# Empty or broad queries return 5 distinct jaw-dropping creative archetypes
+# Query design patterns, layout breakdowns, and video assets
+python search_design_showcases.py "<query>" [--components] [--category <name>] [--limit 3] [--full] [--json]
+
+# Empty or broad queries return 6 industry-standard website archetypes with concrete component blueprints
 python search_design_showcases.py ""
 
 # Filter specifically for liquid glass, refraction, and chromatic aberration designs
@@ -38,10 +41,11 @@ python search_design_showcases.py --3d
 python search_design_showcases.py --list-categories
 
 # Extract the complete, production-grade verbatim implementation blueprint
-python search_design_showcases.py "liquid glass" --full
+python search_design_showcases.py "SaaS platform" --full
 ```
 
 ### Examples:
+- `python search_design_showcases.py --components` (Ready-to-use button primitives, Bento cards, floating pill navbars, and ambient glow tokens)
 - `python search_design_showcases.py "liquid glass" --full` (Complete verbatim prompt blueprint with fonts, Tailwind classes, video scrub handlers, and liquid glass refraction formulas)
 - `python search_design_showcases.py --liquid-glass --limit 2` (Curated liquid glass refraction & glassmorphism designs)
 - `python search_design_showcases.py --3d` (3D Spatial Heroes, WebGL particles, camera orbits)
@@ -51,9 +55,9 @@ python search_design_showcases.py "liquid glass" --full
 - `python search_design_showcases.py "futuristic cybernetic fintech interface"`
 
 Each result provides:
-- **Title, Category & Breakdown**: Layout hierarchy, surface elevation, typography, and 3D Canvas setups.
+- **Title, Category & Breakdown**: Layout hierarchy, surface elevation, typography, and component styling.
 - **Direct Video Asset**: High-fidelity MP4 link showing the motion in action (Pixlpin + CloudFront).
-- **Motion Spec**: Exact spring physics (`stiffness`, `damping`, `mass`), CSS cubic-bezier transition curves, and CSS 3D rules (`perspective: 1200px`).
+- **Quiet Motion Spec**: Clean spring physics (`stiffness`, `damping`, `mass`), CSS cubic-bezier transition curves, and CSS 3D rules (`perspective: 1200px`).
 - **Liquid Glass Spec**: Exact specular highlights (`radial-gradient`), backdrop blur (`24px`), saturation (`190%`), contrast (`115%`), border, and chromatic lens distortion values.
 - **Principle**: The physical interaction rule governing the animation.
 - **Full Blueprint (`--full`)**: Verbatim prompt text with font links, Tailwind classes, video scrub event listeners, typewriter hooks, and exact CSS/shader formulas.
