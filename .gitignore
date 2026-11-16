@@ -2,6 +2,8 @@
 attic/
 .slop-cache/
 *.log
+__pycache__/
+*.pyc
 design_showcases.zip
 design_showcases/videos/
 design_showcases/images/

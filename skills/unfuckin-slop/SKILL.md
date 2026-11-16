@@ -15,8 +15,8 @@ This file is the thin layer that is always loaded. The cards are not.
 
 **The Embedded Model (EmbeddingGemma 2 UI motion retriever) LEADS the creative vision as the Creative Director. The skill cards and linting FOLLOW as the Engineering Quality Floor.**
 
-- **Model as Creative Director:** When told to "build a site/screen of your choice" or given any creative brief, coding agents must **FIRST** run `python search_design_showcases.py` (with `--3d` or creative keywords like `"3d spatial hero"`, `"kinetic typography"`, `"interactive canvas"`, `"particle orbit"`) to ground the design in high-impact 3D, WebGL canvas, spatial depth, particle fields, or kinetic typography from the 622 video showcases. Never default to generic, flat templates.
-- **Skill as Engineering Floor:** The skill rules (Apple craft, contrast ≥ 4.5:1, keyboard focus, custom scrollbar) then verify, constrain, and polish the implementation **without killing creativity**. High-ambition 3D and kinetic designs must run at 60fps, remain keyboard accessible, and react with authentic physical spring physics.
+- **Model as Creative Director:** When told to "build a site/screen of your choice" or given any creative brief, coding agents must **FIRST** run `python search_design_showcases.py` (with `--3d`, `--liquid-glass`, `--category <name>`, or creative keywords like `"liquid glass"`, `"3d spatial hero"`, `"kinetic typography"`, `"interactive canvas"`, `"particle orbit"`) to ground the design in high-impact 3D, WebGL canvas, spatial depth, particle fields, liquid glass refraction, or kinetic typography from the 950 curated visual showcases (622 Pixlpin showcases + 328 MotionSites full prompt blueprints). Pass `--full` to extract verbatim, production-grade implementation blueprints (including font links, Tailwind classes, video scrub listeners, typewriter hooks, and exact CSS/shader formulas). Never default to generic, flat templates.
+- **Skill as Engineering Floor:** The skill rules (Apple craft, contrast ≥ 4.5:1, keyboard focus, custom scrollbar) then verify, constrain, and polish the implementation **without killing creativity**. High-ambition 3D, liquid glass, and kinetic designs must run at 60fps, remain keyboard accessible, and react with authentic physical spring physics.
 
 ## Rule 0 — do not read the cards directly
 
@@ -110,9 +110,11 @@ No praise padding. Distinguish taste from defect: "I would have picked another t
 
 Self-contained with **zero external MCP dependencies**:
 
-1. **EmbeddingGemma 2 UI Motion Retriever (Creative Director):** 622 UI motion designs fine-tuned with EmbeddingGemma 2 (~740M multimodal params).
-   - Run: `python search_design_showcases.py "<query>" [--3d] [--limit 3] [--json]`
+1. **EmbeddingGemma 2 UI Motion & Design Library Engine (Creative Director):** 950 curated visual showcases (622 Pixlpin motion showcases + 328 MotionSites full prompt blueprints) fine-tuned with EmbeddingGemma 2 (~740M multimodal params).
+   - Run: `python search_design_showcases.py "<query>" [--3d] [--liquid-glass] [--category <name>] [--list-categories] [--limit 3] [--full] [--json]`
+   - Full Blueprints: Pass `--full` to receive complete, production-grade blueprints (including font links, Tailwind classes, video scrub event listeners, typewriter hooks, and exact CSS/shader formulas) so agents can directly copy-paste or execute the implementation (e.g. `python search_design_showcases.py "liquid glass" --full`).
    - Broad or empty queries return 5 distinct creative archetypes (3D Spatial Hero, Kinetic Type & Liquid Glass, 3D Bento Tilt, Cybernetic Interface, Camera Orbit).
+   - Dedicated Liquid Glass preset with exact specular highlights, backdrop blur (`24px`), saturation (`190%`), contrast (`115%`), and chromatic lens distortion values.
    - Returns: Three.js/Canvas scaffolds, spatial depth (`perspective: 1200px`), spring physics (`stiffness`, `damping`), CSS curves, and direct MP4 URLs.
 2. **Skill (this file + 30 cards):** Thin layer and on-demand atom cards.
 3. **Context Router (`unfslop`):** Serves relevant cards without context bloat (`unfslop context "<task>"`).
