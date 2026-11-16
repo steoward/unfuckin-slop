@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 """
 Pipeline to parse motionsites-free-prompts.txt, merge with Pixlpin showcases,
-generate 384-dimensional vector embeddings, and save showcases_meta.json and dataset.jsonl.
+regenerate the fine-tuned neural vector index, and save showcases_meta.json and dataset.jsonl.
 """
 
 import os
 import re
 import json
-import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.decomposition import TruncatedSVD
-from sklearn.preprocessing import normalize
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SHOWCASES_DIR = os.path.join(BASE_DIR, "design_showcases")
@@ -210,22 +206,18 @@ def main():
         for it in merged:
             f.write(json.dumps(it, ensure_ascii=False) + '\n')
 
-    # 3. Generate Embeddings (shape: 950, 384)
-    print(f"[*] Generating TF-IDF + SVD vector embeddings (384 dimensions)...")
-    corpus = [
-        f"{it['title']} {it['title']} {it['category']} {it['description']} {it['id'].replace('-', ' ')}"
-        for it in merged
-    ]
-
-    tfidf = TfidfVectorizer(stop_words='english', max_features=10000, ngram_range=(1, 2))
-    tfidf_mat = tfidf.fit_transform(corpus)
-
-    svd = TruncatedSVD(n_components=384, random_state=42)
-    embeddings_dense = svd.fit_transform(tfidf_mat)
-    embeddings_norm = normalize(embeddings_dense, norm='l2').astype(np.float32)
-
-    print(f"[*] Saving vector embeddings to {EMBS_PATH} (shape: {embeddings_norm.shape})...")
-    np.save(EMBS_PATH, embeddings_norm)
+    # 3. Regenerate the neural vector index with the fine-tuned encoder.
+    #    The previous TF-IDF+SVD fallback silently wrote a different vector space
+    #    into design_embeddings.npy; we now use the same encoder search queries with,
+    #    and leave the existing index untouched if the encoder is unavailable.
+    print("[*] Regenerating neural embeddings with the fine-tuned ONNX encoder...")
+    try:
+        import semantic_index
+        semantic_index.build_index()
+    except Exception as e:
+        print(f"[!] Neural encoder unavailable ({e}).")
+        print("    Keeping existing design_embeddings.npy unchanged.")
+        print("    Install onnxruntime + tokenizers and run: python semantic_index.py rebuild")
 
     print(f"✅ Pipeline complete! Verified {len(merged)} showcases indexed.")
 

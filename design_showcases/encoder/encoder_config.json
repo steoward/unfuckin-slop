@@ -1,0 +1,8 @@
+{
+  "max_seq_length": 128,
+  "dim": 384,
+  "base_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "checkpoint": "queryv2_phase2",
+  "pooling": "mean",
+  "normalize": true
+}

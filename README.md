@@ -5,7 +5,8 @@ Autonomous UI & Kinetic Design System for Coding Agents: Production-grade compon
 Two of the best frontend design skills, **Apple Design** (Emil Kowalski, distilled from Apple's
 WWDC interface talks) and **Impeccable** (Paul Bakaus, Apache-2.0), fused into **30 atom cards** and
 served on demand by a **zero-dependency Rust binary** — paired with a curated 950 UI design system showcase library
-(622 Pixlpin visual showcases + 328 MotionSites full prompt blueprints) fine-tuned with Google DeepMind's **EmbeddingGemma 2**.
+(622 Pixlpin visual showcases + 328 MotionSites full prompt blueprints) retrieved by a fine-tuned
+**all-MiniLM-L6-v2** encoder (384-d, int8 ONNX) through hybrid lexical + semantic search.
 
 The problem it solves is not knowledge. It is context. Loading both skills means ~10,000 tokens
 before you write a line of CSS, and most of it is irrelevant to the one thing you are doing. Here the
@@ -179,6 +180,70 @@ python search_design_showcases.py "liquid glass" --full
 - **Direct Video Reference**: Direct link to the high-frame-rate interaction video.
 
 The agent uses these concrete UI blueprints to build production-grade interfaces, then mechanically verifies them with `unfslop lint`.
+
+## Neural retrieval & evaluation
+
+`search_design_showcases.py` ranks the 950 showcases with a **hybrid** of lexical TF-IDF +
+keyword boosts and a **fine-tuned semantic encoder**. The semantic layer is a fine-tuned
+[`all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) (384-d),
+exported to a ~23 MB int8 ONNX model in `design_showcases/encoder/` and queried with
+`onnxruntime` + `tokenizers` only — no torch at search time. The final score is
+`(1-w)·minmax(lexical) + w·minmax(semantic)` with `w = 0.7`, tuned on the dev split. It applies
+to every query mode (search terms, `--3d`, `--category`, `--components`).
+
+The semantic layer is **optional**: install the runtime with `pip install -r requirements.txt`.
+If `onnxruntime`/`tokenizers` or the encoder files are missing, search falls back to the pure
+lexical pipeline, unchanged.
+
+```bash
+pip install -r requirements.txt        # numpy, scikit-learn, onnxruntime, tokenizers
+python search_design_showcases.py "liquid glass refraction hero" --limit 3
+python semantic_index.py rebuild       # regenerate design_embeddings.npy from the encoder
+```
+
+### Fine-tuning
+
+The encoder is fine-tuned with Multiple-Negatives Ranking Loss on *query-style* anchors derived
+from each showcase description, aligned to the index text `"{title}: {description}"`. Brand-only
+titles (≤2 content words) are never used as anchors, which avoids the false-negative noise a naive
+title-anchor recipe injects. `train_retriever.ipynb` reproduces the full pipeline (train → evaluate
+→ export → rebuild); `eval/train_v2.py` is the script form. The earlier `EmbeddingGemma-2` branding
+was aspirational — the shipped 384-d index is MiniLM, which trains on CPU and exports to a small
+ONNX encoder. EmbeddingGemma-2 (768-d, gated, GPU-only) remains an optional upgrade path.
+
+### Before / after (held-out test split, 51 queries)
+
+A hand-verified benchmark of 70 queries (`eval/benchmark.json`, 19 dev / 51 test) measures
+P@1, Recall@5, MRR@10 and nDCG@5. The dev split selects the checkpoint and the hybrid weight;
+the test split is reported once, untouched.
+
+**Encoder quality** — pure semantic retrieval over `"title: description"`:
+
+| Model | P@1 | R@5 | MRR@10 | nDCG@5 |
+| --- | --- | --- | --- | --- |
+| base MiniLM (un-tuned) | 0.9216 | 0.8899 | 0.9477 | 0.8811 |
+| previous shipped fine-tune | 0.9216 | 0.9101 | 0.9510 | 0.8980 |
+| notebook recipe (control) | 0.9216 | 0.9160 | 0.9477 | 0.9054 |
+| **new fine-tune (this repo)** | **0.9412** | **0.9330** | **0.9647** | **0.9122** |
+
+**Deployed search** — the full `search()` pipeline, before vs after:
+
+| System | P@1 | R@5 | MRR@10 | nDCG@5 |
+| --- | --- | --- | --- | --- |
+| lexical only (before) | 0.7843 | 0.8451 | 0.8627 | 0.8097 |
+| **hybrid lexical + semantic (after)** | **0.9216** | **0.8915** | **0.9314** | **0.8917** |
+
+Reproduce:
+
+```bash
+pip install torch sentence-transformers datasets accelerate onnx onnxscript
+python eval/train_v2.py                                   # fine-tune, pick best dev checkpoint
+python eval/export_encoder.py --checkpoint <best>         # bundle int8 ONNX encoder
+python semantic_index.py rebuild                          # regenerate the index
+python eval/evaluate.py --systems lexical onnx stored base <best>
+python eval/tune_hybrid.py                                # tune w on dev via the real search()
+python eval/smoke_test.py                                 # end-to-end sanity checks
+```
 
 ## Attribution and licence
 

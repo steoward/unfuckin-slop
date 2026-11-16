@@ -20,6 +20,36 @@ META_PATH = os.path.join(SHOWCASES_DIR, "showcases_meta.json")
 EMBS_PATH = os.path.join(SHOWCASES_DIR, "design_embeddings.npy")
 FALLBACK_DATASET = os.path.join(SHOWCASES_DIR, "dataset.jsonl")
 
+# Hybrid lexical+semantic ranking. Weight tuned on the dev split of eval/benchmark.json
+# by driving the real search() pipeline at each weight (see eval/tune_hybrid.py): w=0.7
+# maximizes dev MRR@10 then nDCG@5. Semantic layer is optional: without onnxruntime/tokenizers
+# or the bundled encoder, search falls back to the pure lexical pipeline unchanged.
+SEMANTIC_WEIGHT = 0.7
+_sem_state = {"loaded": False, "enc": None, "emb": None}
+
+
+def _load_semantic():
+    if _sem_state["loaded"]:
+        return _sem_state["enc"], _sem_state["emb"]
+    _sem_state["loaded"] = True
+    try:
+        _here = os.path.dirname(os.path.abspath(__file__))
+        if _here not in sys.path:
+            sys.path.insert(0, _here)
+        import semantic_index
+        enc = semantic_index.load_encoder()
+        if enc is not None and os.path.exists(EMBS_PATH):
+            _sem_state["enc"] = enc
+            _sem_state["emb"] = np.load(EMBS_PATH)
+    except Exception:
+        pass
+    return _sem_state["enc"], _sem_state["emb"]
+
+
+def _minmax(x):
+    lo, hi = float(np.min(x)), float(np.max(x))
+    return (x - lo) / max(hi - lo, 1e-9)
+
 # 3D, WebGL, and Kinetic keywords for filtering and classification
 THREED_KEYWORDS = [
     "3d", "webgl", "canvas", "particle", "liquid", "kinetic", "spatial",
@@ -969,18 +999,22 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
     Embedding & TF-IDF similarity, and component-first blueprints.
     """
     items = load_data()
+    n_total = len(items)
+    indexed = list(enumerate(items))
 
     # Pre-filter by Category if specified
     if category_filter:
-        items = [it for it in items if matches_category(it, category_filter)]
+        indexed = [(i, it) for i, it in indexed if matches_category(it, category_filter)]
 
     # Pre-filter by Liquid Glass if requested
     if filter_liquid_glass:
-        items = [it for it in items if is_liquid_glass_showcase(it)]
+        indexed = [(i, it) for i, it in indexed if is_liquid_glass_showcase(it)]
 
     # Pre-filter by 3D if requested
     if filter_3d:
-        items = [it for it in items if is_3d_showcase(it)]
+        indexed = [(i, it) for i, it in indexed if is_3d_showcase(it)]
+
+    items = [it for _, it in indexed]
 
     # Empty or broad query handling: return the 6 Universal UI Design System Archetypes
     if is_broad_or_creative_query(query):
@@ -1022,8 +1056,15 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
     q_words = [w.lower() for w in query.split() if len(w) > 2]
     is_3d_query = any(k in query.lower() for k in THREED_KEYWORDS)
     is_liquid_query = any(k in query.lower() for k in LIQUID_GLASS_KEYWORDS)
-    scored = []
 
+    # Optional semantic similarity from the fine-tuned vector index
+    enc, emb = _load_semantic()
+    sem = None
+    if enc is not None and emb is not None and emb.shape[0] == n_total and items:
+        qv = enc.encode([query])[0]
+        sem = emb[[i for i, _ in indexed]] @ qv
+
+    lex_scores = []
     for idx, it in enumerate(items):
         sim = float(similarities[idx]) if idx < len(similarities) else 0.0
         title_lower = it.get('title', '').lower()
@@ -1046,7 +1087,17 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
             elif any(k in desc_lower for k in ["liquid", "glass", "refraction", "chromatic", "frosted"]):
                 exact_boost += 0.20
 
-        total_score = sim + exact_boost
+        lex_scores.append(sim + exact_boost)
+
+    lex_scores = np.asarray(lex_scores)
+    if sem is not None:
+        final_scores = (1.0 - SEMANTIC_WEIGHT) * _minmax(lex_scores) + SEMANTIC_WEIGHT * _minmax(sem)
+    else:
+        final_scores = lex_scores
+
+    scored = []
+    for idx, it in enumerate(items):
+        total_score = float(final_scores[idx])
         if total_score > 0.05 or not q_words:
             ds = derive_ui_design_spec(it)
             it_with_ds = {
