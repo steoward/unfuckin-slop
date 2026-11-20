@@ -4,5 +4,6 @@
   "base_model": "sentence-transformers/all-MiniLM-L6-v2",
   "checkpoint": "queryv2_phase2",
   "pooling": "mean",
-  "normalize": true
+  "normalize": true,
+  "quantization": "uint8_perchannel"
 }

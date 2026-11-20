@@ -1,62 +1,28 @@
 {
-  "lexical": {
-    "dev": {
-      "P@1": 0.7368,
-      "R@5": 0.6754,
-      "MRR@10": 0.7632,
-      "nDCG@5": 0.6788
-    },
-    "test": {
-      "P@1": 0.7843,
-      "R@5": 0.8451,
-      "MRR@10": 0.8627,
-      "nDCG@5": 0.8097
-    },
-    "all": {
-      "P@1": 0.7714,
-      "R@5": 0.799,
-      "MRR@10": 0.8357,
-      "nDCG@5": 0.7742
-    }
+  "_note": "Measured from the deployed pipeline via eval/evaluate.py on the 70-query benchmark (19 dev / 51 test). 'current' is the real search() (TF-IDF + keyword boosts + fine-tuned semantic, w=0.7, broad-query hijack fixed). 'onnx' is the shipped uint8 per-channel ONNX encoder + design_embeddings.npy (pure semantic). 'float_checkpoint' is the same fine-tune before quantization (queryv2_phase2). 'lexical' is search() with the semantic layer disabled. 'base' is un-tuned all-MiniLM-L6-v2.",
+  "current": {
+    "dev": {"P@1": 1.0, "R@5": 0.9561, "MRR@10": 1.0, "nDCG@5": 0.9624},
+    "test": {"P@1": 0.9804, "R@5": 0.934, "MRR@10": 0.9902, "nDCG@5": 0.934},
+    "all": {"P@1": 0.9857, "R@5": 0.94, "MRR@10": 0.9929, "nDCG@5": 0.9417}
   },
   "onnx": {
-    "dev": {
-      "P@1": 1.0,
-      "R@5": 0.9386,
-      "MRR@10": 1.0,
-      "nDCG@5": 0.9398
-    },
-    "test": {
-      "P@1": 0.9412,
-      "R@5": 0.8882,
-      "MRR@10": 0.9627,
-      "nDCG@5": 0.8945
-    },
-    "all": {
-      "P@1": 0.9571,
-      "R@5": 0.9019,
-      "MRR@10": 0.9729,
-      "nDCG@5": 0.9068
-    }
+    "dev": {"P@1": 0.9474, "R@5": 0.9211, "MRR@10": 0.9737, "nDCG@5": 0.9204},
+    "test": {"P@1": 0.9412, "R@5": 0.9183, "MRR@10": 0.9627, "nDCG@5": 0.9072},
+    "all": {"P@1": 0.9429, "R@5": 0.919, "MRR@10": 0.9657, "nDCG@5": 0.9108}
   },
-  "current": {
-    "dev": {
-      "P@1": 0.7895,
-      "R@5": 0.7456,
-      "MRR@10": 0.7895,
-      "nDCG@5": 0.7476
-    },
-    "test": {
-      "P@1": 0.9216,
-      "R@5": 0.8915,
-      "MRR@10": 0.9314,
-      "nDCG@5": 0.8917
-    },
-    "all": {
-      "P@1": 0.8857,
-      "R@5": 0.8519,
-      "MRR@10": 0.8929,
-      "nDCG@5": 0.8526
-    }
+  "float_checkpoint": {
+    "dev": {"P@1": 1.0, "R@5": 0.9254, "MRR@10": 1.0, "nDCG@5": 0.934},
+    "test": {"P@1": 0.9412, "R@5": 0.933, "MRR@10": 0.9647, "nDCG@5": 0.9122},
+    "all": {"P@1": 0.9571, "R@5": 0.931, "MRR@10": 0.9743, "nDCG@5": 0.9181}
+  },
+  "lexical": {
+    "dev": {"P@1": 0.8947, "R@5": 0.886, "MRR@10": 0.9342, "nDCG@5": 0.8594},
+    "test": {"P@1": 0.8235, "R@5": 0.8745, "MRR@10": 0.902, "nDCG@5": 0.8395},
+    "all": {"P@1": 0.8429, "R@5": 0.8776, "MRR@10": 0.9107, "nDCG@5": 0.8449}
+  },
+  "base": {
+    "dev": {"P@1": 0.9474, "R@5": 0.9079, "MRR@10": 0.9737, "nDCG@5": 0.9081},
+    "test": {"P@1": 0.9216, "R@5": 0.8899, "MRR@10": 0.9477, "nDCG@5": 0.8811},
+    "all": {"P@1": 0.9286, "R@5": 0.8948, "MRR@10": 0.9548, "nDCG@5": 0.8884}
   }
 }

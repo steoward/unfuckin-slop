@@ -7,12 +7,13 @@ ambient lighting atmospheres, and real video showcases from 950 curated visual s
 """
 
 import os
+import re
 import sys
 import json
 import argparse
 from collections import Counter
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, ENGLISH_STOP_WORDS
 from sklearn.metrics.pairwise import cosine_similarity
 
 SHOWCASES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "design_showcases")
@@ -671,34 +672,38 @@ def matches_category(item, category_query: str) -> bool:
     cq = category_query.strip().lower()
     return cq in cat or cq == cat
 
+# Words that carry no specific design subject on their own. A query made up
+# entirely of these (plus English stopwords) is genuinely vague and falls back
+# to the archetype defaults; any real subject word makes it a retrieval query.
+_GENERIC_QUERY_WORDS = frozenset({
+    "creative", "creativity", "landing", "hero", "showcase", "portfolio",
+    "homepage", "website", "web", "site", "page", "app", "application",
+    "ui", "ux", "design", "build", "modern", "cool", "best", "great",
+    "awesome", "nice", "beautiful", "stunning", "something", "anything",
+    "archetype", "archetypes", "brief", "project", "new", "mind", "blowing",
+    "director", "system", "components", "component", "explore", "exploration",
+    "inspiration", "ideas", "idea", "concept", "demo", "choice", "choose",
+    "pick", "select", "example", "examples", "sample", "samples", "random",
+    "whatever", "stuff", "things", "thing", "kind", "sort", "type", "types",
+    "style", "styles", "look", "feel", "vibe", "vibes", "aesthetic",
+})
+
+
 def is_broad_or_creative_query(query: str) -> bool:
-    """Detect whether query is empty, broad, or asking for archetypes/landing exploration."""
+    """True only for empty or genuinely subject-free queries.
+
+    A specific product/service brief (e.g. 'space travel brand landing page
+    selling seats to mars') must retrieve real showcases, not archetype
+    defaults. Strip English stopwords and generic web/design filler; if any
+    substantive subject word remains, the query is specific and gets retrieved.
+    """
     q = query.strip().lower()
     if not q:
         return True
-
-    broad_phrases = [
-        "choice", "creative", "landing", "landing page", "creative archetype",
-        "of your choice", "of choice", "creative brief", "something cool",
-        "creative showcase", "mind-blowing", "creative director", "archetype",
-        "build a site", "build a web", "build an app", "new project",
-        "modern website", "website", "modern site", "design system", "components"
-    ]
-    if any(phrase in q for phrase in broad_phrases):
-        specific_tech = ["slider", "drawer", "modal", "chart", "analytics", "table", "button", "toggle", "liquid", "glass", "3d", "refraction", "dashboard", "fintech", "ecommerce", "fashion", "developer", "terminal"]
-        if not any(tech in q for tech in specific_tech):
-            return True
-
-    words = [w for w in q.split() if len(w) > 1]
-    generic_words = {
-        "choice", "creative", "landing", "hero", "showcase", "portfolio",
-        "homepage", "website", "web", "app", "ui", "design", "build",
-        "modern", "cool", "best", "site", "page", "archetypes"
-    }
-    if words and all(w in generic_words for w in words):
-        return True
-
-    return False
+    words = [w for w in re.split(r"[^a-z0-9]+", q) if len(w) > 1]
+    content = [w for w in words
+               if w not in ENGLISH_STOP_WORDS and w not in _GENERIC_QUERY_WORDS]
+    return len(content) == 0
 
 def derive_ui_design_spec(item) -> dict:
     """
@@ -1111,6 +1116,15 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
     return [it for _, it in scored[:eff_limit]]
 
 def main():
+    # Windows consoles default to cp1252, which cannot encode characters such as
+    # U+2212 (minus) present in some showcase descriptions. Force UTF-8 so --json
+    # and blueprint output never crash on non-ASCII content.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8")
+            except (ValueError, OSError):
+                pass
     parser = argparse.ArgumentParser(
         description="UI Design System & Component Library Engine for Autonomous Coding Agents"
     )

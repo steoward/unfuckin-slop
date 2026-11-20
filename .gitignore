@@ -7,3 +7,8 @@ __pycache__/
 design_showcases.zip
 design_showcases/videos/
 design_showcases/images/
+
+# Local-only demonstration sites and gallery (kept out of the repo by request)
+sites/
+gallery.html
+gallery_server.py
