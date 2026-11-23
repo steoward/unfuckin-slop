@@ -35,11 +35,9 @@ pub fn install(lib: &Library, target: &Path, force: bool) -> io::Result<usize> {
     let exe = std::env::current_exe()?.canonicalize()?;
     let bin_dir = target.join("bin");
     fs::create_dir_all(&bin_dir)?;
-    for name in ["unfslop", "slop"] {
-        let binary = bin_dir.join(format!("{name}{}", std::env::consts::EXE_SUFFIX));
-        if !binary.exists() || binary.canonicalize()? != exe {
-            fs::copy(&exe, binary)?;
-        }
+    let binary = bin_dir.join(format!("unfslop{}", std::env::consts::EXE_SUFFIX));
+    if !binary.exists() || binary.canonicalize()? != exe {
+        fs::copy(&exe, binary)?;
     }
     fs::write(&skill_path, cards::SKILL_MD)?;
     Ok(lib.cards.len())
