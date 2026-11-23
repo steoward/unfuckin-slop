@@ -299,7 +299,7 @@ def rank_catalog(query, limit, records, load_semantic, *, components=False,
 
     ranked = sorted(zip(scores, items), key=lambda pair: pair[0], reverse=True)
     return [{**item, "relevance_score": round(float(score), 4)}
-            for score, item in ranked if score > 0.05 or not terms][:limit]
+            for score, item in ranked[:limit] if score > 0.05 or not terms]
 
 
 def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False,
