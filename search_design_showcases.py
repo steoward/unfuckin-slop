@@ -12,6 +12,7 @@ import json
 import argparse
 from pathlib import Path
 from collections import Counter
+from functools import cache
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer, ENGLISH_STOP_WORDS
 from sklearn.metrics.pairwise import cosine_similarity
@@ -24,52 +25,34 @@ EMBS_PATH = os.path.join(SHOWCASES_DIR, "design_embeddings.npy")
 COMPONENTS_META_PATH = os.path.join(SHOWCASES_DIR, "components_meta.json")
 COMPONENTS_EMBS_PATH = os.path.join(SHOWCASES_DIR, "component_embeddings.npy")
 
-# Hybrid lexical+semantic ranking. Weight tuned on the dev split of eval/benchmark.json
-# by driving the real search() pipeline at each weight (see eval/tune_hybrid.py): w=0.7
-# maximizes dev MRR@10 then nDCG@5. Semantic layer is optional: without onnxruntime/tokenizers
-# or the bundled encoder, search falls back to the pure lexical pipeline unchanged.
+# The semantic layer is optional. Both pools use the same encoder.
 SEMANTIC_WEIGHT = 0.7
-_sem_state = {"loaded": False, "enc": None, "emb": None}
+
+
+@cache
+def _encoder():
+    from semantic_index import load_encoder
+
+    return load_encoder()
+
+
+@cache
+def _load_index(path):
+    encoder = _encoder()
+    if encoder is not None:
+        try:
+            return encoder, np.load(path)
+        except (OSError, ValueError):
+            pass
+    return None, None
 
 
 def _load_semantic():
-    if _sem_state["loaded"]:
-        return _sem_state["enc"], _sem_state["emb"]
-    _sem_state["loaded"] = True
-    try:
-        _here = os.path.dirname(os.path.abspath(__file__))
-        if _here not in sys.path:
-            sys.path.insert(0, _here)
-        import semantic_index
-        enc = semantic_index.load_encoder()
-        if enc is not None and os.path.exists(EMBS_PATH):
-            _sem_state["enc"] = enc
-            _sem_state["emb"] = np.load(EMBS_PATH)
-    except Exception:
-        pass
-    return _sem_state["enc"], _sem_state["emb"]
-
-
-# Component pool shares the same bundled encoder but has its own vector index.
-_comp_sem_state = {"loaded": False, "enc": None, "emb": None}
+    return _load_index(EMBS_PATH)
 
 
 def _load_semantic_components():
-    if _comp_sem_state["loaded"]:
-        return _comp_sem_state["enc"], _comp_sem_state["emb"]
-    _comp_sem_state["loaded"] = True
-    try:
-        _here = os.path.dirname(os.path.abspath(__file__))
-        if _here not in sys.path:
-            sys.path.insert(0, _here)
-        import semantic_index
-        enc = semantic_index.load_encoder()
-        if enc is not None and os.path.exists(COMPONENTS_EMBS_PATH):
-            _comp_sem_state["enc"] = enc
-            _comp_sem_state["emb"] = np.load(COMPONENTS_EMBS_PATH)
-    except Exception:
-        pass
-    return _comp_sem_state["enc"], _comp_sem_state["emb"]
+    return _load_index(COMPONENTS_EMBS_PATH)
 
 
 def _minmax(x):

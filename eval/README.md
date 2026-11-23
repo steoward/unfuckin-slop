@@ -28,5 +28,4 @@ The comparison used the shipped model and catalogs on both versions. To reproduc
 - `cargo test` runs CLI and card tests.
 - `python eval/smoke_test.py` checks ONNX inference and lexical fallback.
 - GitHub Actions exercises exact and hybrid lookup from an installed skill.
-- [Design pilot](design-pilot.html) compares four runnable prototypes on two briefs. Open it from the checkout.
-- [Showcase benchmark](benchmark.json) and [recorded results](deployed_results.json) track earlier model evaluation. `python eval/evaluate.py --help` lists the supported runs.
+- `python eval/evaluate.py` measures the shipped hybrid search, lexical fallback and ONNX encoder on the [showcase benchmark](benchmark.json).

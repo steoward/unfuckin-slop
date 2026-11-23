@@ -9,6 +9,7 @@ when the semantic layer is unavailable.
 """
 import os
 import sys
+from unittest.mock import patch
 
 import numpy as np
 
@@ -43,8 +44,8 @@ def main():
     print(f"[ok] --3d filter respected: {res3d[0]['title']}")
 
     # Force lexical fallback
-    sds._sem_state.update({"loaded": True, "enc": None, "emb": None})
-    res_fb = sds.search("liquid glass refraction", limit=5)
+    with patch.object(sds, "_load_semantic", return_value=(None, None)):
+        res_fb = sds.search("liquid glass refraction", limit=5)
     assert res_fb, "lexical fallback returned nothing"
     print(f"[ok] lexical fallback works: {res_fb[0]['title']}")
 

@@ -40,6 +40,8 @@ jobs:
           if [ "$RUNNER_OS" = "Windows" ]; then suffix=".exe"; fi
           skill_dir="$RUNNER_TEMP/unfslop-test/unfuckin-slop"
           cargo run --locked --release --bin unfslop -- install --dir "$skill_dir"
+          test -f "$skill_dir/bin/unfslop$suffix"
+          test ! -e "$skill_dir/bin/slop$suffix"
           packet_test="$PWD/eval/verify_design_packet.py"
           cd "$RUNNER_TEMP/unfslop-test"
           "unfuckin-slop/bin/unfslop$suffix" context "review this screenshot" --json > pack.json

@@ -1,0 +1,35 @@
+name: Remove merged production cleanup branch
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/prune-production-branch.yml]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify the merged pull request and remove its branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          branch=cleanup/production
+          ref="refs/heads/$branch"
+          remote=$(git ls-remote --refs origin "$ref")
+          if [ -z "$remote" ]; then exit 0; fi
+          owner="${GITHUB_REPOSITORY%%/*}"
+          pull=$(gh api -X GET "repos/$GITHUB_REPOSITORY/pulls" \
+            -f state=closed -f "head=$owner:$branch" -f base=main \
+            --jq 'map(select(.merged_at != null))[0].number // empty')
+          test -n "$pull"
+          read -r head merge < <(gh api "repos/$GITHUB_REPOSITORY/pulls/$pull" \
+            --jq '[.head.sha, .merge_commit_sha] | @tsv')
+          git merge-base --is-ancestor "$merge" HEAD
+          git push --force-with-lease="$ref:$head" origin ":$ref"
