@@ -4,6 +4,11 @@ UI Design System & Component Library Engine for Autonomous Coding Agents.
 Grounds interfaces in production UI design systems, component blueprints, surface elevation tokens,
 ambient lighting atmospheres, and real video showcases from 950 curated visual showcases
 (622 Pixlpin showcases + 328 MotionSites full prompt blueprints).
+
+A second retrievable pool (--pool components) holds 9735 UI component code prompts
+(9698 from 21st.dev + 37 from skiper.ui) with verbatim implementations and npm install
+commands. It is kept separate from the 950 full-design showcases so design search and
+the design benchmark stay clean; both pools share the same fine-tuned semantic encoder.
 """
 
 import os
@@ -20,6 +25,10 @@ SHOWCASES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "design
 META_PATH = os.path.join(SHOWCASES_DIR, "showcases_meta.json")
 EMBS_PATH = os.path.join(SHOWCASES_DIR, "design_embeddings.npy")
 FALLBACK_DATASET = os.path.join(SHOWCASES_DIR, "dataset.jsonl")
+# Separate UI-component pool (21st.dev + skiper.ui code prompts). Kept apart from the
+# 950 full-design showcases so the design benchmark and design search stay clean.
+COMPONENTS_META_PATH = os.path.join(SHOWCASES_DIR, "components_meta.json")
+COMPONENTS_EMBS_PATH = os.path.join(SHOWCASES_DIR, "component_embeddings.npy")
 
 # Hybrid lexical+semantic ranking. Weight tuned on the dev split of eval/benchmark.json
 # by driving the real search() pipeline at each weight (see eval/tune_hybrid.py): w=0.7
@@ -45,6 +54,28 @@ def _load_semantic():
     except Exception:
         pass
     return _sem_state["enc"], _sem_state["emb"]
+
+
+# Component pool shares the same bundled encoder but has its own vector index.
+_comp_sem_state = {"loaded": False, "enc": None, "emb": None}
+
+
+def _load_semantic_components():
+    if _comp_sem_state["loaded"]:
+        return _comp_sem_state["enc"], _comp_sem_state["emb"]
+    _comp_sem_state["loaded"] = True
+    try:
+        _here = os.path.dirname(os.path.abspath(__file__))
+        if _here not in sys.path:
+            sys.path.insert(0, _here)
+        import semantic_index
+        enc = semantic_index.load_encoder()
+        if enc is not None and os.path.exists(COMPONENTS_EMBS_PATH):
+            _comp_sem_state["enc"] = enc
+            _comp_sem_state["emb"] = np.load(COMPONENTS_EMBS_PATH)
+    except Exception:
+        pass
+    return _comp_sem_state["enc"], _comp_sem_state["emb"]
 
 
 def _minmax(x):
@@ -862,6 +893,16 @@ def load_data():
                         pass
     return items
 
+def load_components():
+    """Load the separate UI-component pool (21st.dev + skiper.ui code prompts)."""
+    if os.path.exists(COMPONENTS_META_PATH):
+        with open(COMPONENTS_META_PATH, "r", encoding="utf-8") as f:
+            try:
+                return json.load(f)
+            except Exception:
+                pass
+    return []
+
 def list_categories(items):
     """Print all available categories with their item counts and exit."""
     counts = Counter()
@@ -1115,6 +1156,126 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
     scored.sort(key=lambda x: x[0], reverse=True)
     return [it for _, it in scored[:eff_limit]]
 
+def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None):
+    """Search the separate UI-component pool (21st.dev + skiper.ui) with the same
+    hybrid lexical+semantic ranking used for designs. Components ship verbatim code
+    prompts and npm install commands rather than interaction video, so results carry
+    tags/install metadata instead of a derived design-system spec."""
+    items = load_components()
+    n_total = len(items)
+    indexed = list(enumerate(items))
+
+    if category_filter:
+        indexed = [(i, it) for i, it in indexed if matches_category(it, category_filter)]
+    if filter_liquid_glass:
+        indexed = [(i, it) for i, it in indexed if is_liquid_glass_showcase(it)]
+    if filter_3d:
+        indexed = [(i, it) for i, it in indexed if is_3d_showcase(it)]
+
+    items = [it for _, it in indexed]
+    eff_limit = limit if limit is not None else 5
+
+    # Components have no archetype defaults; a subject-free query returns the first
+    # matching components from the (optionally filtered) pool.
+    if is_broad_or_creative_query(query):
+        return [{**it, "relevance_score": 1.0} for it in items[:eff_limit]]
+
+    if not items:
+        return []
+
+    corpus = [
+        f"{it.get('title', '')} {it.get('title', '')} {get_item_category(it)} {it.get('description', '')} {it.get('id', '').replace('-', ' ')} {' '.join(it.get('tags', []))}"
+        for it in items
+    ]
+
+    try:
+        vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(1, 2))
+        tfidf_matrix = vectorizer.fit_transform(corpus)
+        query_vec = vectorizer.transform([query])
+        similarities = cosine_similarity(query_vec, tfidf_matrix).flatten()
+    except Exception:
+        similarities = np.zeros(len(items))
+
+    q_words = [w.lower() for w in query.split() if len(w) > 2]
+    is_3d_query = any(k in query.lower() for k in THREED_KEYWORDS)
+    is_liquid_query = any(k in query.lower() for k in LIQUID_GLASS_KEYWORDS)
+
+    enc, emb = _load_semantic_components()
+    sem = None
+    if enc is not None and emb is not None and emb.shape[0] == n_total and items:
+        qv = enc.encode([query])[0]
+        sem = emb[[i for i, _ in indexed]] @ qv
+
+    lex_scores = []
+    for idx, it in enumerate(items):
+        sim = float(similarities[idx]) if idx < len(similarities) else 0.0
+        title_lower = it.get('title', '').lower()
+        desc_lower = it.get('description', '').lower()
+        cat_lower = get_item_category(it).lower()
+        tags_lower = ' '.join(it.get('tags', [])).lower()
+
+        exact_boost = sum(0.35 for w in q_words if w in title_lower)
+        exact_boost += sum(0.20 for w in q_words if w in cat_lower)
+        exact_boost += sum(0.15 for w in q_words if w in desc_lower)
+        exact_boost += sum(0.10 for w in q_words if w in tags_lower)
+
+        if filter_3d or is_3d_query:
+            if any(k in title_lower for k in ["3d", "webgl", "particle", "liquid", "kinetic", "canvas"]):
+                exact_boost += 0.35
+            elif any(k in desc_lower for k in ["3d", "webgl", "particle", "liquid", "kinetic", "canvas"]):
+                exact_boost += 0.15
+
+        if filter_liquid_glass or is_liquid_query:
+            if any(k in title_lower for k in ["liquid", "glass", "refraction", "chromatic", "frosted"]):
+                exact_boost += 0.40
+            elif any(k in desc_lower for k in ["liquid", "glass", "refraction", "chromatic", "frosted"]):
+                exact_boost += 0.20
+
+        lex_scores.append(sim + exact_boost)
+
+    lex_scores = np.asarray(lex_scores)
+    if sem is not None:
+        final_scores = (1.0 - SEMANTIC_WEIGHT) * _minmax(lex_scores) + SEMANTIC_WEIGHT * _minmax(sem)
+    else:
+        final_scores = lex_scores
+
+    scored = []
+    for idx, it in enumerate(items):
+        total_score = float(final_scores[idx])
+        if total_score > 0.05 or not q_words:
+            scored.append((total_score, {**it, "relevance_score": round(float(total_score), 4)}))
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+    return [it for _, it in scored[:eff_limit]]
+
+def format_component_blueprint(item, index=1):
+    """Format a component's verbatim prompt / code implementation and install metadata."""
+    category = get_item_category(item)
+    source_site, source_url = get_source_info(item)
+    title = item.get("title", "Component")
+
+    lines = []
+    lines.append("######################################################################")
+    lines.append(f"[{index}] {title}")
+    lines.append(f"Category: {category}  |  Source: {source_site}  |  Type: component")
+    lines.append(f"URL: {source_url}")
+    if item.get("author"):
+        lines.append(f"Author: {item['author']}")
+    if item.get("license"):
+        lines.append(f"License: {item['license']}")
+    if item.get("npm_deps"):
+        lines.append(f"Install deps: {item['npm_deps']}")
+    if item.get("tags"):
+        lines.append(f"Tags: {', '.join(item['tags'])}")
+    lines.append(f"Overview: {item.get('description', '')}")
+    lines.append("----------------------------------------------------------------------")
+    full_prompt = item.get("full_prompt")
+    if full_prompt:
+        lines.append("VERBATIM PROMPT / CODE:")
+        lines.append(full_prompt)
+    lines.append("######################################################################\n")
+    return "\n".join(lines)
+
 def main():
     # Windows consoles default to cp1252, which cannot encode characters such as
     # U+2212 (minus) present in some showcase descriptions. Force UTF-8 so --json
@@ -1136,7 +1297,13 @@ def main():
     parser.add_argument(
         "--components",
         action="store_true",
-        help="Output ready-to-use production UI component tokens (Buttons, Cards/Bento, Navigation, Lighting & Atmosphere)"
+        help="Output static production UI primitive tokens (Buttons, Cards/Bento, Navigation, Lighting). To search the 9735-component code library use --pool components"
+    )
+    parser.add_argument(
+        "--pool",
+        choices=["designs", "components"],
+        default="designs",
+        help="Which retrievable pool to search: 'designs' (950 full-design showcases, default) or 'components' (9735 UI component code prompts from 21st.dev + skiper.ui)"
     )
     parser.add_argument(
         "--3d",
@@ -1186,24 +1353,35 @@ def main():
 
     # Handle --list-categories early
     if args.list_categories:
-        items = load_data()
+        items = load_components() if args.pool == "components" else load_data()
         list_categories(items)
         return
 
     query_str = " ".join(args.query) if args.query else ""
-    results = search(
-        query=query_str,
-        limit=args.limit,
-        filter_3d=args.three_d,
-        filter_liquid_glass=args.liquid_glass,
-        category_filter=args.category
-    )
+    if args.pool == "components":
+        results = search_components(
+            query=query_str,
+            limit=args.limit,
+            filter_3d=args.three_d,
+            filter_liquid_glass=args.liquid_glass,
+            category_filter=args.category
+        )
+    else:
+        results = search(
+            query=query_str,
+            limit=args.limit,
+            filter_3d=args.three_d,
+            filter_liquid_glass=args.liquid_glass,
+            category_filter=args.category
+        )
 
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))
         return
 
     filter_tags = []
+    if args.pool == "components":
+        filter_tags.append("--pool components")
     if args.three_d:
         filter_tags.append("--3d")
     if args.liquid_glass:
@@ -1211,6 +1389,38 @@ def main():
     if args.category:
         filter_tags.append(f"--category '{args.category}'")
     tag_str = f" [{' '.join(filter_tags)}]" if filter_tags else ""
+
+    if args.pool == "components":
+        if args.full:
+            print(f"\n=======================================================")
+            print(f" UI Component Library (21st.dev + skiper.ui): '{query_str}'{tag_str} [FULL PROMPT]")
+            print(f" Showing {len(results)} Verbatim Component Prompts & Implementations")
+            print(f"=======================================================\n")
+            for i, r in enumerate(results, 1):
+                print(format_component_blueprint(r, index=i))
+            return
+
+        print(f"\n=======================================================")
+        print(f" UI Component Library (21st.dev + skiper.ui): '{query_str}'{tag_str}")
+        print(f" Matched {len(results)} Components (Code Prompts & Install Commands)")
+        print(f"=======================================================\n")
+        for i, r in enumerate(results, 1):
+            category = get_item_category(r)
+            source_site, source_url = get_source_info(r)
+            print(f"[{i}] {r.get('title')}")
+            print(f"    - Category:        {category}")
+            print(f"    - Source:          {source_site} ({source_url})")
+            print(f"    - Relevance Score: {r.get('relevance_score', 'N/A')}")
+            print(f"    - Overview:        {r.get('description')}")
+            if r.get('tags'):
+                print(f"    - Tags:            {', '.join(r['tags'])}")
+            if r.get('npm_deps'):
+                print(f"    - Install deps:    {r['npm_deps']}")
+            if r.get('full_prompt'):
+                print(f"    - Prompt/Code:     Pass --full to view the verbatim prompt and implementation\n")
+            else:
+                print()
+        return
 
     if args.full:
         print(f"\n=======================================================")

@@ -7,6 +7,8 @@ WWDC interface talks) and **Impeccable** (Paul Bakaus, Apache-2.0), fused into *
 served on demand by a **zero-dependency Rust binary** — paired with a curated 950 UI design system showcase library
 (622 Pixlpin visual showcases + 328 MotionSites full prompt blueprints) retrieved by a fine-tuned
 **all-MiniLM-L6-v2** encoder (384-d, uint8 per-channel ONNX) through hybrid lexical + semantic search.
+A second pool (`--pool components`) adds **9,735 UI component code prompts** (9,698 from 21st.dev +
+37 from skiper.ui) with verbatim implementations and install commands, searched by the same encoder.
 
 The problem it solves is not knowledge. It is context. Loading both skills means ~10,000 tokens
 before you write a line of CSS, and most of it is irrelevant to the one thing you are doing. Here the
@@ -171,6 +173,11 @@ python search_design_showcases.py --category SaaS
 
 # Extract full prompt blueprints with verbatim code, fonts, and Tailwind classes
 python search_design_showcases.py "liquid glass" --full
+
+# Search the separate 9,735-component code library (21st.dev + skiper.ui)
+python search_design_showcases.py --pool components "gooey liquid effect" --limit 3
+python search_design_showcases.py --pool components "card swipe carousel" --full   # verbatim code
+python search_design_showcases.py --pool components --3d --category Background
 ```
 
 ### What it provides:
@@ -230,6 +237,23 @@ retrieval time (`--full` and the per-item source links). The encoder is a *retri
 the 950 reference designs for a query; it does not generate sites — so the indexed representation is
 optimized for concept-level search, not for reproducing a prompt's every token.
 
+### Component library (`--pool components`)
+
+A second, separate pool holds **9,735 UI component code prompts** — 9,698 community components from
+[21st.dev](https://21st.dev/community/components) and 37 from [skiper.ui](https://skiper-ui.com) —
+parsed into `design_showcases/components_meta.json` and indexed with the **same** fine-tuned encoder
+(`design_showcases/component_embeddings.npy`, `python semantic_index.py rebuild-components`). These
+sources ship verbatim implementations and npm install commands rather than interaction video, so
+component results carry tags / install metadata and surface the full code prompt through `--full`.
+The pool is kept apart from the 950 full-design showcases so the design benchmark and design search
+stay clean; `search_components()` reuses the same hybrid lexical + semantic ranking (`w = 0.7`).
+
+On **28 natural-language probes** (descriptive and name-based, e.g. "gooey liquid effect on elements",
+"card swipe carousel with stacking and gestures") the deployed encoder retrieves the target component
+in the top 5 every time — **R@5 1.0, P@1 0.9286, MRR@10 0.9643** (the two rank-2 cases are near-duplicate
+siblings: a murmuration-boids vs murmuration-wordmark, and a 21st.dev mirror of skiper89). The designs-only
+fine-tune generalizes to these component prompts without any component-specific training (see Exp C).
+
 ### Before / after (held-out test split, 51 queries)
 
 A hand-verified benchmark of 70 queries (`eval/benchmark.json`, 19 dev / 51 test) measures
@@ -245,7 +269,7 @@ pipeline with `eval/evaluate.py` and are stored in `eval/deployed_results.json`.
 | fine-tuned float checkpoint | 0.9412 | 0.9330 | 0.9647 | 0.9122 |
 | **shipped uint8 per-channel ONNX** | **0.9412** | **0.9183** | **0.9627** | **0.9072** |
 
-The query-style recipe was selected over the notebook control on dev. Four further experiments were
+The query-style recipe was selected over the notebook control on dev. Five further experiments were
 run and **rejected** because dev got worse (the dev bar is the float checkpoint at nDCG@5 **0.934**,
 R@5 **0.9254**):
 
@@ -257,6 +281,13 @@ R@5 **0.9254**):
 - **Enriched index (Exp B)** — the index text itself was augmented with a compact concept signature
   (engine + motion + layout) and `max_seq_length` raised 128 → 256. Even the *frozen* deployed encoder
   dropped to 0.9195 on the enriched index; the best retrained checkpoint reached only **0.9212**.
+- **Combined designs + components (Exp C)** — continued training on the 950 designs *plus* the 9,735
+  component prompts (10,685 pairs, 91% components). Design dev nDCG@5 fell 0.934 → **0.9274** (A_desc14)
+  / **0.9273** (B_desc20): the much larger component corpus dilutes the distinctive design signal.
+  Component retrieval was **identical** to the designs-only encoder (P@1 0.9286, R@5 1.0, MRR@10 0.9643
+  on 28 probes) — the query-style fine-tune already generalizes to the new component prompts, so the
+  combined training bought nothing for components and cost design accuracy. Rejected; the shipped
+  encoder stays the designs-only `queryv2_phase2`, and the component pool is indexed with it.
 
 Both UI-element experiments fail for the same reason: engine/motion/layout terms are shared
 boilerplate across many designs, so injecting them dilutes the distinctive description signal that
@@ -284,7 +315,8 @@ Reproduce:
 pip install torch sentence-transformers datasets accelerate onnx onnxscript
 python eval/train_v2.py                                   # fine-tune, pick best dev checkpoint
 python eval/export_encoder.py --checkpoint <best>         # bundle uint8 per-channel ONNX encoder
-python semantic_index.py rebuild                          # regenerate the index
+python semantic_index.py rebuild                          # regenerate the design index
+python semantic_index.py rebuild-components               # regenerate the 9,735-component index
 python eval/evaluate.py --systems lexical onnx stored base <best>
 python eval/tune_hybrid.py                                # tune w on dev via the real search()
 python eval/smoke_test.py                                 # end-to-end sanity checks

@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Semantic vector index for the design showcase library.
 
-Encodes text with the bundled fine-tuned MiniLM ONNX encoder (int8, ~23 MB)
+Encodes text with the bundled fine-tuned MiniLM ONNX encoder (uint8 per-channel, ~22 MB)
 using only onnxruntime + tokenizers - no torch needed at search time.
 
 Usage:
-    python semantic_index.py rebuild     # regenerate design_embeddings.npy from meta
-    python semantic_index.py encode "query text"   # debug: print a query vector norm
+    python semantic_index.py rebuild              # regenerate design_embeddings.npy from meta
+    python semantic_index.py rebuild-components   # regenerate component_embeddings.npy from components_meta
+    python semantic_index.py encode "query text"  # debug: print a query vector norm
 
 If onnxruntime/tokenizers or the encoder files are missing, `load_encoder()`
 returns None and callers fall back to lexical search.
@@ -21,6 +22,8 @@ SHOWCASES_DIR = os.path.join(BASE_DIR, "design_showcases")
 ENC_DIR = os.path.join(SHOWCASES_DIR, "encoder")
 META_PATH = os.path.join(SHOWCASES_DIR, "showcases_meta.json")
 EMBS_PATH = os.path.join(SHOWCASES_DIR, "design_embeddings.npy")
+COMPONENTS_META_PATH = os.path.join(SHOWCASES_DIR, "components_meta.json")
+COMPONENTS_EMBS_PATH = os.path.join(SHOWCASES_DIR, "component_embeddings.npy")
 
 
 class OnnxEncoder:
@@ -78,11 +81,29 @@ def build_index(verbose=True):
     return emb
 
 
+def build_component_index(verbose=True):
+    enc = load_encoder()
+    if enc is None:
+        raise RuntimeError(
+            "semantic encoder unavailable: pip install onnxruntime tokenizers "
+            "and ensure design_showcases/encoder/ exists (see eval/export_encoder.py)")
+    with open(COMPONENTS_META_PATH, encoding="utf-8") as f:
+        meta = json.load(f)
+    texts = [index_text(m) for m in meta]
+    emb = enc.encode(texts)
+    np.save(COMPONENTS_EMBS_PATH, emb)
+    if verbose:
+        print(f"indexed {len(meta)} components -> {COMPONENTS_EMBS_PATH} shape={emb.shape}")
+    return emb
+
+
 def main():
     import sys
     cmd = sys.argv[1] if len(sys.argv) > 1 else "rebuild"
     if cmd == "rebuild":
         build_index()
+    elif cmd == "rebuild-components":
+        build_component_index()
     elif cmd == "encode":
         enc = load_encoder()
         if enc is None:

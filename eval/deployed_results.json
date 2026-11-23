@@ -24,5 +24,15 @@
     "dev": {"P@1": 0.9474, "R@5": 0.9079, "MRR@10": 0.9737, "nDCG@5": 0.9081},
     "test": {"P@1": 0.9216, "R@5": 0.8899, "MRR@10": 0.9477, "nDCG@5": 0.8811},
     "all": {"P@1": 0.9286, "R@5": 0.8948, "MRR@10": 0.9548, "nDCG@5": 0.8884}
+  },
+  "component_probes": {
+    "_note": "28 natural-language probes over the separate 9,735-component pool (21st.dev + skiper.ui), NOT the 950-design benchmark. 'deployed_hybrid' is search_components() (uint8 ONNX + lexical, w=0.7); 'float_checkpoint' is queryv2_phase2 pure semantic. R@5=1.0: every probe's target component is in the top 5. The two rank-2 cases are near-duplicate siblings (murmuration-boids vs -wordmark; a 21st.dev mirror of skiper89).",
+    "deployed_hybrid": {"P@1": 0.9286, "R@5": 1.0, "MRR@10": 0.9643},
+    "float_checkpoint": {"P@1": 0.9286, "R@5": 1.0, "MRR@10": 0.9643, "nDCG@5": 0.9736}
+  },
+  "combined_experiment": {
+    "_note": "Exp C (REJECTED): continued training on 950 designs + 9,735 components (10,685 pairs, 91% components). Design dev nDCG@5 fell below the 0.934 bar while component retrieval was IDENTICAL to the designs-only encoder — the query-style fine-tune already generalizes to the component prompts, so combined training diluted designs for zero component gain. Shipped encoder stays queryv2_phase2.",
+    "combined_A_desc14": {"design_dev": {"P@1": 1.0, "R@5": 0.9211, "MRR@10": 1.0, "nDCG@5": 0.9274}, "component": {"P@1": 0.9286, "R@5": 1.0, "MRR@10": 0.9643, "nDCG@5": 0.9736}},
+    "combined_B_desc20": {"design_dev": {"P@1": 1.0, "R@5": 0.9254, "MRR@10": 1.0, "nDCG@5": 0.9273}, "component": {"P@1": 0.9286, "R@5": 1.0, "MRR@10": 0.9643, "nDCG@5": 0.9736}}
   }
 }
