@@ -1039,7 +1039,7 @@ def format_full_blueprint(item, index=1):
     lines.append("######################################################################\n")
     return "\n".join(lines)
 
-def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None):
+def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None, *, diagnostics=None, include_specs=True):
     """
     Search curated showcases with UI Design System Archetypes,
     Embedding & TF-IDF similarity, and component-first blueprints.
@@ -1110,6 +1110,9 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
         qv = enc.encode([query])[0]
         sem = emb[[i for i, _ in indexed]] @ qv
 
+    if diagnostics is not None:
+        diagnostics["backend"] = "hybrid" if sem is not None else "lexical"
+
     lex_scores = []
     for idx, it in enumerate(items):
         sim = float(similarities[idx]) if idx < len(similarities) else 0.0
@@ -1145,18 +1148,18 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
     for idx, it in enumerate(items):
         total_score = float(final_scores[idx])
         if total_score > 0.05 or not q_words:
-            ds = derive_ui_design_spec(it)
-            it_with_ds = {
-                **it,
-                "relevance_score": round(float(total_score), 4),
-                "design_system": ds
-            }
-            scored.append((total_score, it_with_ds))
+            scored.append((total_score, it))
 
     scored.sort(key=lambda x: x[0], reverse=True)
-    return [it for _, it in scored[:eff_limit]]
+    results = []
+    for score, item in scored[:eff_limit]:
+        result = {**item, "relevance_score": round(float(score), 4)}
+        if include_specs:
+            result["design_system"] = derive_ui_design_spec(item)
+        results.append(result)
+    return results
 
-def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None):
+def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None, *, diagnostics=None):
     """Search the separate UI-component pool (21st.dev + skiper.ui) with the same
     hybrid lexical+semantic ranking used for designs. Components ship verbatim code
     prompts and npm install commands rather than interaction video, so results carry
@@ -1205,6 +1208,9 @@ def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass
     if enc is not None and emb is not None and emb.shape[0] == n_total and items:
         qv = enc.encode([query])[0]
         sem = emb[[i for i, _ in indexed]] @ qv
+
+    if diagnostics is not None:
+        diagnostics["backend"] = "hybrid" if sem is not None else "lexical"
 
     lex_scores = []
     for idx, it in enumerate(items):
@@ -1276,6 +1282,27 @@ def format_component_blueprint(item, index=1):
     lines.append("######################################################################\n")
     return "\n".join(lines)
 
+def reference_evidence(query, pool):
+    """Return catalog evidence for a design decision. Keep presets out of this path."""
+    if is_broad_or_creative_query(query):
+        return {"status": "needs_specific_query", "backend": None, "references": []}
+    details = {"backend": None}
+    if pool == "components":
+        matches = search_components(query, limit=3, diagnostics=details)
+    else:
+        matches = search(query, limit=3, diagnostics=details, include_specs=False)
+    refs = []
+    for item in matches:
+        source, url = get_source_info(item)
+        refs.append({
+            "id": item.get("id"), "title": item["title"], "source": source,
+            "url": url or None, "video_url": item.get("video_url") or None,
+            "description": (item.get("description") or "")[:750],
+            "blueprint_excerpt": (item.get("full_prompt") or "")[:550] or None,
+        })
+    return {"status": "ok" if refs else "no_matches", **details, "references": refs}
+
+
 def main():
     # Windows consoles default to cp1252, which cannot encode characters such as
     # U+2212 (minus) present in some showcase descriptions. Force UTF-8 so --json
@@ -1344,7 +1371,12 @@ def main():
         action="store_true",
         help="Output JSON for programmatic agent consumption"
     )
+    parser.add_argument("--evidence", action="store_true",
+                        help="Return a compact JSON packet of source descriptions and media for the design agent")
     args = parser.parse_args()
+    if args.evidence:
+        print(json.dumps(reference_evidence(" ".join(args.query), args.pool), ensure_ascii=False))
+        return
 
     # Handle --components early
     if args.components:
