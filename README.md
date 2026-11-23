@@ -15,7 +15,7 @@ cargo run --locked --release --bin unfslop -- install --agent codex
 
 Run the same commands on Windows, macOS and Linux. The last command installs the skill, local model and catalog. Codex's project skill directory is `.agents/skills/`. Add `--user` to install for your user account, `--dir PATH` for another location, or `--force` to update an existing installation. Set `UNFSLOP_PYTHON` if the agent uses a different interpreter.
 
-Run commands below with `target/release/unfslop` from the checkout, or with the installed skill's `bin/unfslop` on PATH. On Windows the executable has an `.exe` suffix.
+Run commands below with `target/release/unfslop` from the checkout, or with the installed skill's `bin/unfslop` on PATH. On Windows the executable has an `.exe` suffix. The CLI is installed as `unfslop`.
 
 ## Use
 
