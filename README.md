@@ -10,12 +10,14 @@ served on demand by a **standalone Rust binary** — paired with a curated 950 U
 A second pool (`--pool components`) adds **9,735 UI component code prompts** (9,698 from 21st.dev +
 37 from skiper.ui) with verbatim implementations and install commands, searched by the same encoder.
 
-Start with the screen's primary task. The skill routes a review, a focused repair and a new visual direction differently. Only the relevant design cards enter the working context. The optional Python retriever supplies visual references when the design needs them.
+For a new screen, `unfslop design` retrieves design evidence from the local model and pairs it with Apple Design and Impeccable guidance. The coding agent chooses the composition. For a review or repair, `unfslop context` serves focused craft guidance.
 
 ## Quick start
 
 ```bash
+python -m pip install -r requirements.txt   # in your Python environment
 cargo build --release          # builds unfslop
+target/release/unfslop design "field-recording archive with a track list and audio player"
 target/release/unfslop doctor
 target/release/unfslop context "settings page with destructive actions"
 ```
@@ -33,7 +35,7 @@ unfslop install --dir path/to/skills/unfuckin-slop
 ```
 
 That writes `SKILL.md`, all 30 cards, `NOTICE.md`, and a copy of the binary at `bin/unfslop`, so the
-skill keeps working on a machine with no Cargo toolchain. Build the CLI from this checkout before installing to pick up the current router and embedded guide. The optional Python retriever and its indexes stay in the repository checkout. Any SKILL.md-compatible agent can use it
+skill keeps working on a machine with no Cargo toolchain. Build the CLI from this checkout before installing to pick up the current router and embedded guide. The installer copies the reference engine, catalogs and ONNX model into `design-library/` when run from a checkout build or a full bundle. Install `design-library/requirements.txt` in your Python environment. `UNFSLOP_PYTHON` selects a specific interpreter and `UNFSLOP_DESIGN_LIBRARY` can point a binary-only installation at an existing checkout. Any SKILL.md-compatible agent can use it
 (Claude Code, Codex, Cursor, Copilot, and friends); point it at the folder.
 
 For this repository itself, the skill is already in `skills/unfuckin-slop/`. Agents that scan
@@ -43,7 +45,8 @@ For this repository itself, the skill is already in `skills/unfuckin-slop/`. Age
 
 | Command | What it does |
 | --- | --- |
-| `unfslop context "<task>"` | The main command. Ranks cards, prints only those that fit the budget. |
+| `unfslop design "<brief>" [--pool components]` | JSON with up to three catalog references, retrieval status, and one complete Apple and Impeccable card each. | 
+| `unfslop context "<task>"` | Rank task-specific craft cards for a repair, review or deeper follow-up. |
 | `--budget N` | Token ceiling for the pack. Default 2000. |
 | `--limit N` | Card ceiling. Default 6. |
 | `--mode M` | Force a mode: `build`, `motion`, `gesture`, `critique`, `polish`, `system`, `a11y`, `native`, `inspire`. |
@@ -136,8 +139,8 @@ Unfuckin-Slop operates completely self-contained with **zero external MCP depend
 ### Workflow
 
 1. Identify the main action, surface intent and whether the request is a build, refinement or review. Inspect the incumbent UI and its actual content.
-2. Retrieve a small card pack with `unfslop context`. Use `--mode` to pin the task when a brief mixes concerns.
-3. For an open visual direction, search the repository's showcase or component index. For a focused repair, start with the product's own conventions. In a cards-only installation, use the fallback links in the skill guide.
+2. For new design work, run `unfslop design` with a specific subject and interaction. Review the catalog text or linked media, sketch two candidate compositions with real content, and choose the one that best serves the primary task.
+3. Use the accompanying craft lenses to refine the chosen composition. Pull related cards for deeper decisions, or use `unfslop context` directly for focused repairs. If retrieval falls back, the packet reports the backend or the reason it could not retrieve references.
 4. Run lint over changed web paths, then exercise the primary flow, keyboard interaction and relevant recovery at supported sizes. Report the checks you could perform.
 
 ### How agents use it:
