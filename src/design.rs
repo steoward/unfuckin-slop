@@ -54,13 +54,14 @@ pub(crate) fn install_library(target: &Path) -> io::Result<()> {
     Ok(())
 }
 
-fn retrieve(query: &str, pool: &str) -> Result<Value, String> {
+fn retrieve(args: &[&str], pool: &str) -> Result<Value, String> {
     let root = library_root().ok_or("Install the full skill bundle or set UNFSLOP_DESIGN_LIBRARY to the checkout root.")?;
     let python = std::env::var_os("UNFSLOP_PYTHON")
         .unwrap_or_else(|| if cfg!(windows) { "python" } else { "python3" }.into());
     let output = Command::new(python)
         .arg(root.join(SCRIPT))
-        .args(["--evidence", "--pool", pool, "--", query])
+        .args(["--pool", pool])
+        .args(args)
         .output()
         .map_err(|e| format!("Cannot start Python ({e}). Set UNFSLOP_PYTHON to a Python executable."))?;
     if !output.status.success() {
@@ -71,8 +72,17 @@ fn retrieve(query: &str, pool: &str) -> Result<Value, String> {
     serde_json::from_slice(&output.stdout).map_err(|e| format!("Invalid reference packet: {e}"))
 }
 
-pub fn brief(lib: &Library, query: &str, pool: &str) -> Value {
-    let evidence = retrieve(query, pool).unwrap_or_else(|reason| {
+pub fn record(id: &str, pool: &str) -> Result<Value, String> {
+    retrieve(&["--record", id], pool)
+}
+
+pub fn brief(lib: &Library, query: &str, pool: &str, source: Option<&str>) -> Value {
+    let mut args = vec!["--evidence"];
+    if let Some(source) = source {
+        args.extend(["--source", source]);
+    }
+    args.extend(["--", query]);
+    let evidence = retrieve(&args, pool).unwrap_or_else(|reason| {
         json!({"status":"unavailable", "backend":null, "references":[], "reason":reason})
     });
     let hits = index::search(&lib.cards, query);
