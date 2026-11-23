@@ -980,7 +980,7 @@ def print_component_tokens(as_json=False):
     print("\n======================================================================\n")
 
 def format_full_blueprint(item, index=1):
-    """Format the complete verbatim prompt blueprint and code implementation."""
+    """Format an original prompt, catalog description, or labeled archetype."""
     category = get_item_category(item)
     source_site, source_url = get_source_info(item)
     video_url = item.get("video_url", "N/A")
@@ -1261,7 +1261,7 @@ def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass
     return [it for _, it in scored[:eff_limit]]
 
 def format_component_blueprint(item, index=1):
-    """Format a component's verbatim prompt / code implementation and install metadata."""
+    """Format the component's stored material and dependency metadata."""
     category = get_item_category(item)
     source_site, source_url = get_source_info(item)
     title = item.get("title", "Component")
@@ -1283,7 +1283,7 @@ def format_component_blueprint(item, index=1):
     lines.append("----------------------------------------------------------------------")
     full_prompt = item.get("full_prompt")
     if full_prompt:
-        lines.append("VERBATIM PROMPT / CODE:")
+        lines.append("STORED COMPONENT MATERIAL:")
         lines.append(full_prompt)
     lines.append("######################################################################\n")
     return "\n".join(lines)
@@ -1357,7 +1357,9 @@ def reference_evidence(query, pool, *, limit=3, filter_3d=False,
         return {"status": "ok" if limit else "no_matches", "backend": "catalog_exact",
                 "exact_matches": len(exact), "references": [pack_reference(row) for row in exact[:limit]]}
 
-    if not exact and query.strip().startswith(("https://", "http://")):
+    key = query.strip()
+    if not exact and (key.startswith(("https://", "http://"))
+                      or any(row.get("id") == key for row in records)):
         return {"status": "no_matches", "backend": "catalog_exact", "exact_matches": 0, "references": []}
     if broad and not constrained and not exact:
         return {"status": "needs_specific_query", "backend": None, "references": []}
@@ -1525,7 +1527,7 @@ def main():
         if args.full:
             print(f"\n=======================================================")
             print(f" UI Component Library (21st.dev + skiper.ui): '{query_str}'{tag_str} [FULL PROMPT]")
-            print(f" Showing {len(results)} Verbatim Component Prompts & Implementations")
+            print(f" Showing {len(results)} Component Records")
             print(f"=======================================================\n")
             for i, r in enumerate(results, 1):
                 print(format_component_blueprint(r, index=i))
@@ -1548,7 +1550,7 @@ def main():
             if r.get('npm_deps'):
                 print(f"    - Install deps:    {r['npm_deps']}")
             if r.get('full_prompt'):
-                print(f"    - Prompt/Code:     Pass --full to view the verbatim prompt and implementation\n")
+                print(f"    - Prompt/Code:     Pass --full to view stored material\n")
             else:
                 print()
         return
@@ -1556,7 +1558,7 @@ def main():
     if args.full:
         print(f"\n=======================================================")
         print(f" UI Design System & Component Library: '{query_str}'{tag_str} [FULL BLUEPRINT]")
-        print(f" Showing {len(results)} Complete Implementation Blueprints")
+        print(f" Showing {len(results)} Design Records")
         print(f"=======================================================\n")
         for i, r in enumerate(results, 1):
             print(format_full_blueprint(r, index=i))
@@ -1564,7 +1566,7 @@ def main():
 
     print(f"\n=======================================================")
     print(f" UI Design System & Component Library Engine: '{query_str}'{tag_str}")
-    print(f" Matched {len(results)} Curated Showcases (Component Blueprints & Video Grounded)")
+    print(f" Matched {len(results)} Design References")
     print(f"=======================================================\n")
 
     for i, r in enumerate(results, 1):
@@ -1600,9 +1602,9 @@ def main():
         ts = ds.get("transition_spec", {})
         print(f"    - Transition Spec:      {ts.get('duration_ms', 240)}ms {ts.get('curve', 'cubic-bezier(0.16, 1, 0.3, 1)')} (Quiet supporting detail)")
         if r.get('code_scaffold') or ds.get('code_scaffold'):
-            print(f"    - Code Blueprint:       Pass --full to view complete React + Tailwind component implementation\n")
+            print(f"    - Code Blueprint:       Pass --full to view the archetype scaffold\n")
         else:
-            print(f"    - Blueprint:            Pass --full to view entire verbatim prompt blueprint\n")
+            print(f"    - Blueprint:            Pass --full to view the archetype notes\n")
 
 if __name__ == "__main__":
     main()
