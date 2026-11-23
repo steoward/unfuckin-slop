@@ -37,7 +37,7 @@ jobs:
           cd "$RUNNER_TEMP/package"
           "unfuckin-slop/bin/unfslop$suffix" context "review this screenshot" --json > pack.json
           python -c "import json; p = json.load(open('pack.json', encoding='utf-8')); assert p['mode'] == 'critique' and p['cards']"
-          tar -czf "$RUNNER_TEMP/unfuckin-slop.tar.gz" unfuckin-slop
+          tar -czf ../unfuckin-slop.tar.gz unfuckin-slop
 
       - name: Upload the standalone skill
         uses: actions/upload-artifact@v4
