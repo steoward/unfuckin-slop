@@ -8,7 +8,7 @@ weight: 9
 
 # Required states
 
-For every interactive element: default, hover, active, focus-visible, disabled, loading, error. For every collection: empty, one item, many items, loading, error, no permission.
+Map each control's reachable states. A static link needs keyboard focus and activation. A save action also needs pending, success and recoverable failure. For collections, cover empty, one and many items, plus loading, failure and restricted access when the data source supports them.
 
 - **Loading** is not a spinner in the middle of a blank page. Use a skeleton that matches the final layout, or keep the previous content and show progress in place.
 - **Empty states teach.** Say what would be here, why it is empty, and the one action that fills it.
@@ -20,6 +20,7 @@ For every interactive element: default, hover, active, focus-visible, disabled, 
 
 Real content is the test: long names, no name, 300 items, 0 items, 4-digit numbers, Arabic and Hebrew (RTL), German (30–40% longer), emoji in titles, missing images, slow 3G, offline, double submit, back button after mutation.
 
+- **Bidirectional content.** Set the document direction from the locale, use logical spacing, isolate mixed-direction names or IDs with `bdi`, and test an actual RTL screen. Mirror directional navigation icons where their meaning follows reading order. Keep logos and media controls in their conventional orientation.
 - **Layout must survive 200% zoom** and a 320px viewport.
 - **Destructive actions** get confirm or undo, never both, never a modal for something reversible.
 - **Never lose user input** on navigation, refresh, or error.
