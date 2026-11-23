@@ -417,13 +417,14 @@ def main():
     parser.add_argument("--3d", dest="three_d", action="store_true")
     parser.add_argument("--liquid-glass", action="store_true")
     parser.add_argument("--category")
-    parser.add_argument("--list-categories", action="store_true")
     parser.add_argument("--full", action="store_true", help="Print the stored reference text")
     parser.add_argument("--limit", type=int)
     parser.add_argument("--json", action="store_true")
-    parser.add_argument("--evidence", action="store_true", help="Return compact source evidence as JSON")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--list-categories", action="store_true")
+    mode.add_argument("--evidence", action="store_true", help="Return compact source evidence as JSON")
     parser.add_argument("--source", choices=sorted(SOURCE_MATERIAL))
-    parser.add_argument("--record", metavar="ID", help="Print one original catalog record as JSON")
+    mode.add_argument("--record", metavar="ID", help="Print one original catalog record as JSON")
     args = parser.parse_args()
     if args.limit is not None and args.limit < 0:
         parser.error("--limit must be nonnegative")
@@ -431,14 +432,17 @@ def main():
         parser.error(f"--source {args.source} is outside the {args.pool} pool")
 
     load = load_components if args.pool == "components" else load_data
+    if args.record or args.list_categories:
+        matches = [row for row in load() if matches_filters(
+            row, args.source, args.category, args.three_d, args.liquid_glass)]
     if args.record:
-        record = next((row for row in load() if row.get("id") == args.record), None)
+        record = next((row for row in matches if row.get("id") == args.record), None)
         if record is None:
             parser.error(f"unknown {args.pool} record {args.record!r}")
         print(json.dumps(record, ensure_ascii=False, indent=2))
         return
     if args.list_categories:
-        list_categories(load())
+        list_categories(matches)
         return
 
     query = " ".join(args.query)
