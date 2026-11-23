@@ -1005,10 +1005,39 @@ def format_full_blueprint(item, index=1):
     if full_prompt and str(full_prompt).strip():
         lines.append(str(full_prompt).strip())
     elif item.get("archetype"):
+        ds = ds or derive_ui_design_spec(item)
         lines.append("Built-in archetype (authored preset)")
-        lines.append(item.get("description", ""))
-        if item.get("code_scaffold") or ds.get("code_scaffold"):
-            lines.append(item.get("code_scaffold") or ds["code_scaffold"])
+        lines.append(f"Build a production-grade, high-impact web interface for \"{title}\" with React, TypeScript, and Tailwind CSS.\n")
+        lines.append("---")
+        lines.append("UI ARCHITECTURE & COMPONENT BREAKDOWN")
+        for comp in ds.get("components", []):
+            lines.append(f"- {comp}")
+        lines.append("\n---")
+        lines.append("SURFACE TOKENS, LIGHTING & ATMOSPHERE")
+        vs = ds.get("visual_styling", {})
+        lines.append(f"- Surface Elevations: {vs.get('surfaces')}")
+        lines.append(f"- Lighting Spotlight: {vs.get('lighting')}")
+        lines.append(f"- Color Palette:     {vs.get('accents')}")
+        lines.append(f"- Typography:        {vs.get('typography')}\n")
+        lines.append("---")
+        lines.append("FONTS & GOOGLE FONTS IMPORT")
+        lines.append("- Display/Heading Font: 'Space Grotesk' or 'Syne' (weights: 700, 800)")
+        lines.append("- Body/Interface Font: 'Inter' or 'Geist Sans' (weights: 400, 500, 600)")
+        lines.append("- Import Link:\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Syne:wght@700;800&display=swap\" rel=\"stylesheet\">\n")
+        lines.append("---")
+        lines.append("CLEAN TRANSITION SPEC (QUIET SUPPORTING DETAILS)")
+        ts = ds.get("transition_spec", {})
+        lines.append(f"- Duration: {ts.get('duration_ms', 240)}ms")
+        lines.append(f"- Easing:   {ts.get('curve', 'cubic-bezier(0.16, 1, 0.3, 1)')}")
+        lines.append(f"- Notes:    {ts.get('notes', 'Natural dampening with zero float')}\n")
+        lines.append("---")
+        lines.append("PRODUCTION CODE IMPLEMENTATION SCAFFOLD")
+        scaffold = item.get("code_scaffold") or ds.get("code_scaffold")
+        if scaffold:
+            lines.append(scaffold)
+        lines.append("\n---")
+        lines.append(f"DIRECT MP4 VIDEO ASSET: {video_url}")
+
     else:
         lines.append("Catalog description")
         lines.append(item.get("description", ""))
@@ -1039,6 +1068,8 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
         indexed = [(i, it) for i, it in indexed if is_3d_showcase(it)]
 
     items = [it for _, it in indexed]
+    if diagnostics is not None:
+        diagnostics["catalog_available"] = n_total > 0
 
     # Empty or broad query handling: return the 6 Universal UI Design System Archetypes
     if is_broad_or_creative_query(query):
@@ -1047,12 +1078,11 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
             results = []
             eff_limit = limit if limit is not None else 5
             for it in items[:eff_limit]:
-                ds = derive_ui_design_spec(it)
-                results.append({
-                    **it,
-                    "relevance_score": 1.0,
-                    "design_system": ds
-                })
+                result = {**it, "relevance_score": 1.0}
+                if include_specs:
+                    result["design_system"] = derive_ui_design_spec(it)
+                    result["design_system_origin"] = "category_heuristic"
+                results.append(result)
             return results
 
         eff_limit = limit if limit is not None else len(UI_DESIGN_ARCHETYPES)
@@ -1134,6 +1164,7 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
         result = {**item, "relevance_score": round(float(score), 4)}
         if include_specs:
             result["design_system"] = derive_ui_design_spec(item)
+            result["design_system_origin"] = "category_heuristic"
         results.append(result)
     return results
 
@@ -1154,6 +1185,8 @@ def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass
         indexed = [(i, it) for i, it in indexed if is_3d_showcase(it)]
 
     items = [it for _, it in indexed]
+    if diagnostics is not None:
+        diagnostics["catalog_available"] = n_total > 0
     eff_limit = limit if limit is not None else 5
 
     # Components have no archetype defaults; a subject-free query returns the first
@@ -1260,16 +1293,19 @@ def format_component_blueprint(item, index=1):
     lines.append("######################################################################\n")
     return "\n".join(lines)
 
-def reference_evidence(query, pool):
+def reference_evidence(query, pool, *, limit=3, filter_3d=False, filter_liquid_glass=False, category_filter=None):
     """Return catalog evidence for a design decision. Keep presets out of this path."""
-    if is_broad_or_creative_query(query):
+    broad = is_broad_or_creative_query(query)
+    if broad and not (filter_3d or filter_liquid_glass or category_filter):
         return {"status": "needs_specific_query", "backend": None, "references": []}
-    details = {"backend": None}
+    details = {"backend": "catalog_filter" if broad else None}
+    options = dict(limit=limit, filter_3d=filter_3d, filter_liquid_glass=filter_liquid_glass,
+                   category_filter=category_filter, diagnostics=details)
     if pool == "components":
-        matches = search_components(query, limit=3, diagnostics=details)
+        matches = search_components(query, **options)
     else:
-        matches = search(query, limit=3, diagnostics=details, include_specs=False)
-    if details["backend"] is None:
+        matches = search(query, include_specs=False, **options)
+    if not details["catalog_available"]:
         return {"status": "unavailable", "backend": None, "references": [],
                 "reason": f"The {pool} catalog could not be loaded."}
     refs = []
@@ -1281,7 +1317,7 @@ def reference_evidence(query, pool):
             "description": (item.get("description") or "")[:750],
             "blueprint_excerpt": (item.get("full_prompt") or "")[:550] or None,
         })
-    return {"status": "ok" if refs else "no_matches", **details, "references": refs}
+    return {"status": "ok" if refs else "no_matches", "backend": details["backend"], "references": refs}
 
 
 def main():
@@ -1357,7 +1393,13 @@ def main():
     parser.add_argument("--record", metavar="ID", help="Print one original catalog record as JSON")
     args = parser.parse_args()
     if args.evidence:
-        print(json.dumps(reference_evidence(" ".join(args.query), args.pool), ensure_ascii=False))
+        if args.limit is not None and args.limit < 0:
+            parser.error("--limit must be nonnegative")
+        result = reference_evidence(" ".join(args.query), args.pool,
+                                    limit=3 if args.limit is None else args.limit,
+                                    filter_3d=args.three_d, filter_liquid_glass=args.liquid_glass,
+                                    category_filter=args.category)
+        print(json.dumps(result, ensure_ascii=False))
         return
 
     # Resolve a selected reference by its stable ID without a second ranking pass.
