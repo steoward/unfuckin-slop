@@ -22,7 +22,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 META_PATH = os.path.join(REPO, "design_showcases", "showcases_meta.json")
 BENCH_PATH = os.path.join(REPO, "eval", "benchmark.json")
 STORED_EMB = os.path.join(REPO, "design_showcases", "design_embeddings.npy")
-CACHE_DIR = os.environ.get("UNFSLOP_EVAL_CACHE", "D:/unfslop-ft/cache")
+CACHE_DIR = os.environ.get("UNFSLOP_EVAL_CACHE", os.path.join(REPO, ".slop-cache", "evaluation"))
 BASE_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 
