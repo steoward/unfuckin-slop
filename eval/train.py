@@ -26,7 +26,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(REPO, "eval"))
 import evaluate as ev  # noqa: E402
 
-OUT_ROOT = "D:/unfslop-ft/models"
+OUT_ROOT = os.environ.get("UNFSLOP_MODEL_DIR", os.path.join(REPO, ".slop-cache", "models"))
 BASE_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 STOP = {"a", "an", "the", "and", "or", "for", "with", "of", "in", "on", "to", "is",
