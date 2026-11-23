@@ -125,7 +125,6 @@ pub fn search<'a>(cards: &'a [Card], query: &str) -> Vec<Hit<'a>> {
                 score += 4.0;
             }
             // Weight only breaks ties; it must not outrank a real match.
-            score += card.weight as f64 * 0.01;
             Hit { card, score }
         })
         .collect();
@@ -150,6 +149,14 @@ mod tests {
         assert!(tokens.contains(&"drag".to_string()));
         assert!(tokens.contains(&"sheet".to_string()));
         assert!(!tokens.contains(&"the".to_string()));
+    }
+
+    #[test]
+    fn a_query_without_evidence_has_no_positive_hits() {
+        let lib = crate::cards::Library::load();
+        for query in ["", "the and of", "qxzvvv"] {
+            assert!(search(&lib.cards, query).iter().all(|hit| hit.score == 0.0));
+        }
     }
 
     #[test]
