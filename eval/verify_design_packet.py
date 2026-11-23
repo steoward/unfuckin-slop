@@ -45,6 +45,10 @@ def main():
                                 check=True, capture_output=True, encoding="utf-8")
         assert json.loads(lookup.stdout) == by_id[refs[0]["id"]]
         print(pool, json.dumps(refs, ensure_ascii=True), flush=True)
+    filtered = catalog.reference_evidence("", "designs", filter_3d=True, limit=1)
+    assert filtered["backend"] == "catalog_filter" and len(filtered["references"]) == 1
+    empty = catalog.reference_evidence("archive", "designs", category_filter="zzz-no-category")
+    assert empty["status"] == "no_matches" and not empty["references"]
     sample = {"title": "Plain index", "description": "A quiet list."}
     formatted = catalog.format_full_blueprint(sample)
     assert "A quiet list." in formatted and "no source blueprint" in formatted
