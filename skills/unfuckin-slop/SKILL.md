@@ -1,6 +1,6 @@
 ---
 name: unfuckin-slop
-description: "Design, refine, and review web or native interfaces. Use for new screens, UI redesigns, visual critique, interaction and gesture design, accessibility, responsive layouts, or design-system work."
+description: "Design, refine, and review web or native interfaces. Use the local design-reference model and Apple Design / Impeccable guidance for new screens, UI redesigns, visual critique, interaction and gesture design, accessibility, responsive layouts, or design-system work."
 ---
 
 # Unfuckin-Slop
@@ -11,12 +11,23 @@ Start with the person using the screen. Identify their main action, what they ne
 
 | Request | First move | Deliverable |
 | --- | --- | --- |
-| New screen or redesign | Pick a surface intent from `imp.modes` (Persuade, Experience, Operate, Read). Use the brief, content and references to choose a direction. | A working screen with real hierarchy and a usable primary flow. |
+| New screen or redesign | Name the primary action and run the design brief below. Pick a surface intent (Persuade, Experience, Operate, Read). | A working screen with real hierarchy and a usable primary flow. |
 | Refine or repair | Reproduce the issue. Reuse existing tokens, components, copy and interaction contracts. | The smallest coherent change that solves the observed problem. |
 | Review | Identify the route, screenshot or files under review and the evidence each provides. | Findings ordered by impact. Edit only when requested. |
 | Motion or system work | Isolate the gesture, state transition, token or shared primitive and inspect a real consumer. | A change verified in context, including recovery or fallback where applicable. |
 
 Treat the user's brief and established product conventions as design inputs. Preserve factual claims, supported languages and working actions. For an open brief, pick one concrete organizing idea. On an inventory screen that could mean grouping by stock status with the next action alongside each exception. Decorative effects need a purpose on that surface.
+
+## Build the design direction
+
+For a new identity, page or substantial redesign, start with `unfslop design "<subject, primary action, visual or interaction constraint>"`. For a single new component add `--pool components`. The command returns up to three catalog records, their source and media links where available, and one complete card from each design tradition. The encoder retrieves designs. The agent decides how the screen should work and look.
+
+1. Read the actual descriptions. Open the most useful source or video when visual inspection is available. A text description alone supports claims about the catalog text. A link alone supplies no evidence about what an animation feels like.
+2. Sketch two plausible compositions using the product's real content. Select one by a concrete constraint such as comparing rows, previewing a surface, or reading uninterrupted. A distinctive gesture can be as important as a distinctive layout. Borrow one transferable relationship and identify what would fail if copied into this product. Skip weak references or re-query using the interaction rather than the industry.
+3. Use the Impeccable card to challenge hierarchy, layout or copy, and the Apple card to refine perception, typography or interaction. Follow a related card when a decision crosses topics. Keep a short direction note while implementing: focal point, composition at wide and narrow widths, primary interaction and reference evidence. Respect the user's pinned visual language.
+4. Inspect the rendered result with realistic content. Could you swap in an unrelated product name without changing the composition? If so, revisit the main design decision. Check whether the interaction and mobile layout still express it.
+
+Read `evidence.backend` to distinguish hybrid from lexical search. For `needs_specific_query`, supply an English description of the subject and interaction. For `unavailable`, use the diagnostic to restore the full library or use a supplied visual reference and the local cards. Describe fallback honestly. A small repair or a screenshot review can go directly to the relevant cards.
 
 ## Get the relevant cards
 
@@ -36,9 +47,7 @@ Run `unfslop context "<action, surface, constraint>"` (default budget 2,000 esti
 
 Use `unfslop get <id>` for a specific rule, `unfslop cards` for the index, or open the linked card directly. Pull another only when the task reaches that subject.
 
-## Choose references deliberately
-
-For a new visual direction, consult the supplied references or query the showcase index from the **repository root**. Use the [search examples](cards/imp.inspiration.md) to choose between complete designs, individual components and token presets. Extract one decision you can apply, such as a product comparison that keeps prices aligned as titles wrap. A focused repair usually has a better reference in a sibling component. The standalone skill installation includes cards and a router. If the Python index is unavailable, proceed with the product, the brief and the cards.
+Use the [catalog guide](cards/imp.inspiration.md) for full source blueprints, videos and targeted searches. The packaged `design-library/` includes the model and both catalogs. Install its Python requirements in your working Python environment to enable hybrid search. A source checkout has the same requirements at the repository root.
 
 ## Implement and verify
 
