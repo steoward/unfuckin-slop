@@ -18,36 +18,41 @@ pub struct Pack<'a> {
 }
 
 pub fn detect_mode(task: &str) -> String {
-    let t = task.to_lowercase();
-    let has = |words: &[&str]| words.iter().any(|w| t.contains(w));
+    // Match whole words and phrases. A screenshot or a preview may accompany
+    // any task, and "preference" is not a request for a reference.
+    let lower = task.to_lowercase();
+    let words: Vec<&str> = lower
+        .split(|c: char| !c.is_alphanumeric())
+        .filter(|word| !word.is_empty())
+        .collect();
+    let normalized = format!(" {} ", words.join(" "));
+    let has = |phrases: &[&str]| phrases.iter().any(|p| normalized.contains(&format!(" {p} ")));
 
-    if has(&[
-        "inspiration", "reference", "example", "gallery", "collectui", "pixlpin",
-        "shot", "dribbble", "pattern", "inspo", "screens", "ui pattern",
-    ]) {
-        "inspire".to_string()
-    } else if has(&["gesture", "swipe", "drag", "grab", "pointer", "touch", "carousel"]) {
-        "gesture".to_string()
-    } else if has(&[
-        "spring", "sheet", "flick", "interrupt", "momentum", "snap", "rubber", "transition",
-        "animation", "motion",
-    ]) {
-        "motion".to_string()
-    } else if has(&[
-        "accessib", "a11y", "contrast", "keyboard", "screen reader", "focus",
-    ]) {
-        "a11y".to_string()
-    } else if has(&["critique", "review", "audit", "evaluate", "score", "feedback"]) {
-        "critique".to_string()
+    let mode = if has(&["critique", "review", "audit", "evaluate", "score", "feedback"]) {
+        "critique"
     } else if has(&["polish", "final pass", "refine", "tighten", "clean up"]) {
-        "polish".to_string()
-    } else if has(&["token", "design system", "design.md", "theme", "palette"]) {
-        "system".to_string()
-    } else if has(&["ios", "iphone", "ipad", "macos", "native", "swiftui", "android"]) {
-        "native".to_string()
+        "polish"
+    } else if has(&["inspiration", "references", "reference", "example", "examples", "gallery",
+                    "collectui", "pixlpin", "dribbble", "inspo", "ui pattern", "ui patterns"]) {
+        "inspire"
+    } else if has(&["accessible", "accessibility", "a11y", "contrast", "keyboard", "screen reader",
+                    "focus", "reduced motion", "reduce motion"]) {
+        "a11y"
+    } else if has(&["gesture", "gestures", "swipe", "swiping", "drag", "dragging", "draggable",
+                    "grab", "pointer", "touch", "carousel"]) {
+        "gesture"
+    } else if has(&["spring", "springs", "sheet", "flick", "interrupt", "interruptible", "momentum",
+                    "snap", "rubber", "transition", "transitions", "animate", "animation",
+                    "animations", "motion"]) {
+        "motion"
+    } else if has(&["token", "tokens", "design system", "design md", "theme", "palette"]) {
+        "system"
+    } else if has(&["ios", "iphone", "ipad", "ipados", "macos", "native", "swiftui", "android"]) {
+        "native"
     } else {
-        "build".to_string()
-    }
+        "build"
+    };
+    mode.to_string()
 }
 
 pub fn mode_cards(mode: &str) -> &'static [&'static str] {
@@ -278,9 +283,26 @@ mod tests {
     }
 
     #[test]
+    fn mixed_briefs_and_incidental_substrings_route_to_the_requested_work() {
+        for (task, expected) in [
+            ("review this screenshot of a carousel", "critique"),
+            ("polish the preview screen", "polish"),
+            ("honour prefers-reduced-motion for the sheet", "a11y"),
+            ("keyboard access for a draggable list", "a11y"),
+            ("find references for a motion study", "inspire"),
+            ("build a preferences screen", "build"),
+            ("build a product preview", "build"),
+            ("draggable bottom sheet", "gesture"),
+            ("update DESIGN.md tokens", "system"),
+        ] {
+            assert_eq!(detect_mode(task), expected, "{task}");
+        }
+    }
+
+    #[test]
     fn every_mode_card_exists() {
         let lib = library();
-        for mode in ["build", "motion", "critique", "polish", "system", "a11y", "native"] {
+        for mode in ["build", "motion", "gesture", "inspire", "critique", "polish", "system", "a11y", "native"] {
             for id in mode_cards(mode) {
                 assert!(lib.get(id).is_some(), "mode {mode} points at missing card {id}");
             }
