@@ -24,3 +24,32 @@ jobs:
 
       - name: Cargo build release
         run: cargo build --release --verbose
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install retrieval runtime
+        run: python -m pip install -r requirements.txt
+
+      - name: Package and exercise the standalone skill
+        shell: bash
+        run: |
+          set -eu
+          suffix=""
+          if [ "$RUNNER_OS" = "Windows" ]; then suffix=".exe"; fi
+          skill_dir="$RUNNER_TEMP/package/unfuckin-slop"
+          "target/release/unfslop$suffix" install --dir "$skill_dir"
+          packet_test="$PWD/eval/verify_design_packet.py"
+          cd "$RUNNER_TEMP/package"
+          "unfuckin-slop/bin/unfslop$suffix" context "review this screenshot" --json > pack.json
+          python -c "import json; p = json.load(open('pack.json', encoding='utf-8')); assert p['mode'] == 'critique' and p['cards']"
+          python "$packet_test" "unfuckin-slop/bin/unfslop$suffix"
+          tar -czf ../unfuckin-slop.tar.gz unfuckin-slop
+
+      - name: Upload the standalone skill
+        uses: actions/upload-artifact@v4
+        with:
+          name: unfuckin-slop-${{ runner.os }}-${{ runner.arch }}
+          path: ${{ runner.temp }}/unfuckin-slop.tar.gz
+          if-no-files-found: error

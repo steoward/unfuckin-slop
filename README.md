@@ -4,37 +4,29 @@ Autonomous UI & Kinetic Design System for Coding Agents: Production-grade compon
 
 Two of the best frontend design skills, **Apple Design** (Emil Kowalski, distilled from Apple's
 WWDC interface talks) and **Impeccable** (Paul Bakaus, Apache-2.0), fused into **30 atom cards** and
-served on demand by a **zero-dependency Rust binary** — paired with a curated 950 UI design system showcase library
+served on demand by a **standalone Rust binary** — paired with a curated 950 UI design system showcase library
 (622 Pixlpin visual showcases + 328 MotionSites full prompt blueprints) retrieved by a fine-tuned
 **all-MiniLM-L6-v2** encoder (384-d, uint8 per-channel ONNX) through hybrid lexical + semantic search.
 A second pool (`--pool components`) adds **9,735 UI component code prompts** (9,698 from 21st.dev +
 37 from skiper.ui) with verbatim implementations and install commands, searched by the same encoder.
 
-The problem it solves is not knowledge. It is context. Loading both skills means ~10,000 tokens
-before you write a line of CSS, and most of it is irrelevant to the one thing you are doing. Here the
-always-on layer is ~1,600 tokens, and the router pulls one to four cards (usually ~1,700) that match
-the task in front of you.
-
-```
-SKILL.md              always loaded, ~1.6k tok     the protocol + the non-negotiables + the index
-     │
-     ├─ unfslop context "draggable sheet that snaps" ranks 29 cards, prints 4 that fit 2k tok
-     │      └─ cards/apple.springs.md               one idea, one page, only when asked for
-     │
-     └─ unfslop lint src/                           the mechanical half of the quality floor
-```
+For a new screen, `unfslop design` retrieves design evidence from the local model and pairs it with Apple Design and Impeccable guidance. The coding agent chooses the composition. For a review or repair, `unfslop context` serves focused craft guidance.
 
 ## Quick start
 
 ```bash
+python -m pip install -r requirements.txt   # in your Python environment
 cargo build --release          # builds unfslop
+target/release/unfslop design "field-recording archive with a track list and audio player"
 target/release/unfslop doctor
 target/release/unfslop context "settings page with destructive actions"
 ```
 
-Put `unfslop` (or `unfslop.exe`) somewhere on `PATH`, or use the copy installed with the skill.
+Use the newly built CLI or the one in a current CI bundle. The historical Windows executable tracked under `skills/unfuckin-slop/bin/` predates the `design` command. If you move the CLI alone onto PATH, point `UNFSLOP_DESIGN_LIBRARY` at the checkout or the installed `design-library/`.
 
 ### Install as an agent skill
+
+To use the tested binary without building it, open the successful Rust CI run for your revision and download the `unfuckin-slop-<OS>-<ARCH>` artifact for your machine. Unzip it, then extract the enclosed `.tar.gz` into your agent’s skills directory. The archive preserves the executable permissions on Unix. To build and install from source, run the commands below with your freshly built CLI on PATH.
 
 ```bash
 unfslop install                  # → .claude/skills/unfuckin-slop
@@ -42,8 +34,8 @@ unfslop install --user           # → ~/.claude/skills/unfuckin-slop
 unfslop install --dir path/to/skills/unfuckin-slop
 ```
 
-That writes `SKILL.md`, all 29 cards, `NOTICE.md`, and a copy of the binary at `bin/unfslop`, so the
-skill keeps working on a machine with no Cargo toolchain. Any SKILL.md-compatible agent can use it
+That writes `SKILL.md`, all 30 cards, `NOTICE.md`, and a copy of the binary at `bin/unfslop`, so the
+skill keeps working on a machine with no Cargo toolchain. Build the CLI from this checkout before installing to pick up the current router and embedded guide. The installer copies the reference engine, catalogs and ONNX model into `design-library/` when run from a checkout build or a full bundle. Install `design-library/requirements.txt` in your Python environment. `UNFSLOP_PYTHON` selects a specific interpreter and `UNFSLOP_DESIGN_LIBRARY` can point a binary-only installation at an existing checkout. Any SKILL.md-compatible agent can use it
 (Claude Code, Codex, Cursor, Copilot, and friends); point it at the folder.
 
 For this repository itself, the skill is already in `skills/unfuckin-slop/`. Agents that scan
@@ -53,10 +45,11 @@ For this repository itself, the skill is already in `skills/unfuckin-slop/`. Age
 
 | Command | What it does |
 | --- | --- |
-| `unfslop context "<task>"` | The main command. Ranks cards, prints only those that fit the budget. |
+| `unfslop design "<brief>" [--pool components]` | JSON with up to three catalog references, retrieval status, and one complete Apple and Impeccable card each. | 
+| `unfslop context "<task>"` | Rank task-specific craft cards for a repair, review or deeper follow-up. |
 | `--budget N` | Token ceiling for the pack. Default 2000. |
 | `--limit N` | Card ceiling. Default 6. |
-| `--mode M` | Force a mode: `build`, `motion`, `gesture`, `critique`, `polish`, `system`, `a11y`, `native`. |
+| `--mode M` | Force a mode: `build`, `motion`, `gesture`, `critique`, `polish`, `system`, `a11y`, `native`, `inspire`. |
 | `--brief` | Headers and token costs only, no bodies. |
 | `--all` | Ignore budget and limit (rarely what you want). |
 | `unfslop get <id>` | One card, full text. |
@@ -79,7 +72,7 @@ sheet, the `0.998` momentum projection, the grab offset, the -0.04em tracking fl
 delay to delete.
 
 **Direction and QA** — `workflow`, `modes`, `craft-floor`, `bans`, `slop-test`, `layout`, `typeset`,
-`color`, `motion`, `states`, `copy`, `a11y`, `performance`, `critique`, `polish`, `system`.
+`color`, `motion`, `states`, `copy`, `a11y`, `performance`, `critique`, `polish`, `system`, `inspiration`.
 
 The permanent ban (an eyebrow above a heading), the refused defaults (side stripes, gradient text,
 hard shadows, nested cards, emoji as icons), the four modes, and the review format that refuses to
@@ -95,8 +88,7 @@ pulls: apple.springs, apple.velocity-projection
 weight: 10
 ```
 
-`always: true` marks the craft floor, which is placed second in every pack so it is read rather than
-skipped.
+`always: true` marks the craft floor, which is placed after the first mode card when it fits, or first when the mode supplies no cards.
 
 ## Lint
 
@@ -121,8 +113,7 @@ comments), so tool state and archives do not drown the findings.
 
 ## Design notes
 
-- **Zero dependencies, no async runtime.** The whole tool is ~2,000 lines of std Rust. Builds offline,
-  starts in milliseconds, and has no supply chain to audit.
+- **Standalone CLI.** Cargo resolves the Rust dependencies at build time. The built CLI runs independently of Python and the optional showcase index.
 - **Embedded cards with a disk override.** `build.rs` bakes the cards into the binary so it works
   anywhere; if `UNFUCKIN_SLOP_HOME` or a `cards/` directory sits next to the binary or the cwd, that
   wins, so editing a card is a rebuild-free operation.
@@ -130,9 +121,7 @@ comments), so tool state and archives do not drown the findings.
   the safe side. The pack never pads to fill the budget: if a mandated card does not fit, it stops.
 - **Relevance is thresholded.** Extras must score at least 25% of the best match, so a big budget
   cannot smuggle in weak material.
-- **The linter is the point of the second half.** A model will claim it checked contrast, states, and
-  focus rings. It will not. These 18 checks are deterministic, cheap, and cite the rule they come
-  from.
+- **Source checks and rendered checks.** Lint reports recognizable patterns. Use the rendered surface for computed contrast, keyboard navigation, responsive layout and recovery behavior.
 
 ## Verify
 
@@ -147,15 +136,12 @@ target/release/unfslop lint fixtures; echo "exit=$?"
 
 Unfuckin-Slop operates completely self-contained with **zero external MCP dependencies**.
 
-### Workflow Philosophy: Component Library & Design Architecture First
-1. **Designs & Components First:**
-   When told to build any site, screen, dashboard, or landing page, coding agents **FIRST** query `python search_design_showcases.py` (with `--components`, `--category <name>`, or search terms) to pull real UI architecture: Hero layouts, Navbars, Bento cards, Button styles, Lighting & Atmosphere tokens, and Color systems from the 950 curated showcase library (622 Pixlpin visual showcases + 328 MotionSites full prompt blueprints).
-2. **Visual Hierarchy & Styling:**
-   Assemble the page with distinct typographic scale, dark/light surface tokens, and ambient lighting.
-3. **Organic Physics:**
-   Transitions and springs are natural, quiet implementation details (duration, cubic-bezier curves, or spring stiffness/damping). Websites and web apps do NOT use audio, sound effects, or vibration gimmicks.
-4. **Mechanical Anti-Slop Quality Floor:**
-   Run `unfslop lint` to verify the implementation against 18 deterministic checks: contrast ≥ 4.5:1, keyboard focus rings, no kicker eyebrows, no gradient text, no side stripes, and no `transition: all`.
+### Workflow
+
+1. Identify the main action, surface intent and whether the request is a build, refinement or review. Inspect the incumbent UI and its actual content.
+2. For new design work, run `unfslop design` with a specific subject and interaction. Review the catalog text or linked media, sketch two candidate compositions with real content, and choose the one that best serves the primary task.
+3. Use the accompanying craft lenses to refine the chosen composition. Pull related cards for deeper decisions, or use `unfslop context` directly for focused repairs. If retrieval falls back, the packet reports the backend or the reason it could not retrieve references.
+4. Run lint over changed web paths, then exercise the primary flow, keyboard interaction and relevant recovery at supported sizes. Report the checks you could perform.
 
 ### How agents use it:
 ```bash
@@ -186,7 +172,11 @@ python search_design_showcases.py --pool components --3d --category Background
 - **Physical Spring & Motion Parameters**: Exact `stiffness`, `damping`, durations, and CSS cubic-bezier curves.
 - **Direct Video Reference**: Direct link to the high-frame-rate interaction video.
 
-The agent uses these concrete UI blueprints to build production-grade interfaces, then mechanically verifies them with `unfslop lint`.
+Use a reference to answer a specific design question, then verify the resulting behavior in the product.
+
+## Visual comparison
+
+Open [the standalone comparison](eval/design-pilot.html) in a browser to run four prototypes at desktop and phone widths. Two identical briefs were each implemented with selected craft cards and with the reference-grounded workflow. A blinded reviewer preferred the hybrid archive for identity but the cards-only archive for ease of choosing a recording. For the editorial rights desk the reviewer preferred the hybrid overall, while the cards-only table kept clearer mobile column labels. These are two exploratory pairs. Retrieval metrics below measure finding records, a separate outcome.
 
 ## Neural retrieval & evaluation
 

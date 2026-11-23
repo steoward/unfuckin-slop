@@ -1,126 +1,60 @@
 ---
 name: unfuckin-slop
-description: "Autonomous UI & Kinetic Design System for Coding Agents: Production-grade component library, model-grounded inspiration, and anti-slop quality floor."
-version: 1.1.0
-license: MIT
+description: "Design, refine, and review web or native interfaces. Use the local design-reference model and Apple Design / Impeccable guidance for new screens, UI redesigns, visual critique, interaction and gesture design, accessibility, responsive layouts, or design-system work."
 ---
 
 # Unfuckin-Slop
 
-Autonomous UI & Kinetic Design System for Coding Agents: Production-grade component library, model-grounded inspiration, and anti-slop quality floor.
+Start with the person using the screen. Identify their main action, what they need to see before acting, and what counts as success. In an existing app, inspect the component, its callers, nearby UI, and a rendered example when available.
 
-This file is the thin layer that is always loaded. The cards are not.
+## Choose the scope
 
-## Workflow Philosophy: Component Library & Design Architecture First
-
-**Production-grade UI component architecture and visual hierarchy lead. Clean kinetic craft and mechanical anti-slop linting follow as the engineering floor.**
-
-- **Real UI Architecture First:** When tasked with building any website, interface, dashboard, or landing page, coding agents must **FIRST** pull concrete UI components and layout blueprints: Hero layouts, Navigation bars, Bento feature grids, Button styles, Lighting & Atmosphere tokens, and Color systems. Query `python search_design_showcases.py` (with `--components`, `--category <name>`, or search terms) to ground the interface in 950 production-grade design showcases (622 curated visual showcases + 328 MotionSites full prompt blueprints). Pass `--full` when you need verbatim code blueprints (font imports, Tailwind classes, exact CSS/shader formulas). Never default to generic, unstyled, or flat templates.
-- **Organic Physics (Quiet Implementation Details):** Transitions and springs are natural, quiet implementation details (smooth 60fps Framer Motion or CSS cubic-bezier curves). Websites and web apps do NOT use audio, sound effects, or vibration gimmicks.
-- **Skill as Engineering Floor:** The skill rules (contrast ≥ 4.5:1, keyboard focus, custom scrollbars, state matrices) verify and polish the implementation without suppressing design ambition.
-
-## Rule 0 — do not read the cards directly
-
-Run the router. It ranks the cards for the task and prints only what fits the budget:
-
-```bash
-unfslop context "<what you are about to do>"     # default: ~2000 tok, max 6 cards
-unfslop context "draggable sheet that snaps" --budget 1200 --brief
-unfslop get apple.interruptibility               # one card, when you need a specific rule
-unfslop search "focus ring"                      # find a card by topic
-unfslop cards                                    # the whole index, no bodies
-```
-
-If `unfslop` is not on PATH, use `bin/unfslop` (or `bin/unfslop.exe`) inside this skill's folder. If the binary cannot run at all, fall back to reading **exactly one** file, `cards/<id>.md`, named by the index at the bottom of this file. Never read `cards/` in bulk, and never load a card whose rule the task does not touch.
-
-Do not show the pack to the user. It is working context, not output.
-
-## Protocol
-
-1. **Designs & Components First:** Query `python search_design_showcases.py` (or pass `--components`, `--category <name>`) to pull real UI architecture: Hero layouts, Navbars, Bento cards, Button styles, Lighting & Atmosphere tokens, and Color systems. Pass `--full` when you need verbatim prompt blueprints.
-2. **Visual Hierarchy & Styling:** Assemble the page with distinct typographic scale, dark/light surface tokens, and ambient lighting. Select surface mode (`Persuade`, `Experience`, `Operate`, or `Read`).
-3. **Organic Physics:** Transitions and springs are natural, quiet implementation details (no sound/haptic gimmicks, no `transition: all`). Feedback starts on pointer-down.
-4. **Mechanical Verification:** Run `unfslop lint <changed paths>` to ensure zero slop (contrast ≥ 4.5:1, keyboard focus rings, no eyebrows, no gradient text, no side stripes).
-5. **Stop:** When the floor is green, components are fully styled, and the design is cohesive, you are done. Do not gold-plate.
-
-## Modes
-
-| Mode | Picked when the task is | `--mode` |
+| Request | First move | Deliverable |
 | --- | --- | --- |
-| Build | new screen, component, page, or redesign | `build` |
-| Motion | springs, drag, swipe, sheets, momentum, interruption | `motion` or `gesture` |
-| Review | critique, audit, score, "is this good" | `critique` |
-| Polish | final pass, tighten, clean up | `polish` |
-| System | tokens, DESIGN.md, theme, palette | `system` |
-| A11y | contrast, focus, keyboard, reduced motion | `a11y` |
-| Native | iOS, iPadOS, macOS, Android conventions | `native` |
-| Inspire | find references, galleries, patterns, examples | `inspire` |
+| New screen or redesign | Name the primary action and run the design brief below. Pick a surface intent (Persuade, Experience, Operate, Read). | A working screen with real hierarchy and a usable primary flow. |
+| Refine or repair | Reproduce the issue. Reuse existing tokens, components, copy and interaction contracts. | The smallest coherent change that solves the observed problem. |
+| Review | Identify the route, screenshot or files under review and the evidence each provides. | Findings ordered by impact. Edit only when requested. |
+| Motion or system work | Isolate the gesture, state transition, token or shared primitive and inspect a real consumer. | A change verified in context, including recovery or fallback where applicable. |
 
-`context` infers the mode from your wording; pass `--mode` when it guesses wrong.
+Treat the user's brief and established product conventions as design inputs. Preserve factual claims, supported languages and working actions. For an open brief, pick one concrete organizing idea. On an inventory screen that could mean grouping by stock status with the next action alongside each exception. Decorative effects need a purpose on that surface.
 
-## Never break these
+## Build the design direction
 
-These are true even if you never open a card.
+For a new identity, page or substantial redesign, start with `unfslop design "<subject, primary action, visual or interaction constraint>"`. For a single new component add `--pool components`. The command returns up to three catalog records, their source and media links where available, and one complete card from each design tradition. The encoder retrieves designs. The agent decides how the screen should work and look.
 
-- Ground interfaces in real UI architecture and component blueprints via the retriever before writing code.
-- Ambient lighting, glowing accents, Bento grids, and tactile depth are celebrated — never treated as slop when authored with intentional hierarchy.
-- Feedback starts on **pointer-down**, and continues during the interaction, not only at the end.
-- If it can be grabbed, flicked, or dismissed, it is **interruptible**: springs, not linear CSS keyframes. Start from the current on-screen value; carry velocity through a reversal.
-- Never lock out input during a transition.
-- Body text ≥4.5:1, large text ≥3:1. A visible `:focus-visible` ring. Every `:hover` has a focus twin. Custom scrollbars match background and thumb contrast.
-- Every interactive element has default, hover, active, focus, disabled, loading, error. Every collection has empty, one, many, loading, error.
-- No kicker/eyebrow above a heading. No gradient text. No coloured side stripe above 1px. No nested cards. No `transition: all`.
-- One authored motion moment, not the same entrance on every section.
-- Reduced motion gets a cross-fade, not a slower slide.
-- Controls name their action; errors name the problem and the recovery; no em dashes in copy.
-- No audio, sound effects, or vibration gimmicks on standard web interfaces.
-- Refinement preserves; redesign replaces. Never silently repair drifted product context.
-- Verify at shipped sizes. The weakest axis is the verdict; do not average it away.
-- When two directions are live, commit. Splitting the difference is how slop is made.
+1. Read the actual descriptions. Open the most useful source or video when visual inspection is available. A text description alone supports claims about the catalog text. A link alone supplies no evidence about what an animation feels like.
+2. Sketch two plausible compositions using the product's real content. Select one by a concrete constraint such as comparing rows, previewing a surface, or reading uninterrupted. A distinctive gesture can be as important as a distinctive layout. Borrow one transferable relationship and identify what would fail if copied into this product. Skip weak references or re-query using the interaction rather than the industry.
+3. Use the Impeccable card to challenge hierarchy, layout or copy, and the Apple card to refine perception, typography or interaction. Follow a related card when a decision crosses topics. Keep a short direction note while implementing: focal point, composition at wide and narrow widths, primary interaction and reference evidence. Respect the user's pinned visual language.
+4. Inspect the rendered result with realistic content. Could you swap in an unrelated product name without changing the composition? If so, revisit the main design decision. At phone width, confirm that a distinctive preview leaves the primary choice discoverable. In a work queue, keep the field labels users need to compare rows.
 
-## Card index
+Read `evidence.backend` to distinguish hybrid from lexical search. For `needs_specific_query`, supply an English description of the subject and interaction. For `unavailable`, use the diagnostic to restore the full library or use a supplied visual reference and the local cards. Describe fallback honestly. A small repair or a screenshot review can go directly to the relevant cards.
 
-**Apple craft**
-`apple.response` `apple.direct-manipulation` `apple.interruptibility` `apple.springs` `apple.velocity-projection` `apple.spatial` `apple.gestures` `apple.materials` `apple.typography` `apple.motion-a11y` `apple.multimodal` `apple.principles` `apple.process`
+## Get the relevant cards
 
-**Direction and QA**
-`imp.workflow` `imp.modes` `imp.craft-floor` `imp.bans` `imp.slop-test` `imp.layout` `imp.typeset` `imp.color` `imp.motion` `imp.states` `imp.copy` `imp.a11y` `imp.performance` `imp.critique` `imp.polish` `imp.system` `imp.inspiration`
+Run `unfslop context "<action, surface, constraint>"` (default budget 2,000 estimated tokens, up to six cards). Use an explicit mode for mixed requests or a short English description of a non-English task. Keep product copy in the requested language. The examples below use the CLI on PATH. An installed copy can also run from the skill's `bin/` directory by absolute path. If an older CLI reports an unknown `design` command, use a current bundle. For the current checkout's router, build with `cargo build --release --bin unfslop` at the repository root.
 
-`imp.craft-floor` is marked always-on and usually appears in the pack without being asked for. That is intentional; it is the checklist that catches what taste misses.
+| Task | CLI mode | Start here if the binary is unavailable |
+| --- | --- | --- |
+| Build a screen | `build` | [Surface intent](cards/imp.modes.md) |
+| Find visual references | `inspire` | [Inspiration](cards/imp.inspiration.md) |
+| Review a design | `critique` | [Critique](cards/imp.critique.md) |
+| Polish existing UI | `polish` | [Polish](cards/imp.polish.md) |
+| Work on shared tokens | `system` | [Design systems](cards/imp.system.md) |
+| Fix focus or accessibility | `a11y` | [Accessibility](cards/imp.a11y.md) |
+| Implement direct manipulation | `gesture` | [Direct manipulation](cards/apple.direct-manipulation.md) |
+| Design a transition | `motion` | [Motion](cards/imp.motion.md) |
+| Follow native conventions | `native` | [Platform principles](cards/apple.principles.md) |
 
-## Lint
+Use `unfslop get <id>` for a specific rule, `unfslop cards` for the index, or open the linked card directly. Pull another only when the task reaches that subject.
 
-`unfslop lint <paths>` scans CSS, HTML, JSX/TSX, Vue, Svelte, and Astro for 18 deterministic tells: eyebrow labels, gradient text, side stripes, hard and zero-offset shadows, `transition: all`, animating layout properties, tracking below -0.04em, px root font sizes, missing alt, clickable divs, removed outlines, hover without focus-visible, transform motion without reduced-motion, CSS-driven gesture motion, em dashes, "click here", and lorem ipsum.
+Use the [catalog guide](cards/imp.inspiration.md) for full source blueprints, videos and targeted searches. The packaged `design-library/` includes the model and both catalogs. Install its Python requirements in your working Python environment to enable hybrid search. A source checkout has the same requirements at the repository root.
 
-Each finding prints `path:line severity rule`, the problem, and the fix. Exit code is 1 on error by default; use `--fail-on warn` to be stricter. Do not suppress a finding to get a green run. Fix the cause, or say why the rule does not apply.
+## Implement and verify
 
-## Review output
+- Use the project's primitives and real content. Make the primary action discoverable at the narrowest supported width. For multilingual surfaces, test long labels, mixed-script values and the actual reading direction.
+- Give controls native semantics, accessible names and visible focus. Provide immediate press feedback. Commit ordinary button actions on activation so pointer cancellation and keyboard use work. A draggable surface should track the pointer, accept interruption, and offer a non-drag path to the same outcome.
+- Model states the flow can enter. For a failed save, retain the input, show the error next to the action and allow retry. For reduced motion, keep the final state and remove unnecessary travel.
+- Run `unfslop lint <changed paths>` for supported web files. Inspect each finding in context. Exercise the main action and a relevant failure or cancellation path. Check the rendered screen at narrow and wide sizes, keyboard focus, contrast and motion preferences as applicable. Use the [craft floor](cards/imp.craft-floor.md) for details.
+- Report the change and checks actually performed. For screenshot-only reviews, cite visible evidence and identify interaction checks that still need a live surface. Stop once the requested flow works and the observed defects are addressed.
 
-```
-Verdict:   ships | ships with fixes | does not ship
-Critical:  what / why (card id) / fix
-Improve:   what / why / fix
-Craft:     the small things
-Works:     name it specifically
-Scores:    hierarchy, clarity, craft, a11y, coherence (1-5, one line each)
-```
-
-No praise padding. Distinguish taste from defect: "I would have picked another typeface" is not a finding; "tracking is -0.06em, letters touch" is.
-
-## UI Design System & Component Library Architecture
-
-Self-contained with **zero external MCP dependencies**:
-
-1. **EmbeddingGemma 2 UI Design System & Component Engine:** 950 curated visual showcases (622 Pixlpin motion showcases + 328 MotionSites full prompt blueprints) fine-tuned with EmbeddingGemma 2 (~740M multimodal params).
-   - Component Library: Pass `--components` to get production-ready UI tokens (Button Primitives, Card & Bento Primitives, Navigation Primitives, Lighting & Atmosphere Primitives).
-   - Search: `python search_design_showcases.py "<query>" [--components] [--category <name>] [--list-categories] [--3d] [--liquid-glass] [--limit 3] [--full] [--json]`
-   - Full Blueprints: Pass `--full` to receive complete, production-grade blueprints (including font links, Tailwind classes, video scrub event listeners, typewriter hooks, and exact CSS/shader formulas).
-   - Open-ended or empty queries return 6 industry-standard website archetypes (Modern SaaS, Fintech & Data, High-End Ecommerce, Creative Studio, Developer Tools, AI-Native Platform).
-   - Quiet motion specs: Clean durations and cubic-beziers alongside layout tokens and MP4 asset links.
-2. **Skill (this file + 30 cards):** Thin layer and on-demand atom cards.
-3. **Context Router (`unfslop`):** Serves relevant cards without context bloat (`unfslop context "<task>"`).
-4. **Mechanical Floor (`unfslop lint`):** 18 deterministic checks catching eyebrow headings, fake icons, `transition: all`, and generic slop.
-
-## Attribution
-
-Distilled from Emil Kowalski's Apple Design skill (after Apple's WWDC talks) and Paul Bakaus' Impeccable (Apache-2.0). Independent rewrite, not an endorsed copy. See `NOTICE.md` for the full statement.
+Independent distillation of Emil Kowalski's Apple Design and Paul Bakaus' Impeccable. See the project's NOTICE.md for attribution.

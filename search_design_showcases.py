@@ -751,7 +751,7 @@ def derive_ui_design_spec(item) -> dict:
             "components": [
                 "Header & Telemetry Bar: Sticky minimal navbar with live currency ticker and network health dot",
                 "Hero Metrics Stage: Split layout with large financial yield callout and sparkline telemetry graph",
-                "Compliance Badges: Monospace SOC2 and 256-bit AES encryption verification tags",
+                "Trust information: Only display product claims supported by the brief and verified evidence",
                 "Transaction Feed: Filterable high-contrast table with tabbed stream controls",
                 "Quick Action Card: Instant transfer/exchange module with slider input"
             ],
@@ -793,7 +793,7 @@ def derive_ui_design_spec(item) -> dict:
             "components": [
                 "Global Command Header: Top bar with breadcrumb path, environment pill, and Cmd+K trigger",
                 "Interactive Terminal Stage: Multi-tab code snippet runner (Bash, TypeScript) with syntax colors",
-                "API Endpoint Cards: Payload schemas, SDK install snippets, and latency benchmark pills (<15ms)",
+                "API Endpoint Cards: Payload schemas and SDK snippets drawn from the actual API",
                 "Architecture Flow: Node diagram showing request routing from edge gateway to worker",
                 "CLI Quickstart Drawer: Collapsible sheet with one-click package manager copy runner"
             ],
@@ -992,7 +992,7 @@ def format_full_blueprint(item, index=1):
     video_url = item.get("video_url", "N/A")
     title = item.get("title", "Showcase Design")
     full_prompt = item.get("full_prompt")
-    ds = item.get("design_system") or derive_ui_design_spec(item)
+    ds = item.get("design_system") or {}
 
     lines = []
     lines.append("######################################################################")
@@ -1004,7 +1004,9 @@ def format_full_blueprint(item, index=1):
 
     if full_prompt and str(full_prompt).strip():
         lines.append(str(full_prompt).strip())
-    else:
+    elif item.get("archetype"):
+        ds = ds or derive_ui_design_spec(item)
+        lines.append("Built-in archetype (authored preset)")
         lines.append(f"Build a production-grade, high-impact web interface for \"{title}\" with React, TypeScript, and Tailwind CSS.\n")
         lines.append("---")
         lines.append("UI ARCHITECTURE & COMPONENT BREAKDOWN")
@@ -1036,10 +1038,15 @@ def format_full_blueprint(item, index=1):
         lines.append("\n---")
         lines.append(f"DIRECT MP4 VIDEO ASSET: {video_url}")
 
+    else:
+        lines.append("Catalog description")
+        lines.append(item.get("description", ""))
+        lines.append("This catalog record has no source blueprint. Inspect its source or video for further visual detail.")
+
     lines.append("######################################################################\n")
     return "\n".join(lines)
 
-def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None):
+def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None, *, diagnostics=None, include_specs=True):
     """
     Search curated showcases with UI Design System Archetypes,
     Embedding & TF-IDF similarity, and component-first blueprints.
@@ -1061,6 +1068,8 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
         indexed = [(i, it) for i, it in indexed if is_3d_showcase(it)]
 
     items = [it for _, it in indexed]
+    if diagnostics is not None:
+        diagnostics["catalog_available"] = n_total > 0
 
     # Empty or broad query handling: return the 6 Universal UI Design System Archetypes
     if is_broad_or_creative_query(query):
@@ -1069,12 +1078,11 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
             results = []
             eff_limit = limit if limit is not None else 5
             for it in items[:eff_limit]:
-                ds = derive_ui_design_spec(it)
-                results.append({
-                    **it,
-                    "relevance_score": 1.0,
-                    "design_system": ds
-                })
+                result = {**it, "relevance_score": 1.0}
+                if include_specs:
+                    result["design_system"] = derive_ui_design_spec(it)
+                    result["design_system_origin"] = "category_heuristic"
+                results.append(result)
             return results
 
         eff_limit = limit if limit is not None else len(UI_DESIGN_ARCHETYPES)
@@ -1109,6 +1117,9 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
     if enc is not None and emb is not None and emb.shape[0] == n_total and items:
         qv = enc.encode([query])[0]
         sem = emb[[i for i, _ in indexed]] @ qv
+
+    if diagnostics is not None:
+        diagnostics["backend"] = "hybrid" if sem is not None else "lexical"
 
     lex_scores = []
     for idx, it in enumerate(items):
@@ -1145,18 +1156,19 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
     for idx, it in enumerate(items):
         total_score = float(final_scores[idx])
         if total_score > 0.05 or not q_words:
-            ds = derive_ui_design_spec(it)
-            it_with_ds = {
-                **it,
-                "relevance_score": round(float(total_score), 4),
-                "design_system": ds
-            }
-            scored.append((total_score, it_with_ds))
+            scored.append((total_score, it))
 
     scored.sort(key=lambda x: x[0], reverse=True)
-    return [it for _, it in scored[:eff_limit]]
+    results = []
+    for score, item in scored[:eff_limit]:
+        result = {**item, "relevance_score": round(float(score), 4)}
+        if include_specs:
+            result["design_system"] = derive_ui_design_spec(item)
+            result["design_system_origin"] = "category_heuristic"
+        results.append(result)
+    return results
 
-def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None):
+def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None, *, diagnostics=None):
     """Search the separate UI-component pool (21st.dev + skiper.ui) with the same
     hybrid lexical+semantic ranking used for designs. Components ship verbatim code
     prompts and npm install commands rather than interaction video, so results carry
@@ -1173,6 +1185,8 @@ def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass
         indexed = [(i, it) for i, it in indexed if is_3d_showcase(it)]
 
     items = [it for _, it in indexed]
+    if diagnostics is not None:
+        diagnostics["catalog_available"] = n_total > 0
     eff_limit = limit if limit is not None else 5
 
     # Components have no archetype defaults; a subject-free query returns the first
@@ -1205,6 +1219,9 @@ def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass
     if enc is not None and emb is not None and emb.shape[0] == n_total and items:
         qv = enc.encode([query])[0]
         sem = emb[[i for i, _ in indexed]] @ qv
+
+    if diagnostics is not None:
+        diagnostics["backend"] = "hybrid" if sem is not None else "lexical"
 
     lex_scores = []
     for idx, it in enumerate(items):
@@ -1276,6 +1293,33 @@ def format_component_blueprint(item, index=1):
     lines.append("######################################################################\n")
     return "\n".join(lines)
 
+def reference_evidence(query, pool, *, limit=3, filter_3d=False, filter_liquid_glass=False, category_filter=None):
+    """Return catalog evidence for a design decision. Keep presets out of this path."""
+    broad = is_broad_or_creative_query(query)
+    if broad and not (filter_3d or filter_liquid_glass or category_filter):
+        return {"status": "needs_specific_query", "backend": None, "references": []}
+    details = {"backend": "catalog_filter" if broad else None}
+    options = dict(limit=limit, filter_3d=filter_3d, filter_liquid_glass=filter_liquid_glass,
+                   category_filter=category_filter, diagnostics=details)
+    if pool == "components":
+        matches = search_components(query, **options)
+    else:
+        matches = search(query, include_specs=False, **options)
+    if not details["catalog_available"]:
+        return {"status": "unavailable", "backend": None, "references": [],
+                "reason": f"The {pool} catalog could not be loaded."}
+    refs = []
+    for item in matches:
+        source, url = get_source_info(item)
+        refs.append({
+            "id": item.get("id"), "title": item["title"], "source": source,
+            "url": url or None, "video_url": item.get("video_url") or None,
+            "description": (item.get("description") or "")[:750],
+            "blueprint_excerpt": (item.get("full_prompt") or "")[:550] or None,
+        })
+    return {"status": "ok" if refs else "no_matches", "backend": details["backend"], "references": refs}
+
+
 def main():
     # Windows consoles default to cp1252, which cannot encode characters such as
     # U+2212 (minus) present in some showcase descriptions. Force UTF-8 so --json
@@ -1344,7 +1388,28 @@ def main():
         action="store_true",
         help="Output JSON for programmatic agent consumption"
     )
+    parser.add_argument("--evidence", action="store_true",
+                        help="Return a compact JSON packet of source descriptions and media for the design agent")
+    parser.add_argument("--record", metavar="ID", help="Print one original catalog record as JSON")
     args = parser.parse_args()
+    if args.evidence:
+        if args.limit is not None and args.limit < 0:
+            parser.error("--limit must be nonnegative")
+        result = reference_evidence(" ".join(args.query), args.pool,
+                                    limit=3 if args.limit is None else args.limit,
+                                    filter_3d=args.three_d, filter_liquid_glass=args.liquid_glass,
+                                    category_filter=args.category)
+        print(json.dumps(result, ensure_ascii=False))
+        return
+
+    # Resolve a selected reference by its stable ID without a second ranking pass.
+    if args.record:
+        records = load_components() if args.pool == "components" else load_data()
+        record = next((r for r in records if r.get("id") == args.record), None)
+        if record is None:
+            parser.error(f"unknown {args.pool} record {args.record!r}")
+        print(json.dumps(record, ensure_ascii=False, indent=2))
+        return
 
     # Handle --components early
     if args.components:
@@ -1450,7 +1515,14 @@ def main():
         print(f"    - Direct Video Asset:   {video_url}")
         print(f"    - Relevance Score:      {r.get('relevance_score', 'N/A')}")
         print(f"    - Overview:             {r.get('description')}")
-        print(f"    - Component Breakdown:")
+        if not r.get("archetype"):
+            if r.get("full_prompt"):
+                print("    - Source blueprint:     available with --record " + str(r.get("id")))
+            else:
+                print("    - Source blueprint:     unavailable; inspect the linked source or video")
+            print()
+            continue
+        print("    - Built-in archetype / authored component suggestions:")
         for comp in ds.get("components", []):
             print(f"      * {comp}")
         print(f"    - Visual Styling & Lighting:")

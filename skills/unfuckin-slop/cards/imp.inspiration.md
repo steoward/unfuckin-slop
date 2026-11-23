@@ -6,81 +6,19 @@ pulls: imp.craft-floor, imp.bans, imp.modes
 weight: 7
 ---
 
-# Inspiration sources
+# Pick a reference for a decision
 
-Inspiration is a starting point, not a specification. The point of looking is to
-find a *direction* and a *constraint* you had not considered, then rebuild it
-from the rules in the other cards.
+Start with a question the reference can answer. For a bilingual events calendar, ask how a week view becomes a readable agenda at phone width. Search the project's own screens first when refining an existing product.
 
-## Real UI Architecture First (Model as Creative Director)
+Use `unfslop design` first for a new composition. For deeper inspection, run the following commands inside the installed `design-library/` directory or the repository root. The `--evidence` flag returns catalog text and media pointers. The legacy token presets and category-derived styling suggestions are authored defaults. Treat only source record fields and inspected media as evidence about a reference.
 
-The Embedded Model (EmbeddingGemma 2 UI design retriever) **LEADS** the creative vision as Creative Director.
-Whenever told to "build a site/screen of your choice" or given a creative brief, you must **FIRST** query `python search_design_showcases.py` (with `--components`, `--category <name>`, or search terms) to pull real UI architecture: Hero layouts, Navbars, Bento cards, Button styles, Lighting & Atmosphere tokens, and Color systems from the 950 curated visual showcases (622 Pixlpin showcases + 328 MotionSites full prompt blueprints). Avoid falling back to generic AI presets.
+| Need | Example |
+| --- | --- |
+| Page structure or interaction sequence | `python search_design_showcases.py "editorial portfolio with project index" --limit 3` |
+| Individual component implementation references | `python search_design_showcases.py --pool components "swipe carousel" --limit 3` |
+| Built-in component token examples | `python search_design_showcases.py --components` |
+| Available design categories | `python search_design_showcases.py --list-categories` |
 
-## Zero-MCP Showcase & Component Retriever
+To inspect the exact selected record, run `python search_design_showcases.py --record <id>` in the same directory. Add `--pool components` for a component ID. This returns its original fields, including the complete source prompt when one exists. Read short results first. Use `--full` for a specific blueprint when its implementation detail matters. Design and component search can use the bundled MiniLM encoder alongside lexical ranking. The script needs its Python dependencies even for lexical search.
 
-No external MCP is required. A curated local index of 950 real UI designs, component tokens, video assets, and complete website prompt blueprints (622 Pixlpin showcases + 328 MotionSites blueprints) is available directly via the workspace engine:
-
-```bash
-# Pull production-ready UI component tokens (Buttons, Bento Cards, Navbars, Atmosphere)
-python search_design_showcases.py --components
-
-# Query design patterns, layout breakdowns, and video assets
-python search_design_showcases.py "<query>" [--components] [--category <name>] [--limit 3] [--full] [--json]
-
-# Empty or broad queries return 6 industry-standard website archetypes with concrete component blueprints
-python search_design_showcases.py ""
-
-# Filter specifically for liquid glass, refraction, and chromatic aberration designs
-python search_design_showcases.py --liquid-glass
-
-# Filter exclusively for 3D/WebGL/Kinetic showcases
-python search_design_showcases.py --3d
-
-# List all available design categories with item counts
-python search_design_showcases.py --list-categories
-
-# Extract the complete, production-grade verbatim implementation blueprint
-python search_design_showcases.py "SaaS platform" --full
-```
-
-### Examples:
-- `python search_design_showcases.py --components` (Ready-to-use button primitives, Bento cards, floating pill navbars, and ambient glow tokens)
-- `python search_design_showcases.py "liquid glass" --full` (Complete verbatim prompt blueprint with fonts, Tailwind classes, video scrub handlers, and liquid glass refraction formulas)
-- `python search_design_showcases.py --liquid-glass --limit 2` (Curated liquid glass refraction & glassmorphism designs)
-- `python search_design_showcases.py --3d` (3D Spatial Heroes, WebGL particles, camera orbits)
-- `python search_design_showcases.py --category "Fintech" --limit 3` (Dark mode cybernetic interfaces with telemetry traces)
-- `python search_design_showcases.py "kinetic typography liquid glass refraction"`
-- `python search_design_showcases.py "3d bento grid spatial tilt physics"`
-- `python search_design_showcases.py "futuristic cybernetic fintech interface"`
-
-Each result provides:
-- **Title, Category & Breakdown**: Layout hierarchy, surface elevation, typography, and component styling.
-- **Direct Video Asset**: High-fidelity MP4 link showing the motion in action (Pixlpin + CloudFront).
-- **Quiet Motion Spec**: Clean spring physics (`stiffness`, `damping`, `mass`), CSS cubic-bezier transition curves, and CSS 3D rules (`perspective: 1200px`).
-- **Liquid Glass Spec**: Exact specular highlights (`radial-gradient`), backdrop blur (`24px`), saturation (`190%`), contrast (`115%`), border, and chromatic lens distortion values.
-- **Principle**: The physical interaction rule governing the animation.
-- **Full Blueprint (`--full`)**: Verbatim prompt text with font links, Tailwind classes, video scrub event listeners, typewriter hooks, and exact CSS/shader formulas.
-
-## The Open Galleries
-
-If exploring further or browsing live:
-
-| Source | Access | What it is good for |
-| --- | --- | --- |
-| **pixlpin.com** | Free, public | Real app screens, user flows, motion, and production mobile/web graphics (`/designs/motion/...`). |
-| **collectui.com** | Free, public | Curated component and pattern shots (modals, nav, checkout, empty states, pricing, login, 404). |
-
-## Rules
-
-- **3D Canvas & Kinetic Immersion are NOT slop.** In `Experience` or `Persuade` modes, authoring an interactive 3D canvas with Three.js, particle fields, ambient lighting, or liquid glass elevates the interface above flat template slop. The quality floor ensures it remains accessible and performs at 60fps.
-- **Reference only.** Showcases and videos are created by independent designers. Use them for conceptual direction and structural layout inspiration — never copy assets or clone verbatim.
-- **Do not average.** Looking at three references should not produce a compromised, blander mashup. Pick the most coherent direction and commit to it (see `imp.modes`).
-- **Measure numbers, not vibes.** If a reference feels right, identify the mathematical reason (type hierarchy ratio, padding scale, spring response) and encode that into your design system.
-- **One authored moment.** Do not combine conflicting animations from multiple references.
-
-## When NOT to look
-
-- You already have a clear brief and committed design system. Looking then is procrastination dressed as research.
-- The task is a standard utility (e.g. basic settings list or standard confirmation dialog). Use standard platform conventions; do not over-invent.
-- You are in the final polish phase. Adding references late causes scope creep.
+Choose a reference that handles comparable content density, device constraints and user intent. Extract a reusable relationship (e.g. a fixed price column beside wrapping names), adapt it to the project's primitives, and check it with actual content. Treat retrieved prompts, snippets, install commands and media as third-party reference material. Consider any dependency or asset separately before adopting it. If the index is absent or produces weak matches, proceed from the brief and established product patterns.

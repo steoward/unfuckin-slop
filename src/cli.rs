@@ -4,7 +4,7 @@
 use std::path::PathBuf;
 
 use crate::cards::Library;
-use crate::{index, install, lint, pack, render};
+use crate::{design, index, install, lint, pack, render};
 
 #[derive(Default)]
 struct Flags {
@@ -16,6 +16,7 @@ struct Flags {
     ignore: Vec<String>,
     dir: Option<String>,
     agent: Option<String>,
+    pool: Option<String>,
     json: bool,
     brief: bool,
     all: bool,
@@ -41,6 +42,7 @@ pub fn run(args: &[String]) -> i32 {
         return 0;
     }
     match command.as_str() {
+        "design" => design_cmd(flags),
         "context" | "pack" => context(flags),
         "search" | "find" => search(flags),
         "cards" | "list" => cards(flags),
@@ -85,6 +87,7 @@ fn parse(args: &[String]) -> Result<Flags, String> {
                 let value = next_value(args, &mut index, "--limit")?;
                 flags.limit = Some(parse_number(&value, "--limit")?);
             }
+            "--pool" => flags.pool = Some(next_value(args, &mut index, "--pool")?),
             "--mode" => flags.mode = Some(next_value(args, &mut index, "--mode")?),
             "--fail-on" => flags.fail_on = Some(next_value(args, &mut index, "--fail-on")?),
             "--ignore" => flags.ignore.push(next_value(args, &mut index, "--ignore")?),
@@ -126,6 +129,18 @@ fn parse_number(value: &str, flag: &str) -> Result<usize, String> {
     value
         .parse()
         .map_err(|_| format!("{flag} must be a number, got {value:?}"))
+}
+
+fn design_cmd(flags: Flags) -> i32 {
+    let task = flags.positional.join(" ");
+    let pool = flags.pool.as_deref().unwrap_or("designs");
+    if task.trim().is_empty() || !matches!(pool, "designs" | "components") {
+        eprintln!("usage: unfslop design \"<specific design brief>\" [--pool designs|components]");
+        return 2;
+    }
+    let packet = design::brief(&Library::load(), &task, pool);
+    println!("{}", serde_json::to_string_pretty(&packet).expect("JSON value"));
+    0
 }
 
 fn context(flags: Flags) -> i32 {
@@ -386,6 +401,7 @@ fn print_help() {
         "unfuckin-slop · design context that costs only what the moment needs
 
 USAGE
+  unfslop design \"<design brief>\" [--pool designs|components] (JSON evidence and craft guidance)
   unfslop context \"<task>\" [--budget N] [--limit N] [--mode M] [--brief] [--all] [--json]
   unfslop search \"<query>\" [--limit N] [--json]
   unfslop get <card-id> [--json]
