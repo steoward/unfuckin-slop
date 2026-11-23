@@ -31,7 +31,7 @@ Read `evidence.backend` to distinguish hybrid from lexical search. For `needs_sp
 
 ## Get the relevant cards
 
-Run `unfslop context "<action, surface, constraint>"` (default budget 2,000 estimated tokens, up to six cards). Use an explicit mode for mixed requests or a short English description of a non-English task. Keep product copy in the requested language. The examples below use the CLI on PATH. An installed copy can also run from the skill's `bin/` directory by absolute path. If an older CLI reports an unknown `design` command, use a current bundle. For the current checkout's router, build with `cargo build --release --bin unfslop` at the repository root.
+Run `unfslop context "<action, surface, constraint>"` (default budget 2,000 estimated tokens, up to six cards). Use an explicit mode for mixed requests or a short English description of a non-English task. Keep product copy in the requested language. The examples below use the CLI on PATH. An installed copy can also run from the skill's `bin/` directory by absolute path. From a checkout, use `cargo run --locked --release --bin unfslop -- <command>` at the repository root.
 
 | Task | CLI mode | Start here if the binary is unavailable |
 | --- | --- | --- |
@@ -47,7 +47,7 @@ Run `unfslop context "<action, surface, constraint>"` (default budget 2,000 esti
 
 Use `unfslop get <id>` for a specific rule, `unfslop cards` for the index, or open the linked card directly. Pull another only when the task reaches that subject.
 
-Use the [catalog guide](cards/imp.inspiration.md) for full source blueprints, videos and targeted searches. The packaged `design-library/` includes the model and both catalogs. Install its Python requirements in your working Python environment to enable hybrid search. A source checkout has the same requirements at the repository root.
+Use the [catalog guide](cards/imp.inspiration.md) for full source blueprints, videos and targeted searches. The installed `design-library/` includes the model and both catalogs. Install its Python requirements in your working Python environment to enable hybrid search. A source checkout has the same requirements at the repository root.
 
 ## Implement and verify
 
