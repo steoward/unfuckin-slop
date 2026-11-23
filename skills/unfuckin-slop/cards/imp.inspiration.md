@@ -10,7 +10,7 @@ weight: 7
 
 Start with a question the reference can answer. For a bilingual events calendar, ask how a week view becomes a readable agenda at phone width. Search the project's own screens first when refining an existing product.
 
-The optional Python retriever lives beside `design_showcases/` in the repository checkout. Run these commands there, or invoke the script by absolute path. The card router and standalone skill also work without the dataset.
+Use `unfslop design` first for a new composition. For deeper inspection, run the following commands inside the installed `design-library/` directory or the repository root. The `--evidence` flag returns catalog text and media pointers. The legacy token presets and category-derived styling suggestions are authored defaults. Treat only source record fields and inspected media as evidence about a reference.
 
 | Need | Example |
 | --- | --- |
