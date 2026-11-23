@@ -35,6 +35,8 @@ def main():
         spec = importlib.util.spec_from_file_location("previous_catalog", args.baseline)
         previous = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(previous)
+        for name in ("META_PATH", "EMBS_PATH", "FALLBACK_DATASET", "COMPONENTS_META_PATH", "COMPONENTS_EMBS_PATH"):
+            setattr(previous, name, getattr(catalog, name))
 
     rows_by_pool = {"designs": catalog.load_data(), "components": catalog.load_components()}
     source_to_pool = {s: p for p, sources in catalog.REFERENCE_SOURCES.items() for s in sources}
