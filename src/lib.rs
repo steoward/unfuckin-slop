@@ -7,6 +7,7 @@
 
 pub mod cards;
 pub mod cli;
+pub mod design;
 pub mod index;
 pub mod install;
 pub mod lint;
