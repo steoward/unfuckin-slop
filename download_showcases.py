@@ -1,7 +1,6 @@
 import os
 import re
 import json
-import time
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from bs4 import BeautifulSoup
@@ -9,11 +8,11 @@ from bs4 import BeautifulSoup
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SHOWCASE_DIR = os.path.join(BASE_DIR, "design_showcases")
 VIDEOS_DIR = os.path.join(SHOWCASE_DIR, "videos")
-IMAGES_DIR = os.path.join(SHOWCASE_DIR, "images")
-METADATA_FILE = os.path.join(SHOWCASE_DIR, "dataset.jsonl")
+CACHE_DIR = os.path.join(BASE_DIR, ".slop-cache")
+METADATA_FILE = os.path.join(CACHE_DIR, "pixlpin-scrape.jsonl")
 
 os.makedirs(VIDEOS_DIR, exist_ok=True)
-os.makedirs(IMAGES_DIR, exist_ok=True)
+os.makedirs(CACHE_DIR, exist_ok=True)
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
