@@ -22,7 +22,7 @@ target/release/unfslop doctor
 target/release/unfslop context "settings page with destructive actions"
 ```
 
-Put `unfslop` (or `unfslop.exe`) somewhere on `PATH`, or use the copy installed with the skill.
+Use the newly built CLI or the one in a current CI bundle. The historical Windows executable tracked under `skills/unfuckin-slop/bin/` predates the `design` command. If you move the CLI alone onto PATH, point `UNFSLOP_DESIGN_LIBRARY` at the checkout or the installed `design-library/`.
 
 ### Install as an agent skill
 
@@ -173,6 +173,10 @@ python search_design_showcases.py --pool components --3d --category Background
 - **Direct Video Reference**: Direct link to the high-frame-rate interaction video.
 
 Use a reference to answer a specific design question, then verify the resulting behavior in the product.
+
+## Visual comparison
+
+Open [the standalone comparison](eval/design-pilot.html) in a browser to run four prototypes at desktop and phone widths. Two identical briefs were each implemented with selected craft cards and with the reference-grounded workflow. A blinded reviewer preferred the hybrid archive for identity but the cards-only archive for ease of choosing a recording. For the editorial rights desk the reviewer preferred the hybrid overall, while the cards-only table kept clearer mobile column labels. These are two exploratory pairs. Retrieval metrics below measure finding records, a separate outcome.
 
 ## Neural retrieval & evaluation
 
