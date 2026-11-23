@@ -7,7 +7,7 @@ Find UI references locally, then use Apple Design and Impeccable guidance to bui
 Install from Git using Git, Python, and a Rust toolchain.
 
 ```sh
-git clone https://github.com/steoward/unfuckin-slop.git
+git clone --depth 1 https://github.com/steoward/unfuckin-slop.git
 cd unfuckin-slop
 python -m pip install -r requirements.txt
 cargo run --locked --release --bin unfslop -- install --agent codex
