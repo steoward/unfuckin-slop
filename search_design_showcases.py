@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
-"""
-UI Design System & Component Library Engine for Autonomous Coding Agents.
-Grounds interfaces in production UI design systems, component blueprints, surface elevation tokens,
-ambient lighting atmospheres, and real video showcases from 950 curated visual showcases
-(622 Pixlpin showcases + 328 MotionSites full prompt blueprints).
+"""Search the local design and component catalogs.
 
-A second retrievable pool (--pool components) holds 9735 UI component code prompts
-(9698 from 21st.dev + 37 from skiper.ui) with verbatim implementations and npm install
-commands. It is kept separate from the 950 full-design showcases so design search and
-the design benchmark stay clean; both pools share the same fine-tuned semantic encoder.
+MiniLM and lexical search rank text. Evidence packets identify the original
+record and what the snapshot contains. Use --record for the stored payload.
 """
 
 import os
@@ -671,7 +665,7 @@ def get_item_category(item) -> str:
 def get_source_info(item):
     """Extract source website and URL cleanly."""
     source_site = item.get("source_site")
-    source_url = item.get("source_url", "")
+    source_url = item.get("source_url") or ""
     if not source_site:
         if "motionsites.ai" in source_url:
             source_site = "motionsites.ai"
@@ -986,7 +980,7 @@ def print_component_tokens(as_json=False):
     print("\n======================================================================\n")
 
 def format_full_blueprint(item, index=1):
-    """Format the complete verbatim prompt blueprint and code implementation."""
+    """Format an original prompt, catalog description, or labeled archetype."""
     category = get_item_category(item)
     source_site, source_url = get_source_info(item)
     video_url = item.get("video_url", "N/A")
@@ -1046,14 +1040,15 @@ def format_full_blueprint(item, index=1):
     lines.append("######################################################################\n")
     return "\n".join(lines)
 
-def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None, *, diagnostics=None, include_specs=True):
+def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None, *, source_filter=None, diagnostics=None, records=None, include_specs=True):
     """
     Search curated showcases with UI Design System Archetypes,
     Embedding & TF-IDF similarity, and component-first blueprints.
     """
-    items = load_data()
+    items = load_data() if records is None else records
     n_total = len(items)
-    indexed = list(enumerate(items))
+    indexed = [(i, item) for i, item in enumerate(items)
+               if source_filter is None or get_source_info(item)[0] == source_filter]
 
     # Pre-filter by Category if specified
     if category_filter:
@@ -1074,7 +1069,7 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
     # Empty or broad query handling: return the 6 Universal UI Design System Archetypes
     if is_broad_or_creative_query(query):
         # If user explicitly requested liquid-glass, 3d, or a category, return top matching items from pool
-        if filter_liquid_glass or filter_3d or category_filter:
+        if filter_liquid_glass or filter_3d or category_filter or source_filter:
             results = []
             eff_limit = limit if limit is not None else 5
             for it in items[:eff_limit]:
@@ -1168,14 +1163,14 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
         results.append(result)
     return results
 
-def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None, *, diagnostics=None):
+def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None, *, source_filter=None, diagnostics=None, records=None):
     """Search the separate UI-component pool (21st.dev + skiper.ui) with the same
-    hybrid lexical+semantic ranking used for designs. Components ship verbatim code
-    prompts and npm install commands rather than interaction video, so results carry
-    tags/install metadata instead of a derived design-system spec."""
-    items = load_components()
+    hybrid lexical+semantic ranking used for designs. Components carry
+    source snapshots or registry instructions rather than interaction video."""
+    items = load_components() if records is None else records
     n_total = len(items)
-    indexed = list(enumerate(items))
+    indexed = [(i, item) for i, item in enumerate(items)
+               if source_filter is None or get_source_info(item)[0] == source_filter]
 
     if category_filter:
         indexed = [(i, it) for i, it in indexed if matches_category(it, category_filter)]
@@ -1266,7 +1261,7 @@ def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass
     return [it for _, it in scored[:eff_limit]]
 
 def format_component_blueprint(item, index=1):
-    """Format a component's verbatim prompt / code implementation and install metadata."""
+    """Format the component's stored material and dependency metadata."""
     category = get_item_category(item)
     source_site, source_url = get_source_info(item)
     title = item.get("title", "Component")
@@ -1288,36 +1283,103 @@ def format_component_blueprint(item, index=1):
     lines.append("----------------------------------------------------------------------")
     full_prompt = item.get("full_prompt")
     if full_prompt:
-        lines.append("VERBATIM PROMPT / CODE:")
+        lines.append("STORED COMPONENT MATERIAL:")
         lines.append(full_prompt)
     lines.append("######################################################################\n")
     return "\n".join(lines)
 
-def reference_evidence(query, pool, *, limit=3, filter_3d=False, filter_liquid_glass=False, category_filter=None):
-    """Return catalog evidence for a design decision. Keep presets out of this path."""
+REFERENCE_SOURCES = {
+    "designs": ("motionsites.ai", "pixlpin.com"),
+    "components": ("skiper-ui.com", "21st.dev"),
+}
+
+SOURCE_MATERIAL = {
+    "motionsites.ai": "design_prompt",
+    "pixlpin.com": "description",
+    "skiper-ui.com": "component_source_snapshot",
+    "21st.dev": "registry_instructions",
+}
+
+
+def pack_reference(item):
+    source, url = get_source_info(item)
+    body = (item.get("full_prompt") or "").strip()
+    material = {
+        "kind": SOURCE_MATERIAL.get(source, "catalog_text") if body else "description",
+        "characters": len(body),
+        "excerpt_truncated": len(body) > 550,
+    }
+    for key in ("author", "license", "npm_deps"):
+        if item.get(key):
+            material[key] = item[key]
+    return {
+        "id": item.get("id"), "title": item["title"], "source": source,
+        "url": url or None, "video_url": item.get("video_url") or None,
+        "description": (item.get("description") or "")[:750],
+        "blueprint_excerpt": body[:550] or None,
+        "material": material,
+    }
+
+
+def exact_references(query, rows):
+    """Try a canonical ID or source URL before matching titles."""
+    key = query.strip()
+    if not key:
+        return []
+    identified = [row for row in rows
+                  if row.get("id") == key or get_source_info(row)[1].rstrip("/") == key.rstrip("/")]
+    if identified:
+        return identified
+    title = " ".join(key.casefold().split())
+    return [row for row in rows if " ".join(row["title"].casefold().split()) == title]
+
+
+def reference_evidence(query, pool, *, limit=3, filter_3d=False,
+                       filter_liquid_glass=False, category_filter=None, source_filter=None):
+    """Return catalog evidence. Preserve the existing hybrid ranking for briefs."""
+    if source_filter and source_filter not in REFERENCE_SOURCES[pool]:
+        return {"status": "invalid_source", "backend": None, "references": [],
+                "reason": f"Choose a {pool} source: {', '.join(REFERENCE_SOURCES[pool])}."}
+    constrained = filter_3d or filter_liquid_glass or category_filter or source_filter
     broad = is_broad_or_creative_query(query)
-    if broad and not (filter_3d or filter_liquid_glass or category_filter):
+    records = load_components() if pool == "components" else load_data()
+    if not records:
+        return {"status": "unavailable", "backend": None, "references": [],
+                "reason": f"The {pool} catalog could not be loaded."}
+    candidates = (row for row in records
+                  if (not source_filter or get_source_info(row)[0] == source_filter)
+                  and (not category_filter or matches_category(row, category_filter))
+                  and (not filter_3d or is_3d_showcase(row))
+                  and (not filter_liquid_glass or is_liquid_glass_showcase(row)))
+    # Materialize once so both ID and title checks see the same candidates.
+    exact = exact_references(query, list(candidates))
+    if len(exact) == 1:
+        return {"status": "ok" if limit else "no_matches", "backend": "catalog_exact",
+                "exact_matches": len(exact), "references": [pack_reference(row) for row in exact[:limit]]}
+
+    key = query.strip()
+    if not exact and (key.startswith(("https://", "http://"))
+                      or any(row.get("id") == key for row in records)):
+        return {"status": "no_matches", "backend": "catalog_exact", "exact_matches": 0, "references": []}
+    if broad and not constrained and not exact:
         return {"status": "needs_specific_query", "backend": None, "references": []}
+
     details = {"backend": "catalog_filter" if broad else None}
-    options = dict(limit=limit, filter_3d=filter_3d, filter_liquid_glass=filter_liquid_glass,
-                   category_filter=category_filter, diagnostics=details)
+    # Preserve the existing ranking when multiple records share an exact title.
+    rank_limit = len(records) if exact else limit
+    options = dict(limit=rank_limit, filter_3d=filter_3d, filter_liquid_glass=filter_liquid_glass,
+                   category_filter=category_filter, source_filter=source_filter, diagnostics=details, records=records)
     if pool == "components":
         matches = search_components(query, **options)
     else:
         matches = search(query, include_specs=False, **options)
-    if not details["catalog_available"]:
-        return {"status": "unavailable", "backend": None, "references": [],
-                "reason": f"The {pool} catalog could not be loaded."}
-    refs = []
-    for item in matches:
-        source, url = get_source_info(item)
-        refs.append({
-            "id": item.get("id"), "title": item["title"], "source": source,
-            "url": url or None, "video_url": item.get("video_url") or None,
-            "description": (item.get("description") or "")[:750],
-            "blueprint_excerpt": (item.get("full_prompt") or "")[:550] or None,
-        })
-    return {"status": "ok" if refs else "no_matches", "backend": details["backend"], "references": refs}
+    if exact:
+        rank = {row["id"]: i for i, row in enumerate(matches)}
+        exact.sort(key=lambda row: rank.get(row["id"], len(rank)))
+        return {"status": "ok" if limit else "no_matches", "backend": "catalog_exact",
+                "exact_matches": len(exact), "references": [pack_reference(row) for row in exact[:limit]]}
+    return {"status": "ok" if matches else "no_matches", "backend": details["backend"],
+            "references": [pack_reference(row) for row in matches]}
 
 
 def main():
@@ -1331,7 +1393,7 @@ def main():
             except (ValueError, OSError):
                 pass
     parser = argparse.ArgumentParser(
-        description="UI Design System & Component Library Engine for Autonomous Coding Agents"
+        description="Search UI design and component references"
     )
     parser.add_argument(
         "query",
@@ -1341,7 +1403,7 @@ def main():
     parser.add_argument(
         "--components",
         action="store_true",
-        help="Output static production UI primitive tokens (Buttons, Cards/Bento, Navigation, Lighting). To search the 9735-component code library use --pool components"
+        help="Print built-in token presets. Use --pool components to search provider records."
     )
     parser.add_argument(
         "--pool",
@@ -1375,7 +1437,7 @@ def main():
     parser.add_argument(
         "--full",
         action="store_true",
-        help="Print the entire verbatim prompt blueprint (including font links, Tailwind classes, and complete component implementation)"
+        help="Print the stored reference text where available."
     )
     parser.add_argument(
         "--limit",
@@ -1390,6 +1452,7 @@ def main():
     )
     parser.add_argument("--evidence", action="store_true",
                         help="Return a compact JSON packet of source descriptions and media for the design agent")
+    parser.add_argument("--source", choices=sorted(SOURCE_MATERIAL), help="Filter evidence by provider")
     parser.add_argument("--record", metavar="ID", help="Print one original catalog record as JSON")
     args = parser.parse_args()
     if args.evidence:
@@ -1398,18 +1461,23 @@ def main():
         result = reference_evidence(" ".join(args.query), args.pool,
                                     limit=3 if args.limit is None else args.limit,
                                     filter_3d=args.three_d, filter_liquid_glass=args.liquid_glass,
-                                    category_filter=args.category)
+                                    category_filter=args.category, source_filter=args.source)
         print(json.dumps(result, ensure_ascii=False))
         return
 
     # Resolve a selected reference by its stable ID without a second ranking pass.
     if args.record:
+        if args.source:
+            parser.error('--source requires --evidence')
         records = load_components() if args.pool == "components" else load_data()
         record = next((r for r in records if r.get("id") == args.record), None)
         if record is None:
             parser.error(f"unknown {args.pool} record {args.record!r}")
         print(json.dumps(record, ensure_ascii=False, indent=2))
         return
+
+    if args.source:
+        parser.error("--source requires --evidence")
 
     # Handle --components early
     if args.components:
@@ -1459,7 +1527,7 @@ def main():
         if args.full:
             print(f"\n=======================================================")
             print(f" UI Component Library (21st.dev + skiper.ui): '{query_str}'{tag_str} [FULL PROMPT]")
-            print(f" Showing {len(results)} Verbatim Component Prompts & Implementations")
+            print(f" Showing {len(results)} Component Records")
             print(f"=======================================================\n")
             for i, r in enumerate(results, 1):
                 print(format_component_blueprint(r, index=i))
@@ -1482,7 +1550,7 @@ def main():
             if r.get('npm_deps'):
                 print(f"    - Install deps:    {r['npm_deps']}")
             if r.get('full_prompt'):
-                print(f"    - Prompt/Code:     Pass --full to view the verbatim prompt and implementation\n")
+                print(f"    - Prompt/Code:     Pass --full to view stored material\n")
             else:
                 print()
         return
@@ -1490,7 +1558,7 @@ def main():
     if args.full:
         print(f"\n=======================================================")
         print(f" UI Design System & Component Library: '{query_str}'{tag_str} [FULL BLUEPRINT]")
-        print(f" Showing {len(results)} Complete Implementation Blueprints")
+        print(f" Showing {len(results)} Design Records")
         print(f"=======================================================\n")
         for i, r in enumerate(results, 1):
             print(format_full_blueprint(r, index=i))
@@ -1498,7 +1566,7 @@ def main():
 
     print(f"\n=======================================================")
     print(f" UI Design System & Component Library Engine: '{query_str}'{tag_str}")
-    print(f" Matched {len(results)} Curated Showcases (Component Blueprints & Video Grounded)")
+    print(f" Matched {len(results)} Design References")
     print(f"=======================================================\n")
 
     for i, r in enumerate(results, 1):
@@ -1534,9 +1602,9 @@ def main():
         ts = ds.get("transition_spec", {})
         print(f"    - Transition Spec:      {ts.get('duration_ms', 240)}ms {ts.get('curve', 'cubic-bezier(0.16, 1, 0.3, 1)')} (Quiet supporting detail)")
         if r.get('code_scaffold') or ds.get('code_scaffold'):
-            print(f"    - Code Blueprint:       Pass --full to view complete React + Tailwind component implementation\n")
+            print(f"    - Code Blueprint:       Pass --full to view the archetype scaffold\n")
         else:
-            print(f"    - Blueprint:            Pass --full to view entire verbatim prompt blueprint\n")
+            print(f"    - Blueprint:            Pass --full to view the archetype notes\n")
 
 if __name__ == "__main__":
     main()

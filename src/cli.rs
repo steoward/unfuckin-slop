@@ -17,6 +17,8 @@ struct Flags {
     dir: Option<String>,
     agent: Option<String>,
     pool: Option<String>,
+    source: Option<String>,
+    record: Option<String>,
     json: bool,
     brief: bool,
     all: bool,
@@ -87,6 +89,8 @@ fn parse(args: &[String]) -> Result<Flags, String> {
                 let value = next_value(args, &mut index, "--limit")?;
                 flags.limit = Some(parse_number(&value, "--limit")?);
             }
+            "--source" => flags.source = Some(next_value(args, &mut index, "--source")?),
+            "--record" => flags.record = Some(next_value(args, &mut index, "--record")?),
             "--pool" => flags.pool = Some(next_value(args, &mut index, "--pool")?),
             "--mode" => flags.mode = Some(next_value(args, &mut index, "--mode")?),
             "--fail-on" => flags.fail_on = Some(next_value(args, &mut index, "--fail-on")?),
@@ -134,11 +138,31 @@ fn parse_number(value: &str, flag: &str) -> Result<usize, String> {
 fn design_cmd(flags: Flags) -> i32 {
     let task = flags.positional.join(" ");
     let pool = flags.pool.as_deref().unwrap_or("designs");
-    if task.trim().is_empty() || !matches!(pool, "designs" | "components") {
-        eprintln!("usage: unfslop design \"<specific design brief>\" [--pool designs|components]");
+    let source = flags.source.as_deref();
+    let record = flags.record.as_deref();
+    let record_only = task.is_empty() && source.is_none() && record.is_some_and(|id| !id.is_empty());
+    let valid_source = match (pool, source) {
+        (_, None) | ("designs", Some("motionsites.ai" | "pixlpin.com"))
+            | ("components", Some("skiper-ui.com" | "21st.dev")) => true,
+        _ => false,
+    };
+    if !matches!(pool, "designs" | "components") || !valid_source
+        || (!record_only && (task.trim().is_empty() || record.is_some()))
+    {
+        eprintln!("usage: unfslop design \"<query>\" [--pool designs|components] [--source DOMAIN]");
+        eprintln!("       unfslop design --record ID [--pool designs|components]");
         return 2;
     }
-    let packet = design::brief(&Library::load(), &task, pool);
+    let packet = match record {
+        Some(id) => match design::record(id, pool) {
+            Ok(record) => record,
+            Err(error) => {
+                eprintln!("error: {error}");
+                return 1;
+            }
+        },
+        None => design::brief(&Library::load(), &task, pool, source),
+    };
     println!("{}", serde_json::to_string_pretty(&packet).expect("JSON value"));
     0
 }
@@ -401,7 +425,8 @@ fn print_help() {
         "unfuckin-slop · design context that costs only what the moment needs
 
 USAGE
-  unfslop design \"<design brief>\" [--pool designs|components] (JSON evidence and craft guidance)
+  unfslop design \"<design brief>\" [--pool designs|components] [--source DOMAIN]
+  unfslop design --record ID [--pool designs|components]
   unfslop context \"<task>\" [--budget N] [--limit N] [--mode M] [--brief] [--all] [--json]
   unfslop search \"<query>\" [--limit N] [--json]
   unfslop get <card-id> [--json]

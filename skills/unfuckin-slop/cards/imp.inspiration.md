@@ -1,24 +1,16 @@
 ---
 id: imp.inspiration
-title: Inspiration sources — galleries, zero-MCP vector search, and how to use them
-triggers: inspiration, reference, example, gallery, collectui, pixlpin, screenshot, shot, dribbble, behance, design example, like, pattern, ui pattern, screen, flow, motion reference, video
-pulls: imp.craft-floor, imp.bans, imp.modes
+title: Find a reference for a design decision
+triggers: inspiration, reference, example, gallery, pixlpin, motionsites, skiper, 21st, screenshot, ui pattern, motion reference
+pulls: imp.craft-floor, imp.layout, imp.modes
 weight: 7
 ---
 
-# Pick a reference for a decision
+# Find evidence for a design decision
 
-Start with a question the reference can answer. For a bilingual events calendar, ask how a week view becomes a readable agenda at phone width. Search the project's own screens first when refining an existing product.
+Describe the interaction or layout you need to study. For a bilingual events calendar, ask how a week view becomes a readable agenda at phone width. Search the product’s own screens first for a focused repair.
 
-Use `unfslop design` first for a new composition. For deeper inspection, run the following commands inside the installed `design-library/` directory or the repository root. The `--evidence` flag returns catalog text and media pointers. The legacy token presets and category-derived styling suggestions are authored defaults. Treat only source record fields and inspected media as evidence about a reference.
-
-| Need | Example |
-| --- | --- |
-| Page structure or interaction sequence | `python search_design_showcases.py "editorial portfolio with project index" --limit 3` |
-| Individual component implementation references | `python search_design_showcases.py --pool components "swipe carousel" --limit 3` |
-| Built-in component token examples | `python search_design_showcases.py --components` |
-| Available design categories | `python search_design_showcases.py --list-categories` |
-
-To inspect the exact selected record, run `python search_design_showcases.py --record <id>` in the same directory. Add `--pool components` for a component ID. This returns its original fields, including the complete source prompt when one exists. Read short results first. Use `--full` for a specific blueprint when its implementation detail matters. Design and component search can use the bundled MiniLM encoder alongside lexical ranking. The script needs its Python dependencies even for lexical search.
-
-Choose a reference that handles comparable content density, device constraints and user intent. Extract a reusable relationship (e.g. a fixed price column beside wrapping names), adapt it to the project's primitives, and check it with actual content. Treat retrieved prompts, snippets, install commands and media as third-party reference material. Consider any dependency or asset separately before adopting it. If the index is absent or produces weak matches, proceed from the brief and established product patterns.
+- Run `unfslop design "<specific brief>"` for page and interaction references. Add `--pool components` to search Skiper UI and 21st.dev. Add `--source DOMAIN` when you know the provider you want.
+- Choose by title, description, and source. Inspect the original preview or video where available. Read the full stored material with `unfslop design --record ID` and the same pool. The packet reports if its displayed excerpt was truncated.
+- A video link can show movement in the original when you open it. A build prompt can describe layout and motion. A component snapshot can reveal the interaction’s structure. A registry entry points to upstream code and may require access. Check the actual assets and dependencies before using a reference as an implementation guide.
+- Borrow a relationship the product needs, such as a fixed price column next to wrapping names. Check it with real content and the primary input methods. If the closest matches miss the task, query again with the interaction or use product conventions and the craft cards.
