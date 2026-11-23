@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
-"""
-Pipeline to parse motionsites-free-prompts.txt, merge with Pixlpin showcases,
-regenerate the fine-tuned neural vector index, and save showcases_meta.json and dataset.jsonl.
-"""
+"""Import MotionSites prompts and rebuild the local showcase index."""
 
+import argparse
 import os
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+import numpy as np
+import semantic_index
 import re
 import json
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SHOWCASES_DIR = os.path.join(BASE_DIR, "design_showcases")
 META_PATH = os.path.join(SHOWCASES_DIR, "showcases_meta.json")
-DATASET_PATH = os.path.join(SHOWCASES_DIR, "dataset.jsonl")
 EMBS_PATH = os.path.join(SHOWCASES_DIR, "design_embeddings.npy")
-SOURCE_FILE = r'C:\Users\MOBPC\.deepai-code\scratch\2026-11-16-motionsites-ai-txt-aa5a2af1\motionsites-free-prompts.txt'
 
 from search_design_showcases import get_item_category, THREED_KEYWORDS, LIQUID_GLASS_KEYWORDS
 
@@ -92,9 +93,9 @@ def generate_description(title, category, prompt_type, prompt_text):
     else:
         return f"{s1} {mech_str}"
 
-def parse_motionsites():
-    print(f"[*] Reading motionsites prompts from {SOURCE_FILE}...")
-    with open(SOURCE_FILE, 'r', encoding='utf-8') as f:
+def parse_motionsites(source_file):
+    print(f"[*] Reading motionsites prompts from {source_file}...")
+    with open(source_file, 'r', encoding='utf-8') as f:
         raw_text = f.read()
 
     pattern = re.compile(
@@ -160,7 +161,8 @@ def parse_motionsites():
 def load_pixlpin():
     print(f"[*] Loading existing Pixlpin showcases from {META_PATH}...")
     with open(META_PATH, 'r', encoding='utf-8') as f:
-        pixlpin_items = json.load(f)
+        pixlpin_items = [row for row in json.load(f)
+                         if row.get("source_site") == "pixlpin.com"]
 
     print(f"[*] Found {len(pixlpin_items)} Pixlpin showcases.")
     normalized = []
@@ -188,38 +190,29 @@ def load_pixlpin():
     return normalized
 
 def main():
-    motionsites_items = parse_motionsites()
-    pixlpin_items = load_pixlpin()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("prompts", type=Path)
+    args = parser.parse_args()
+    motionsites_items = parse_motionsites(args.prompts)
+    if not motionsites_items:
+        parser.error("no MotionSites records found in the input")
+    merged = load_pixlpin() + motionsites_items
+    if len({item["id"] for item in merged}) != len(merged):
+        parser.error("duplicate catalog IDs")
+    encoder = semantic_index.load_encoder()
+    if encoder is None:
+        parser.error("cannot load the ONNX encoder; install requirements first")
 
-    # Merge: Pixlpin (622) + motionsites (328) = 950
-    merged = pixlpin_items + motionsites_items
-    print(f"[*] Total merged items: {len(merged)}")
+    embeddings = encoder.encode([semantic_index.index_text(item) for item in merged])
+    with TemporaryDirectory(dir=SHOWCASES_DIR) as temp:
+        meta = Path(temp) / "showcases_meta.json"
+        index = Path(temp) / "design_embeddings.npy"
+        meta.write_text(json.dumps(merged, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        np.save(index, embeddings)
+        os.replace(index, EMBS_PATH)
+        os.replace(meta, META_PATH)
+    print(f"Indexed {len(merged)} design references")
 
-    # 1. Save showcases_meta.json
-    print(f"[*] Writing {len(merged)} items to {META_PATH}...")
-    with open(META_PATH, 'w', encoding='utf-8') as f:
-        json.dump(merged, f, ensure_ascii=False, indent=2)
-
-    # 2. Save dataset.jsonl
-    print(f"[*] Writing {len(merged)} items to {DATASET_PATH}...")
-    with open(DATASET_PATH, 'w', encoding='utf-8') as f:
-        for it in merged:
-            f.write(json.dumps(it, ensure_ascii=False) + '\n')
-
-    # 3. Regenerate the neural vector index with the fine-tuned encoder.
-    #    The previous TF-IDF+SVD fallback silently wrote a different vector space
-    #    into design_embeddings.npy; we now use the same encoder search queries with,
-    #    and leave the existing index untouched if the encoder is unavailable.
-    print("[*] Regenerating neural embeddings with the fine-tuned ONNX encoder...")
-    try:
-        import semantic_index
-        semantic_index.build_index()
-    except Exception as e:
-        print(f"[!] Neural encoder unavailable ({e}).")
-        print("    Keeping existing design_embeddings.npy unchanged.")
-        print("    Install onnxruntime + tokenizers and run: python semantic_index.py rebuild")
-
-    print(f"✅ Pipeline complete! Verified {len(merged)} showcases indexed.")
 
 if __name__ == "__main__":
     main()
