@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
-"""
-UI Design System & Component Library Engine for Autonomous Coding Agents.
-Grounds interfaces in production UI design systems, component blueprints, surface elevation tokens,
-ambient lighting atmospheres, and real video showcases from 950 curated visual showcases
-(622 Pixlpin showcases + 328 MotionSites full prompt blueprints).
+"""Search the local design and component catalogs.
 
-A second retrievable pool (--pool components) holds 9735 UI component code prompts
-(9698 from 21st.dev + 37 from skiper.ui) with verbatim implementations and npm install
-commands. It is kept separate from the 950 full-design showcases so design search and
-the design benchmark stay clean; both pools share the same fine-tuned semantic encoder.
+MiniLM and lexical search rank text. Evidence packets identify the original
+record and what the snapshot contains. Use --record for the stored payload.
 """
 
 import os
@@ -671,7 +665,7 @@ def get_item_category(item) -> str:
 def get_source_info(item):
     """Extract source website and URL cleanly."""
     source_site = item.get("source_site")
-    source_url = item.get("source_url", "")
+    source_url = item.get("source_url") or ""
     if not source_site:
         if "motionsites.ai" in source_url:
             source_site = "motionsites.ai"
@@ -1171,9 +1165,8 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
 
 def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None, *, source_filter=None, diagnostics=None, records=None):
     """Search the separate UI-component pool (21st.dev + skiper.ui) with the same
-    hybrid lexical+semantic ranking used for designs. Components ship verbatim code
-    prompts and npm install commands rather than interaction video, so results carry
-    tags/install metadata instead of a derived design-system spec."""
+    hybrid lexical+semantic ranking used for designs. Components carry
+    source snapshots or registry instructions rather than interaction video."""
     items = load_components() if records is None else records
     n_total = len(items)
     indexed = [(i, item) for i, item in enumerate(items)
@@ -1398,7 +1391,7 @@ def main():
             except (ValueError, OSError):
                 pass
     parser = argparse.ArgumentParser(
-        description="UI Design System & Component Library Engine for Autonomous Coding Agents"
+        description="Search UI design and component references"
     )
     parser.add_argument(
         "query",
@@ -1408,7 +1401,7 @@ def main():
     parser.add_argument(
         "--components",
         action="store_true",
-        help="Output static production UI primitive tokens (Buttons, Cards/Bento, Navigation, Lighting). To search the 9735-component code library use --pool components"
+        help="Print built-in token presets. Use --pool components to search provider records."
     )
     parser.add_argument(
         "--pool",
@@ -1442,7 +1435,7 @@ def main():
     parser.add_argument(
         "--full",
         action="store_true",
-        help="Print the entire verbatim prompt blueprint (including font links, Tailwind classes, and complete component implementation)"
+        help="Print the stored reference text where available."
     )
     parser.add_argument(
         "--limit",
