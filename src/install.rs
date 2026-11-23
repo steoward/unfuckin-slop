@@ -7,23 +7,7 @@ use std::path::Path;
 
 use crate::cards::{self, Library};
 
-pub const NOTICE: &str = "\
-# Attribution
-
-Unfuckin-Slop is an independent distillation, rewritten for retrieval. It is
-not a copy of either source skill, and neither author endorses it.
-
-- **Apple Design** by Emil Kowalski (github.com/emilkowalski/skills), which
-  translates Apple's WWDC interface talks, chiefly *Designing Fluid Interfaces*
-  (WWDC 2018), *The Details of UI Typography* (WWDC 2020), and *Principles of
-  Great Design* (WWDC 2026), to the web. Apple's underlying material remains
-  Apple's copyright.
-- **Impeccable** by Paul Bakaus (github.com/pbakaus/impeccable), Apache-2.0,
-  itself started from Anthropic's frontend-design skill.
-
-To read either in full, install them at their source. This project exists so
-an agent does not have to load them both to answer one question.
-";
+pub const NOTICE: &str = include_str!("../NOTICE.md");
 
 pub fn install(lib: &Library, target: &Path, force: bool) -> io::Result<usize> {
     let skill_path = target.join("SKILL.md");
@@ -38,7 +22,6 @@ pub fn install(lib: &Library, target: &Path, force: bool) -> io::Result<usize> {
     }
 
     fs::create_dir_all(target.join("cards"))?;
-    fs::write(&skill_path, cards::SKILL_MD)?;
     for card in &lib.cards {
         fs::write(
             target.join("cards").join(format!("{}.md", card.id)),
@@ -47,16 +30,17 @@ pub fn install(lib: &Library, target: &Path, force: bool) -> io::Result<usize> {
     }
     fs::write(target.join("NOTICE.md"), NOTICE)?;
 
-    // Copies of the running binaries, so the installed skill is self-contained.
-    if let Ok(exe) = std::env::current_exe() {
-        let bin_dir = target.join("bin");
-        if fs::create_dir_all(&bin_dir).is_ok() {
-            let unfslop_name = if cfg!(windows) { "unfslop.exe" } else { "unfslop" };
-            let slop_name = if cfg!(windows) { "slop.exe" } else { "slop" };
-            let _ = fs::copy(&exe, bin_dir.join(unfslop_name));
-            let _ = fs::copy(&exe, bin_dir.join(slop_name));
+    fs::write(target.join("LICENSE"), include_str!("../LICENSE"))?;
+    crate::design::install_library(target)?;
+    let exe = std::env::current_exe()?.canonicalize()?;
+    let bin_dir = target.join("bin");
+    fs::create_dir_all(&bin_dir)?;
+    for name in ["unfslop", "slop"] {
+        let binary = bin_dir.join(format!("{name}{}", std::env::consts::EXE_SUFFIX));
+        if !binary.exists() || binary.canonicalize()? != exe {
+            fs::copy(&exe, binary)?;
         }
     }
-
+    fs::write(&skill_path, cards::SKILL_MD)?;
     Ok(lib.cards.len())
 }
