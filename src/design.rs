@@ -25,9 +25,19 @@ fn library_root() -> Option<PathBuf> {
     let exe = std::env::current_exe().ok()?;
     let dir = exe.parent()?;
     // Installed skill/bin, or the normal Cargo checkout/target/{release,debug}.
-    [dir.join("../design-library"), dir.join("../..")]
-        .into_iter()
-        .find(|path| path.join(SCRIPT).is_file())
+    let installed = dir.join("../design-library");
+    if dir.ends_with("bin") && installed.join(SCRIPT).is_file() {
+        return Some(installed);
+    }
+    let checkout = dir.parent()?.parent()?;
+    if (dir.ends_with("release") || dir.ends_with("debug"))
+        && checkout.join("Cargo.toml").is_file()
+        && checkout.join("skills/unfuckin-slop/SKILL.md").is_file()
+        && checkout.join(SCRIPT).is_file()
+    {
+        return Some(checkout.to_path_buf());
+    }
+    None
 }
 
 pub(crate) fn install_library(target: &Path) -> io::Result<()> {
