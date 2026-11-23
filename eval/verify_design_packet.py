@@ -40,7 +40,15 @@ def main():
             assert ref["blueprint_excerpt"] == ((source.get("full_prompt") or "")[:550] or None)
             assert ref["url"] == (source.get("source_url") or None)
             assert ref["video_url"] == (source.get("video_url") or None)
+        lookup = subprocess.run([sys.executable, str(library / "search_design_showcases.py"),
+                                 "--pool", pool, "--record", refs[0]["id"]],
+                                check=True, capture_output=True, encoding="utf-8")
+        assert json.loads(lookup.stdout) == by_id[refs[0]["id"]]
         print(pool, json.dumps(refs, ensure_ascii=True), flush=True)
+    sample = {"title": "Plain index", "description": "A quiet list."}
+    formatted = catalog.format_full_blueprint(sample)
+    assert "A quiet list." in formatted and "no source blueprint" in formatted
+    assert "Tailwind" not in formatted
 
     broad = run(binary, "build a website")
     assert broad["status"] == "needs_specific_query" and not broad["references"]
