@@ -24,6 +24,8 @@ Put `unfslop` (or `unfslop.exe`) somewhere on `PATH`, or use the copy installed 
 
 ### Install as an agent skill
 
+To use the tested binary without building it, open the successful Rust CI run for your revision and download the `unfuckin-slop-<OS>-<ARCH>` artifact for your machine. Unzip it, then extract the enclosed `.tar.gz` into your agent’s skills directory. The archive preserves the executable permissions on Unix. To build and install from source, run the commands below with your freshly built CLI on PATH.
+
 ```bash
 unfslop install                  # → .claude/skills/unfuckin-slop
 unfslop install --user           # → ~/.claude/skills/unfuckin-slop
