@@ -4,17 +4,18 @@ Find UI references locally, then use Apple Design and Impeccable guidance to bui
 
 ## Install
 
-Download the archive for your platform from a successful [GitHub Actions run](https://github.com/steoward/unfuckin-slop/actions) and extract the enclosed `.tar.gz` into your agent’s skills directory. The bundle includes `SKILL.md`, the CLI, and `design-library/`. Install `design-library/requirements.txt` into the Python environment the agent uses. Call `bin/unfslop` by its path (`bin\unfslop.exe` on Windows).
-
-To build and install from a checkout:
+Install from Git using Git, Python, and a Rust toolchain.
 
 ```sh
+git clone https://github.com/steoward/unfuckin-slop.git
+cd unfuckin-slop
 python -m pip install -r requirements.txt
-cargo build --release --bin unfslop
-./target/release/unfslop install --agent codex
+cargo run --locked --release --bin unfslop -- install --agent codex
 ```
 
-On Windows, use `.\target\release\unfslop.exe`. Pass `--dir PATH` to install into a specific skills directory. Set `UNFSLOP_PYTHON` if the agent should use a specific interpreter. A binary moved outside the checkout or the bundle can use `UNFSLOP_DESIGN_LIBRARY` to locate the index.
+Run the same commands on Windows, macOS and Linux. The last command installs the skill, local model and catalog. Codex's project skill directory is `.agents/skills/`. Add `--user` to install for your user account, `--dir PATH` for another location, or `--force` to update an existing installation. Set `UNFSLOP_PYTHON` if the agent uses a different interpreter.
+
+Run commands below with `target/release/unfslop` from the checkout, or with the installed skill's `bin/unfslop` on PATH. On Windows the executable has an `.exe` suffix.
 
 ## Use
 
