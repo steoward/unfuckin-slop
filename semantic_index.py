@@ -70,7 +70,7 @@ def build_index(verbose=True):
     if enc is None:
         raise RuntimeError(
             "semantic encoder unavailable: pip install onnxruntime tokenizers "
-            "and ensure design_showcases/encoder/ exists (see eval/export_encoder.py)")
+            "and ensure design_showcases/encoder/ exists")
     with open(META_PATH, encoding="utf-8") as f:
         meta = json.load(f)
     texts = [index_text(m) for m in meta]
@@ -86,7 +86,7 @@ def build_component_index(verbose=True):
     if enc is None:
         raise RuntimeError(
             "semantic encoder unavailable: pip install onnxruntime tokenizers "
-            "and ensure design_showcases/encoder/ exists (see eval/export_encoder.py)")
+            "and ensure design_showcases/encoder/ exists")
     with open(COMPONENTS_META_PATH, encoding="utf-8") as f:
         meta = json.load(f)
     texts = [index_text(m) for m in meta]
