@@ -51,11 +51,8 @@ def main():
     assert filtered["backend"] == "catalog_filter" and len(filtered["references"]) == 1
     empty = catalog.reference_evidence("archive", "designs", category_filter="zzz-no-category")
     assert empty["status"] == "no_matches" and not empty["references"]
-    sample = {"title": "Plain index", "description": "A quiet list."}
-    formatted = catalog.format_full_blueprint(sample)
-    assert "A quiet list." in formatted and "no source blueprint" in formatted
-    assert "Tailwind" not in formatted
-
+    assert not catalog.search("build a website")
+    assert all("design_system" not in row for row in catalog.search("liquid glass hero", limit=3))
     sources = [
         ("designs", "motionsites.ai", "3d-character-studio", "design_prompt"),
         ("components", "skiper-ui.com", "skiper-skiper48", "component_source_snapshot"),

@@ -55,7 +55,7 @@ pub(crate) fn install_library(target: &Path) -> io::Result<()> {
 }
 
 fn retrieve(args: &[&str], pool: &str) -> Result<Value, String> {
-    let root = library_root().ok_or("Install the full skill bundle or set UNFSLOP_DESIGN_LIBRARY to the checkout root.")?;
+    let root = library_root().ok_or("Install from the source checkout or set UNFSLOP_DESIGN_LIBRARY to its root.")?;
     let python = std::env::var_os("UNFSLOP_PYTHON")
         .unwrap_or_else(|| if cfg!(windows) { "python" } else { "python3" }.into());
     let output = Command::new(python)
