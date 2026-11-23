@@ -751,7 +751,7 @@ def derive_ui_design_spec(item) -> dict:
             "components": [
                 "Header & Telemetry Bar: Sticky minimal navbar with live currency ticker and network health dot",
                 "Hero Metrics Stage: Split layout with large financial yield callout and sparkline telemetry graph",
-                "Compliance Badges: Monospace SOC2 and 256-bit AES encryption verification tags",
+                "Trust information: Only display product claims supported by the brief and verified evidence",
                 "Transaction Feed: Filterable high-contrast table with tabbed stream controls",
                 "Quick Action Card: Instant transfer/exchange module with slider input"
             ],
@@ -793,7 +793,7 @@ def derive_ui_design_spec(item) -> dict:
             "components": [
                 "Global Command Header: Top bar with breadcrumb path, environment pill, and Cmd+K trigger",
                 "Interactive Terminal Stage: Multi-tab code snippet runner (Bash, TypeScript) with syntax colors",
-                "API Endpoint Cards: Payload schemas, SDK install snippets, and latency benchmark pills (<15ms)",
+                "API Endpoint Cards: Payload schemas and SDK snippets drawn from the actual API",
                 "Architecture Flow: Node diagram showing request routing from edge gateway to worker",
                 "CLI Quickstart Drawer: Collapsible sheet with one-click package manager copy runner"
             ],
@@ -992,7 +992,7 @@ def format_full_blueprint(item, index=1):
     video_url = item.get("video_url", "N/A")
     title = item.get("title", "Showcase Design")
     full_prompt = item.get("full_prompt")
-    ds = item.get("design_system") or derive_ui_design_spec(item)
+    ds = item.get("design_system") or {}
 
     lines = []
     lines.append("######################################################################")
@@ -1004,37 +1004,15 @@ def format_full_blueprint(item, index=1):
 
     if full_prompt and str(full_prompt).strip():
         lines.append(str(full_prompt).strip())
+    elif item.get("archetype"):
+        lines.append("Built-in archetype (authored preset)")
+        lines.append(item.get("description", ""))
+        if item.get("code_scaffold") or ds.get("code_scaffold"):
+            lines.append(item.get("code_scaffold") or ds["code_scaffold"])
     else:
-        lines.append(f"Build a production-grade, high-impact web interface for \"{title}\" with React, TypeScript, and Tailwind CSS.\n")
-        lines.append("---")
-        lines.append("UI ARCHITECTURE & COMPONENT BREAKDOWN")
-        for comp in ds.get("components", []):
-            lines.append(f"- {comp}")
-        lines.append("\n---")
-        lines.append("SURFACE TOKENS, LIGHTING & ATMOSPHERE")
-        vs = ds.get("visual_styling", {})
-        lines.append(f"- Surface Elevations: {vs.get('surfaces')}")
-        lines.append(f"- Lighting Spotlight: {vs.get('lighting')}")
-        lines.append(f"- Color Palette:     {vs.get('accents')}")
-        lines.append(f"- Typography:        {vs.get('typography')}\n")
-        lines.append("---")
-        lines.append("FONTS & GOOGLE FONTS IMPORT")
-        lines.append("- Display/Heading Font: 'Space Grotesk' or 'Syne' (weights: 700, 800)")
-        lines.append("- Body/Interface Font: 'Inter' or 'Geist Sans' (weights: 400, 500, 600)")
-        lines.append("- Import Link:\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Syne:wght@700;800&display=swap\" rel=\"stylesheet\">\n")
-        lines.append("---")
-        lines.append("CLEAN TRANSITION SPEC (QUIET SUPPORTING DETAILS)")
-        ts = ds.get("transition_spec", {})
-        lines.append(f"- Duration: {ts.get('duration_ms', 240)}ms")
-        lines.append(f"- Easing:   {ts.get('curve', 'cubic-bezier(0.16, 1, 0.3, 1)')}")
-        lines.append(f"- Notes:    {ts.get('notes', 'Natural dampening with zero float')}\n")
-        lines.append("---")
-        lines.append("PRODUCTION CODE IMPLEMENTATION SCAFFOLD")
-        scaffold = item.get("code_scaffold") or ds.get("code_scaffold")
-        if scaffold:
-            lines.append(scaffold)
-        lines.append("\n---")
-        lines.append(f"DIRECT MP4 VIDEO ASSET: {video_url}")
+        lines.append("Catalog description")
+        lines.append(item.get("description", ""))
+        lines.append("This catalog record has no source blueprint. Inspect its source or video for further visual detail.")
 
     lines.append("######################################################################\n")
     return "\n".join(lines)
@@ -1291,6 +1269,9 @@ def reference_evidence(query, pool):
         matches = search_components(query, limit=3, diagnostics=details)
     else:
         matches = search(query, limit=3, diagnostics=details, include_specs=False)
+    if details["backend"] is None:
+        return {"status": "unavailable", "backend": None, "references": [],
+                "reason": f"The {pool} catalog could not be loaded."}
     refs = []
     for item in matches:
         source, url = get_source_info(item)
@@ -1373,9 +1354,19 @@ def main():
     )
     parser.add_argument("--evidence", action="store_true",
                         help="Return a compact JSON packet of source descriptions and media for the design agent")
+    parser.add_argument("--record", metavar="ID", help="Print one original catalog record as JSON")
     args = parser.parse_args()
     if args.evidence:
         print(json.dumps(reference_evidence(" ".join(args.query), args.pool), ensure_ascii=False))
+        return
+
+    # Resolve a selected reference by its stable ID without a second ranking pass.
+    if args.record:
+        records = load_components() if args.pool == "components" else load_data()
+        record = next((r for r in records if r.get("id") == args.record), None)
+        if record is None:
+            parser.error(f"unknown {args.pool} record {args.record!r}")
+        print(json.dumps(record, ensure_ascii=False, indent=2))
         return
 
     # Handle --components early
@@ -1482,7 +1473,14 @@ def main():
         print(f"    - Direct Video Asset:   {video_url}")
         print(f"    - Relevance Score:      {r.get('relevance_score', 'N/A')}")
         print(f"    - Overview:             {r.get('description')}")
-        print(f"    - Component Breakdown:")
+        if not r.get("archetype"):
+            if r.get("full_prompt"):
+                print("    - Source blueprint:     available with --record " + str(r.get("id")))
+            else:
+                print("    - Source blueprint:     unavailable; inspect the linked source or video")
+            print()
+            continue
+        print("    - Built-in archetype / authored component suggestions:")
         for comp in ds.get("components", []):
             print(f"      * {comp}")
         print(f"    - Visual Styling & Lighting:")
