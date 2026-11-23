@@ -1046,14 +1046,15 @@ def format_full_blueprint(item, index=1):
     lines.append("######################################################################\n")
     return "\n".join(lines)
 
-def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None, *, diagnostics=None, include_specs=True):
+def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None, *, source_filter=None, diagnostics=None, records=None, include_specs=True):
     """
     Search curated showcases with UI Design System Archetypes,
     Embedding & TF-IDF similarity, and component-first blueprints.
     """
-    items = load_data()
+    items = load_data() if records is None else records
     n_total = len(items)
-    indexed = list(enumerate(items))
+    indexed = [(i, item) for i, item in enumerate(items)
+               if source_filter is None or get_source_info(item)[0] == source_filter]
 
     # Pre-filter by Category if specified
     if category_filter:
@@ -1074,7 +1075,7 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
     # Empty or broad query handling: return the 6 Universal UI Design System Archetypes
     if is_broad_or_creative_query(query):
         # If user explicitly requested liquid-glass, 3d, or a category, return top matching items from pool
-        if filter_liquid_glass or filter_3d or category_filter:
+        if filter_liquid_glass or filter_3d or category_filter or source_filter:
             results = []
             eff_limit = limit if limit is not None else 5
             for it in items[:eff_limit]:
@@ -1168,14 +1169,15 @@ def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False, cat
         results.append(result)
     return results
 
-def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None, *, diagnostics=None):
+def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass=False, category_filter=None, *, source_filter=None, diagnostics=None, records=None):
     """Search the separate UI-component pool (21st.dev + skiper.ui) with the same
     hybrid lexical+semantic ranking used for designs. Components ship verbatim code
     prompts and npm install commands rather than interaction video, so results carry
     tags/install metadata instead of a derived design-system spec."""
-    items = load_components()
+    items = load_components() if records is None else records
     n_total = len(items)
-    indexed = list(enumerate(items))
+    indexed = [(i, item) for i, item in enumerate(items)
+               if source_filter is None or get_source_info(item)[0] == source_filter]
 
     if category_filter:
         indexed = [(i, it) for i, it in indexed if matches_category(it, category_filter)]
@@ -1293,31 +1295,96 @@ def format_component_blueprint(item, index=1):
     lines.append("######################################################################\n")
     return "\n".join(lines)
 
-def reference_evidence(query, pool, *, limit=3, filter_3d=False, filter_liquid_glass=False, category_filter=None):
-    """Return catalog evidence for a design decision. Keep presets out of this path."""
+REFERENCE_SOURCES = {
+    "designs": ("motionsites.ai", "pixlpin.com"),
+    "components": ("skiper-ui.com", "21st.dev"),
+}
+
+SOURCE_MATERIAL = {
+    "motionsites.ai": "design_prompt",
+    "pixlpin.com": "description",
+    "skiper-ui.com": "component_source_snapshot",
+    "21st.dev": "registry_instructions",
+}
+
+
+def pack_reference(item):
+    source, url = get_source_info(item)
+    body = (item.get("full_prompt") or "").strip()
+    material = {
+        "kind": SOURCE_MATERIAL.get(source, "catalog_text") if body else "description",
+        "characters": len(body),
+        "excerpt_truncated": len(body) > 550,
+    }
+    for key in ("author", "license", "npm_deps"):
+        if item.get(key):
+            material[key] = item[key]
+    return {
+        "id": item.get("id"), "title": item["title"], "source": source,
+        "url": url or None, "video_url": item.get("video_url") or None,
+        "description": (item.get("description") or "")[:750],
+        "blueprint_excerpt": body[:550] or None,
+        "material": material,
+    }
+
+
+def exact_references(query, rows):
+    """Try a canonical ID or source URL before matching titles."""
+    key = query.strip()
+    if not key:
+        return []
+    identified = [row for row in rows
+                  if row.get("id") == key or get_source_info(row)[1].rstrip("/") == key.rstrip("/")]
+    if identified:
+        return identified
+    title = " ".join(key.casefold().split())
+    return [row for row in rows if " ".join(row["title"].casefold().split()) == title]
+
+
+def reference_evidence(query, pool, *, limit=3, filter_3d=False,
+                       filter_liquid_glass=False, category_filter=None, source_filter=None):
+    """Return catalog evidence. Preserve the existing hybrid ranking for briefs."""
+    if source_filter and source_filter not in REFERENCE_SOURCES[pool]:
+        return {"status": "invalid_source", "backend": None, "references": [],
+                "reason": f"Choose a {pool} source: {', '.join(REFERENCE_SOURCES[pool])}."}
+    constrained = filter_3d or filter_liquid_glass or category_filter or source_filter
     broad = is_broad_or_creative_query(query)
-    if broad and not (filter_3d or filter_liquid_glass or category_filter):
+    records = load_components() if pool == "components" else load_data()
+    if not records:
+        return {"status": "unavailable", "backend": None, "references": [],
+                "reason": f"The {pool} catalog could not be loaded."}
+    candidates = (row for row in records
+                  if (not source_filter or get_source_info(row)[0] == source_filter)
+                  and (not category_filter or matches_category(row, category_filter))
+                  and (not filter_3d or is_3d_showcase(row))
+                  and (not filter_liquid_glass or is_liquid_glass_showcase(row)))
+    # Materialize once so both ID and title checks see the same candidates.
+    exact = exact_references(query, list(candidates))
+    if len(exact) == 1:
+        return {"status": "ok" if limit else "no_matches", "backend": "catalog_exact",
+                "exact_matches": len(exact), "references": [pack_reference(row) for row in exact[:limit]]}
+
+    if not exact and query.strip().startswith(("https://", "http://")):
+        return {"status": "no_matches", "backend": "catalog_exact", "exact_matches": 0, "references": []}
+    if broad and not constrained and not exact:
         return {"status": "needs_specific_query", "backend": None, "references": []}
+
     details = {"backend": "catalog_filter" if broad else None}
-    options = dict(limit=limit, filter_3d=filter_3d, filter_liquid_glass=filter_liquid_glass,
-                   category_filter=category_filter, diagnostics=details)
+    # Preserve the existing ranking when multiple records share an exact title.
+    rank_limit = len(records) if exact else limit
+    options = dict(limit=rank_limit, filter_3d=filter_3d, filter_liquid_glass=filter_liquid_glass,
+                   category_filter=category_filter, source_filter=source_filter, diagnostics=details, records=records)
     if pool == "components":
         matches = search_components(query, **options)
     else:
         matches = search(query, include_specs=False, **options)
-    if not details["catalog_available"]:
-        return {"status": "unavailable", "backend": None, "references": [],
-                "reason": f"The {pool} catalog could not be loaded."}
-    refs = []
-    for item in matches:
-        source, url = get_source_info(item)
-        refs.append({
-            "id": item.get("id"), "title": item["title"], "source": source,
-            "url": url or None, "video_url": item.get("video_url") or None,
-            "description": (item.get("description") or "")[:750],
-            "blueprint_excerpt": (item.get("full_prompt") or "")[:550] or None,
-        })
-    return {"status": "ok" if refs else "no_matches", "backend": details["backend"], "references": refs}
+    if exact:
+        rank = {row["id"]: i for i, row in enumerate(matches)}
+        exact.sort(key=lambda row: rank.get(row["id"], len(rank)))
+        return {"status": "ok" if limit else "no_matches", "backend": "catalog_exact",
+                "exact_matches": len(exact), "references": [pack_reference(row) for row in exact[:limit]]}
+    return {"status": "ok" if matches else "no_matches", "backend": details["backend"],
+            "references": [pack_reference(row) for row in matches]}
 
 
 def main():
@@ -1390,6 +1457,7 @@ def main():
     )
     parser.add_argument("--evidence", action="store_true",
                         help="Return a compact JSON packet of source descriptions and media for the design agent")
+    parser.add_argument("--source", choices=sorted(SOURCE_MATERIAL), help="Filter evidence by provider")
     parser.add_argument("--record", metavar="ID", help="Print one original catalog record as JSON")
     args = parser.parse_args()
     if args.evidence:
@@ -1398,18 +1466,23 @@ def main():
         result = reference_evidence(" ".join(args.query), args.pool,
                                     limit=3 if args.limit is None else args.limit,
                                     filter_3d=args.three_d, filter_liquid_glass=args.liquid_glass,
-                                    category_filter=args.category)
+                                    category_filter=args.category, source_filter=args.source)
         print(json.dumps(result, ensure_ascii=False))
         return
 
     # Resolve a selected reference by its stable ID without a second ranking pass.
     if args.record:
+        if args.source:
+            parser.error('--source requires --evidence')
         records = load_components() if args.pool == "components" else load_data()
         record = next((r for r in records if r.get("id") == args.record), None)
         if record is None:
             parser.error(f"unknown {args.pool} record {args.record!r}")
         print(json.dumps(record, ensure_ascii=False, indent=2))
         return
+
+    if args.source:
+        parser.error("--source requires --evidence")
 
     # Handle --components early
     if args.components:
