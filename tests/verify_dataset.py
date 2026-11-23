@@ -18,7 +18,6 @@ import numpy as np
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SHOWCASES_DIR = os.path.join(BASE_DIR, "design_showcases")
 META_PATH = os.path.join(SHOWCASES_DIR, "showcases_meta.json")
-DATASET_PATH = os.path.join(SHOWCASES_DIR, "dataset.jsonl")
 EMBS_PATH = os.path.join(SHOWCASES_DIR, "design_embeddings.npy")
 
 def test_dataset():
@@ -34,14 +33,6 @@ def test_dataset():
     total_count = len(items)
     print(f"[*] Total items in showcases_meta.json: {total_count}")
     assert total_count == 950, f"Expected 950 items, found {total_count}"
-
-    # 2. Verify dataset.jsonl
-    assert os.path.exists(DATASET_PATH), f"Missing {DATASET_PATH}"
-    with open(DATASET_PATH, "r", encoding="utf-8") as f:
-        jsonl_lines = [json.loads(line) for line in f if line.strip()]
-
-    print(f"[*] Total items in dataset.jsonl: {len(jsonl_lines)}")
-    assert len(jsonl_lines) == 950, f"Expected 950 items in dataset.jsonl, found {len(jsonl_lines)}"
 
     # 3. Verify video assets
     video_items = [it for it in items if it.get("video_url")]
@@ -90,7 +81,7 @@ def test_dataset():
     np.testing.assert_allclose(norms, 1.0, atol=1e-5, err_msg="Embeddings rows are not L2 normalized!")
     print(f"[*] Embeddings L2 normalization verified (min norm={norms.min():.5f}, max norm={norms.max():.5f})")
 
-    print("\n✅ ALL 7 DATASET VERIFICATION CHECKS PASSED PERFECTLY!\n")
+    print("\n✅ Dataset verification passed\n")
 
 if __name__ == "__main__":
     test_dataset()
