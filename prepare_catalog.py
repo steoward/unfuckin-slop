@@ -4,8 +4,11 @@ from collections import Counter
 import hashlib
 import json
 import re
+import subprocess
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
+
+from visual_annotations import validate_annotation
 
 BUNDLES = {
     "motionsites-free-prompts.txt": ("motionsites.ai", "showcases"),
@@ -101,11 +104,21 @@ def attach_media(path, media_root, rows):
             })
         _, row = rows[item["id"]]
         checksum = file_digest(local)
-        if not any(asset["sha256"] == checksum for asset in row.get("media", [])):
-            row.setdefault("media", []).append({
-                "kind": kind, "path": relative.as_posix(), "sha256": checksum,
-                "rights": item["rights"],
-            })
+        assets = row.setdefault("media", [])
+        asset = next((entry for entry in assets if entry["sha256"] == checksum), None)
+        if asset is None:
+            asset = {"kind": kind, "path": relative.as_posix(), "sha256": checksum, "rights": item["rights"]}
+            assets.append(asset)
+        if "annotation" in item:
+            report = item["annotation"]
+            if not isinstance(report, dict):
+                raise ValueError(f"Annotation for {item['id']} must be a JSON object")
+            duration = 0.0
+            if kind == "video":
+                probe = subprocess.check_output(["ffprobe", "-v", "error", "-show_entries",
+                                                 "format=duration", "-of", "json", str(local)])
+                duration = float(json.loads(probe)["format"]["duration"])
+            asset["annotation"] = validate_annotation(report, checksum, row["id"], duration)
 
 
 def main():
@@ -147,6 +160,7 @@ def main():
         "remote_video_references": dict(Counter(row["source_site"] for _, row in rows.values()
                                                if row.get("video_url"))),
         "assets": dict(Counter(asset["kind"] for _, row in rows.values() for asset in row.get("media", []))),
+        "annotated_assets": sum("annotation" in asset for _, row in rows.values() for asset in row.get("media", [])),
     }
     (args.output / "coverage.json").write_text(json.dumps(coverage, indent=2), encoding="utf-8")
     print(json.dumps(coverage, indent=2))

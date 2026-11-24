@@ -15,7 +15,8 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer, ENGLISH_STOP_WORDS
 from sklearn.metrics.pairwise import cosine_similarity
 
-from semantic_index import DATA_DIR, MEDIA_DIR, open_index, query_vectors
+from semantic_index import DATA_DIR, VISUAL_WINDOW_SECONDS, media_path, open_index, query_vectors
+from visual_annotations import annotation_text, window_annotation
 
 META_PATH = DATA_DIR / "showcases_meta.json"
 COMPONENTS_META_PATH = DATA_DIR / "components_meta.json"
@@ -210,7 +211,7 @@ def rank_catalog(query, limit, records, load_semantic, *, components=False,
 
     titles = [item.get("title", "") for item in items]
     categories = [get_item_category(item) for item in items]
-    descriptions = [item.get("description", "") for item in items]
+    descriptions = [" ".join(filter(None, (item.get("description"), annotation_text(item)))) for item in items]
     tags = [" ".join(item.get("tags", [])) if components else "" for item in items]
     corpus = [
         f"{title} {title} {category} {desc} {item.get('id', '').replace('-', ' ')} {tag}"
@@ -262,13 +263,13 @@ def rank_catalog(query, limit, records, load_semantic, *, components=False,
             if row_index not in visual:
                 continue
             score, asset_index, time = visual[row_index]
+            asset = records[row_index]["media"][asset_index]
+            try:
+                visual_hits[row_index] = pack_visual(asset, time, round(score, 4))
+            except FileNotFoundError:
+                continue
             # A common cosine scale preserves comparable evidence for text-only results.
             semantic[position] = 0.45 * semantic[position] + 0.55 * score
-            asset = records[row_index]["media"][asset_index]
-            visual_hits[row_index] = {
-                "kind": asset["kind"], "path": str((MEDIA_DIR / asset["path"]).resolve()),
-                "seconds": time, "similarity": round(score, 4),
-            }
         semantic = _minmax(semantic) if visual_hits else text_score
         scores = (1.0 - SEMANTIC_WEIGHT) * _minmax(scores) + SEMANTIC_WEIGHT * semantic
     if diagnostics is not None:
@@ -308,6 +309,16 @@ SOURCE_MATERIAL = {
 }
 
 
+def pack_visual(asset, seconds=0.0, similarity=None):
+    evidence = {
+        "kind": asset["kind"], "path": str(media_path(asset)),
+        "seconds": seconds, "similarity": similarity,
+    }
+    if annotation := window_annotation(asset, seconds, seconds + VISUAL_WINDOW_SECONDS):
+        evidence["annotation"] = annotation
+    return evidence
+
+
 def pack_reference(item):
     source, url = get_source_info(item)
     body = (item.get("full_prompt") or "").strip()
@@ -319,13 +330,21 @@ def pack_reference(item):
     for key in ("author", "license", "npm_deps"):
         if item.get(key):
             material[key] = item[key]
+    visual = item.get("visual_evidence")
+    if visual is None:
+        for asset in item.get("media", []):
+            try:
+                visual = pack_visual(asset)
+            except FileNotFoundError:
+                continue
+            break
     return {
         "id": item.get("id"), "title": item["title"], "source": source,
         "url": url or None, "video_url": item.get("video_url") or None,
         "description": (item.get("description") or "")[:750],
         "blueprint_excerpt": body[:550] or None,
         "material": material,
-        "visual_evidence": item.get("visual_evidence"),
+        "visual_evidence": visual,
     }
 
 

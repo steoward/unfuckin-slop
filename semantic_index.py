@@ -10,9 +10,13 @@ from typing import NamedTuple
 
 import numpy as np
 
+from visual_annotations import annotation_text
+
 MODEL_ID = "google/embeddinggemma-2"
 REVISION = "f9972ac22e696a105c482202646979e33e4b5a1e"
 DIM = 768
+VISUAL_WINDOW_SECONDS = 8
+VISUAL_CACHE_VERSION = 2
 DATA_DIR = Path(os.environ.get("UNFSLOP_LIBRARY_DATA", Path(__file__).resolve().parent / "design_showcases"))
 MEDIA_DIR = Path(os.environ.get("UNFSLOP_MEDIA_ROOT", DATA_DIR / "media"))
 
@@ -73,7 +77,7 @@ def canonical_rows(pool):
 
 def document_text(row):
     tags = ", ".join(row.get("tags") or [])
-    return "\n".join(filter(None, (row["title"], row.get("category"), row.get("description"), tags)))
+    return "\n".join(filter(None, (row["title"], row.get("category"), row.get("description"), tags, annotation_text(row))))
 
 
 def row_digest(rows):
@@ -144,40 +148,72 @@ def media_windows(asset):
         frames = sorted(directory.glob("*.jpg"))
         if not frames:
             raise ValueError(f"No frames decoded: {path}")
-        for start in range(0, len(frames), 8):
+        for start in range(0, len(frames), VISUAL_WINDOW_SECONDS):
             images = []
-            for frame in frames[start:start + 8]:
+            for frame in frames[start:start + VISUAL_WINDOW_SECONDS]:
                 with Image.open(frame) as image:
                     images.append(image.convert("RGB"))
             yield float(start), {"video": images}
 
 
-def build_index(pool, batch_size):
+def save_index(path, **arrays):
+    with NamedTemporaryFile(dir=path.parent, suffix=".npz", delete=False) as stream:
+        temporary = Path(stream.name)
+    try:
+        np.savez(temporary, **arrays)
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def encode_asset(model, asset, checkpoint, cache_dir):
+    cached = None
+    if cache_dir is not None:
+        path = media_path(asset)
+        with path.open("rb") as stream:
+            digest = hashlib.file_digest(stream, "sha256").hexdigest()
+        if digest != asset["sha256"]:
+            raise ValueError(f"Media changed since catalog import: {path}")
+        cache_key = f"{VISUAL_CACHE_VERSION}-{checkpoint}-{asset['kind']}-{digest}"
+        cached = cache_dir / f"{cache_key}.npz"
+        if cached.is_file():
+            with np.load(cached, allow_pickle=False) as arrays:
+                return arrays["starts"], arrays["visual"]
+    starts, visual = [], []
+    for start, inputs in media_windows(asset):
+        starts.append(start)
+        visual.append(model.encode(inputs, normalize_embeddings=True, show_progress_bar=False))
+    starts, visual = np.asarray(starts), np.asarray(visual, dtype=np.float32)
+    if cached is not None:
+        save_index(cached, starts=starts, visual=visual)
+    return starts, visual
+
+
+def build_index(pool, batch_size, visual_cache=None):
     rows = canonical_rows(pool)
-    model = load_encoder(vision=any(row.get("media") for row in rows))
+    media = [(owner, index, asset) for owner, row in enumerate(rows)
+             for index, asset in enumerate(row.get("media", []))]
+    checkpoint = model_key()
+    model = load_encoder(vision=bool(media))
+    if visual_cache is not None:
+        visual_cache.mkdir(parents=True, exist_ok=True)
+    visual, owners, asset_indices, starts = [], [], [], []
+    for completed, (owner, index, asset) in enumerate(media, 1):
+        times, vectors = encode_asset(model, asset, checkpoint, visual_cache)
+        visual.extend(vectors)
+        starts.extend(times)
+        owners.extend([owner] * len(times))
+        asset_indices.extend([index] * len(times))
+        if completed % 25 == 0 or completed == len(media):
+            print(f"Visual assets: {completed}/{len(media)} ({len(visual)} windows)", flush=True)
     text = model.encode_document(
         [document_text(row) for row in rows], normalize_embeddings=True,
         batch_size=batch_size, show_progress_bar=True,
     )
-    visual, owners, asset_indices, starts = [], [], [], []
-    for owner, row in enumerate(rows):
-        for index, asset in enumerate(row.get("media", [])):
-            for start, inputs in media_windows(asset):
-                vector = model.encode(inputs, normalize_embeddings=True, show_progress_bar=False)
-                visual.append(vector)
-                owners.append(owner)
-                asset_indices.append(index)
-                starts.append(start)
     path = index_path(pool)
-    with NamedTemporaryFile(dir=path.parent, suffix=".npz", delete=False) as stream:
-        temporary = Path(stream.name)
-    try:
-        np.savez(temporary, model=model_key(), corpus=row_digest(rows), text=text,
-                 visual=np.array(visual, dtype=np.float32).reshape(-1, DIM),
-                 owners=owners, asset_indices=asset_indices, starts=starts)
-        temporary.replace(path)
-    finally:
-        temporary.unlink(missing_ok=True)
+    save_index(path, model=checkpoint, corpus=row_digest(rows), text=text,
+               visual=np.asarray(visual, dtype=np.float32).reshape(-1, DIM),
+               owners=owners, asset_indices=asset_indices, starts=starts)
     print(f"{path}: {len(rows)} text records, {len(visual)} visual windows", flush=True)
 
 
@@ -187,8 +223,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("operation", choices=("rebuild", "rebuild-components"))
     parser.add_argument("--batch-size", type=int, default=16)
+    parser.add_argument("--visual-cache", type=Path, help="Reuse previously encoded assets during a rebuild")
     args = parser.parse_args()
-    build_index("components" if args.operation == "rebuild-components" else "showcases", args.batch_size)
+    build_index("components" if args.operation == "rebuild-components" else "showcases",
+                args.batch_size, args.visual_cache)
 
 
 if __name__ == "__main__":

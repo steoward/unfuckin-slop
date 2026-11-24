@@ -12,7 +12,7 @@ use crate::{cards::Library, index};
 const SCRIPT: &str = "search_design_showcases.py";
 const BUILD_LIBRARY: &str = "build_library.py";
 const LIBRARY_FILES: &[&str] = &[
-    SCRIPT, BUILD_LIBRARY, "semantic_index.py", "prepare_catalog.py", "requirements.txt",
+    SCRIPT, BUILD_LIBRARY, "semantic_index.py", "visual_annotations.py", "prepare_catalog.py", "requirements.txt",
 ];
 
 
