@@ -12,12 +12,9 @@ use crate::{cards::Library, index};
 const SCRIPT: &str = "search_design_showcases.py";
 const BUILD_LIBRARY: &str = "build_library.py";
 const LIBRARY_FILES: &[&str] = &[
-    SCRIPT, BUILD_LIBRARY, "semantic_index.py", "requirements.txt",
-    "design_showcases/showcases_meta.json", "design_showcases/components_meta.json",
-    "design_showcases/design_embeddings.npy", "design_showcases/component_embeddings.npy",
-    "design_showcases/encoder/model.onnx", "design_showcases/encoder/tokenizer.json",
-    "design_showcases/encoder/encoder_config.json",
+    SCRIPT, BUILD_LIBRARY, "semantic_index.py", "prepare_catalog.py", "requirements.txt",
 ];
+
 
 fn library_root() -> Option<PathBuf> {
     if let Some(path) = std::env::var_os("UNFSLOP_DESIGN_LIBRARY") {
@@ -51,6 +48,19 @@ pub(crate) fn install_library(target: &Path) -> io::Result<()> {
         let output = destination.join(relative);
         fs::create_dir_all(output.parent().expect("file has a parent"))?;
         fs::copy(root.join(relative), output)?;
+    }
+    for obsolete in [
+        "design_showcases/design_embeddings.npy",
+        "design_showcases/component_embeddings.npy",
+        "design_showcases/encoder/model.onnx",
+        "design_showcases/encoder/tokenizer.json",
+        "design_showcases/encoder/encoder_config.json",
+    ] {
+        match fs::remove_file(destination.join(obsolete)) {
+            Ok(()) => (),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => (),
+            Err(error) => return Err(error),
+        }
     }
     Ok(())
 }

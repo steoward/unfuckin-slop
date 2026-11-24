@@ -1,34 +1,33 @@
-"""Verify catalog contents and vector layout for the committed snapshots."""
+"""Verify a private EmbeddingGemma 2 catalog and any built indexes."""
 from collections import Counter
-import json
 from pathlib import Path
+import sys
 
 import numpy as np
 
-CATALOG = Path(__file__).resolve().parents[1] / "design_showcases"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from semantic_index import DIM, canonical_rows, media_path, open_index
 
 
-def verify_catalog(meta_name, vectors_name, sources):
-    records = json.loads((CATALOG / meta_name).read_text(encoding="utf-8"))
-    assert Counter(row["source_site"] for row in records) == sources
-    assert len({row["id"] for row in records}) == len(records)
-    vectors = np.load(CATALOG / vectors_name)
-    assert vectors.shape == (len(records), 384) and vectors.dtype == np.float32
-    np.testing.assert_allclose(np.linalg.norm(vectors, axis=1), 1.0, atol=1e-5)
-    return records
-
-
-def test_dataset():
-    designs = verify_catalog("showcases_meta.json", "design_embeddings.npy",
-                             {"pixlpin.com": 622, "motionsites.ai": 328})
-    verify_catalog("components_meta.json", "component_embeddings.npy",
-                   {"21st.dev": 9698, "skiper-ui.com": 37})
-    assert sum(bool(row.get("video_url")) for row in designs) >= 800
-    assert sum(bool(row.get("is_3d")) for row in designs) >= 300
-    assert sum(bool(row.get("is_liquid_glass")) for row in designs) >= 70
-    assert all(row["full_prompt"] for row in designs if row["source_site"] == "motionsites.ai")
-    print("Verified both catalogs and their embedding arrays.")
+def main():
+    all_ids = set()
+    for pool in ("showcases", "components"):
+        rows = canonical_rows(pool)
+        for row in rows:
+            assert row["id"] not in all_ids, row["id"]
+            all_ids.add(row["id"])
+            for media in row.get("media", []):
+                assert media_path(media).is_file()
+        index = open_index(pool)
+        if index is not None:
+            assert index.text.shape == (len(rows), DIM)
+            assert index.visual.shape[1] == DIM
+            assert len(index.visual) == len(index.owners) == len(index.asset_indices) == len(index.starts)
+            assert all(0 <= idx < len(rows) for idx in index.owners)
+            np.testing.assert_allclose(np.linalg.norm(index.text, axis=1), 1, atol=1e-3)
+            np.testing.assert_allclose(np.linalg.norm(index.visual, axis=1), 1, atol=1e-3)
+        print(pool, dict(Counter(row["source_site"] for row in rows)))
 
 
 if __name__ == "__main__":
-    test_dataset()
+    main()

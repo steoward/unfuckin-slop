@@ -11,7 +11,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 import search_design_showcases as catalog
-from semantic_index import load_encoder
+from semantic_index import query_vectors, open_index
 
 
 def metrics(order, relevant):
@@ -36,15 +36,15 @@ def evaluate(system, meta, queries):
     if system == "lexical":
         with patch.object(catalog, "_load_semantic", return_value=(None, None)):
             orders = search_orders(meta, queries)
-    elif system == "onnx":
-        encoder = load_encoder()
-        if encoder is None:
-            raise RuntimeError("Unable to load the bundled encoder")
-        scores = encoder.encode([case["query"] for case in queries]) @ np.load(catalog.EMBS_PATH).T
+    elif system == "gemma2":
+        index = open_index("showcases")
+        if index is None:
+            raise RuntimeError("Build the EmbeddingGemma 2 showcase index first")
+        scores = query_vectors([case["query"] for case in queries]) @ index.text.T
         orders = np.argsort(-scores, axis=1, kind="stable")
     else:
         if catalog._load_semantic()[1] is None:
-            raise RuntimeError("The hybrid search needs the bundled encoder and index")
+            raise RuntimeError("Build the EmbeddingGemma 2 showcase index first")
         orders = search_orders(meta, queries)
 
     rows = [metrics(order, case["relevant"]) for order, case in zip(orders, queries)]
@@ -58,12 +58,18 @@ def evaluate(system, meta, queries):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--systems", nargs="+", choices=("current", "lexical", "onnx"),
-                        default=("current", "lexical", "onnx"))
+    parser.add_argument("--systems", nargs="+", choices=("current", "lexical", "gemma2"),
+                        default=("current", "lexical", "gemma2"))
     parser.add_argument("--out", type=Path, help="Write results to a JSON file")
     args = parser.parse_args()
     queries = json.loads((ROOT / "eval/benchmark.json").read_text(encoding="utf-8"))["queries"]
     meta = catalog.load_data()
+    row_indices = {row["id"]: index for index, row in enumerate(meta)}
+    for case in queries:
+        missing = [record_id for record_id in case["relevant"] if record_id not in row_indices]
+        if missing:
+            parser.error(f"benchmark reference IDs missing: {', '.join(missing)}")
+        case["relevant"] = [row_indices[record_id] for record_id in case["relevant"]]
     results = {name: evaluate(name, meta, queries) for name in args.systems}
     output = json.dumps(results, indent=2) + "\n"
     if args.out:

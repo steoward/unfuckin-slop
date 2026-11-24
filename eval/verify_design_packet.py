@@ -1,131 +1,59 @@
-"""Exercise the installed design entry point from outside its source checkout."""
+"""Test the installed CLI with a small public-safe catalog."""
 import json
-from pathlib import Path
 import os
+from pathlib import Path
 import subprocess
 import sys
-from unittest.mock import patch
+from tempfile import TemporaryDirectory
 
 
-def run(binary, brief, pool="designs", env=None, source=None):
-    command = [binary, "design", brief, "--pool", pool]
-    if source:
-        command += ["--source", source]
-    result = subprocess.run(command, check=True, capture_output=True, encoding="utf-8", env=env)
-    packet = json.loads(result.stdout)
-    assert [rule["id"].split(".")[0] for rule in packet["craft"]] == ["imp", "apple"]
-    assert all(rule["guidance"] for rule in packet["craft"])
-    return packet["evidence"]
+def record(key, title, source, category, description, body=""):
+    return dict(id=key, title=title, source_site=source, source_url=f"https://{source}/{key}",
+                category=category, type="hero" if category == "Hero" else category.lower(),
+                description=description, full_prompt=body)
 
 
-
-def run_json(binary, *args):
-    return json.loads(subprocess.check_output([binary, *args], encoding="utf-8"))
-
-
-def verify_build_library(binary, catalog):
-    records = catalog.load_data() + catalog.load_components()
-    by_id = {row["id"]: row for row in records}
-    page = run_json(binary, "library", "--limit", "2")
-    assert page["total"] == len(by_id) and page["next_offset"] == 2
-    tail = run_json(binary, "library", "--offset", str(page["total"] - 1))
-    assert len(tail["items"]) == 1 and tail["next_offset"] is None
-    filtered = run_json(binary, "library", "--source", "motionsites.ai", "--category", "Footer")
-    assert filtered["items"] and all(
-        row["source"] == "motionsites.ai" and row["category"] == "Footer"
-        for row in filtered["items"]
-    )
-    ranked = run_json(binary, "library", "swipeable card stack", "--source", "skiper-ui.com")
-    assert ranked["backends"] == {"components": "hybrid"}
-    assert "skiper-skiper48" in [row["id"] for row in ranked["items"][:5]]
-
-    ids = ["3d-character-studio", "skiper-skiper48", "21st-aurora-ribbons"]
-    opened = run_json(binary, "library", *(arg for record_id in ids for arg in ("--record", record_id)))
-    assert [item["record"] for item in opened["items"]] == [by_id[record_id] for record_id in ids]
-    assert [item["use"]["action"] for item in opened["items"]] == [
-        "adapt_prompt", "adapt_source", "install_registry",
+def test_cli(binary, location):
+    designs = [
+        record("sound-atlas", "Sound Atlas", "motionsites.ai", "Hero",
+               "Browse field recordings with a waveform timeline",
+               "Build a two-column recorder page with a waveform timeline."),
+        record("plain-footer", "Plain Footer", "motionsites.ai", "Footer",
+               "Links and contact information in a small site footer", "Use a footer nav."),
     ]
-    registry = opened["items"][-1]["use"]
-    assert registry["credential_env"] == "API_KEY_21ST" and "?" not in registry["registry_url"]
-
-    plan = run_json(binary, "plan", "Portable field recorder for hikers with a microphone comparison and reservation")
-    assert plan["status"] == "ok"
-    assert plan["blueprint"]["backends"] == {"designs": "hybrid"}
-    assert plan["blueprint"]["selected"]["use"]["action"] == "adapt_prompt"
-    assert [part["name"] for part in plan["sections"]] == [
-        "navigation", "hero", "features", "call-to-action", "footer",
+    components = [
+        record("sample-swipe", "Swiping Cards", "skiper-ui.com", "Carousel",
+               "Drag stacked photo cards horizontally",
+               "export const Cards = () => <section>Cards</section>;"),
+        record("sample-nav", "Navbar", "21st.dev", "Navigation",
+               "Responsive navigation with mobile menu",
+               'Install: npx shadcn@latest add "https://21st.dev/r/example/nav?api_key=$API_KEY_21ST"'),
     ]
-    for part in plan["sections"]:
-        assert part["selected"]["id"] in by_id and part["selected"]["use"]["instruction"]
-    custom = run_json(binary, "plan", "Photo archive with swipe interaction",
-                      "--section", "carousel=skiper-skiper48", "--full", "--local")
-    section, = custom["sections"]
-    assert section["backends"]["components"] == "catalog_exact"
-    assert section["selected"]["record"] == by_id["skiper-skiper48"]
-    assert custom["blueprint"]["selected"]["record"]["full_prompt"]
-    print("Verified library pagination, hybrid ranking, full source reads and build plans.", flush=True)
+    for name, rows in (("showcases", designs), ("components", components)):
+        (location / f"{name}_meta.json").write_text(json.dumps(rows), encoding="utf-8")
+    env = {**os.environ, "UNFSLOP_LIBRARY_DATA": str(location)}
 
-def main():
-    binary = str(Path(sys.argv[1]).resolve())
-    library = Path(binary).parent.parent / "design-library"
-    sys.path.insert(0, str(library))
-    import search_design_showcases as catalog
+    def run(*args):
+        return json.loads(subprocess.check_output([binary, *args], env=env, encoding="utf-8"))
 
-    briefs = [
-        ("designs", "field recording sound archive audio library track list player"),
-        ("components", "interactive audio waveform player scrubber"),
-    ]
-    for pool, query in briefs:
-        evidence = run(binary, query, pool)
-        assert (evidence["status"], evidence["backend"]) == ("ok", "hybrid"), evidence
-        refs = evidence["references"]
-        assert 1 <= len(refs) <= 3
-        records = catalog.load_components() if pool == "components" else catalog.load_data()
-        by_id = {r["id"]: r for r in records}
-        for ref in refs:
-            source = by_id[ref["id"]]
-            assert ref["title"] == source["title"]
-            assert ref["description"] == (source.get("description") or "")[:750]
-            assert ref["blueprint_excerpt"] == ((source.get("full_prompt") or "").strip()[:550] or None)
-            assert ref["url"] == (source.get("source_url") or None)
-            assert ref["video_url"] == (source.get("video_url") or None)
-            assert ref["material"]["characters"] == len((source.get("full_prompt") or "").strip())
-        lookup = subprocess.run([binary, "design", "--pool", pool, "--record", refs[0]["id"]],
-                                check=True, capture_output=True, encoding="utf-8")
-        assert json.loads(lookup.stdout) == by_id[refs[0]["id"]]
-        print(pool, [ref["id"] for ref in refs], flush=True)
-    filtered = catalog.reference_evidence("", "designs", filter_3d=True, limit=1)
-    assert filtered["backend"] == "catalog_filter" and len(filtered["references"]) == 1
-    empty = catalog.reference_evidence("archive", "designs", category_filter="zzz-no-category")
-    assert empty["status"] == "no_matches" and not empty["references"]
-    assert not catalog.search("build a website")
-    assert all("design_system" not in row for row in catalog.search("liquid glass hero", limit=3))
-    sources = [
-        ("designs", "motionsites.ai", "3d-character-studio", "design_prompt"),
-        ("components", "skiper-ui.com", "skiper-skiper48", "component_source_snapshot"),
-        ("components", "21st.dev", "21st-aurora-ribbons", "registry_instructions"),
-    ]
-    for pool, source, record_id, kind in sources:
-        evidence = run(binary, record_id, pool, source=source)
-        assert evidence["backend"] == "catalog_exact" and evidence["exact_matches"] == 1
-        ref, = evidence["references"]
-        assert (ref["id"], ref["source"], ref["material"]["kind"]) == (record_id, source, kind)
-        assert ref["material"]["excerpt_truncated"] == (kind != "registry_instructions")
-    wrong = run(binary, "https://skiper-ui.com/v1/unknown-record", "components", source="skiper-ui.com")
-    assert wrong["status"] == "no_matches"
-    same_title = [{"id": "a", "title": "Shared"}, {"id": "b", "title": "Shared"}]
-    assert [r["id"] for r in catalog.exact_references("shared", same_title)] == ["a", "b"]
-
-    broad = run(binary, "build a website")
-    assert broad["status"] == "needs_specific_query" and not broad["references"]
-    missing = run(binary, briefs[0][1], env={**os.environ, "UNFSLOP_PYTHON": "missing-unfslop-python"})
-    assert missing["status"] == "unavailable" and not missing["references"]
-    with patch.object(catalog, "_load_semantic", return_value=(None, None)):
-        lexical = catalog.reference_evidence("audio waveform controls on a playback timeline", "designs")
-        assert lexical["backend"] == "lexical" and lexical["references"]
-    print("Verified hybrid designs and components, source fidelity, broad briefs, lexical and cards-only fallback.")
-    verify_build_library(binary, catalog)
+    page = run("library", "--limit", "2")
+    assert page["total"] == 4 and page["next_offset"] == 2
+    assert run("library", "--offset", "2")["next_offset"] is None
+    hit = run("library", "stacked photo cards", "--source", "skiper-ui.com")
+    assert hit["backends"] == {"components": "lexical"}
+    assert hit["items"][0]["id"] == "sample-swipe"
+    items = run("library", "--record", "sound-atlas", "--record", "sample-nav")["items"]
+    assert [item["record"] for item in items] == [designs[0], components[1]]
+    assert items[1]["use"]["registry_url"] == "https://21st.dev/r/example/nav"
+    plan = run("plan", "Field recordings with a waveform timeline",
+               "--section", "carousel=sample-swipe", "--full")
+    assert plan["status"] == "ok" and plan["blueprint"]["selected"]["id"] == "sound-atlas"
+    assert plan["sections"][0]["selected"]["record"] == components[0]
+    evidence = run("design", "sound-atlas")["evidence"]
+    assert evidence["backend"] == "catalog_exact" and evidence["references"][0]["visual_evidence"] is None
+    print("Verified browse, exact and lexical retrieval, source payloads and section planning.")
 
 
 if __name__ == "__main__":
-    main()
+    with TemporaryDirectory() as directory:
+        test_cli(str(Path(sys.argv[1]).resolve()), Path(directory))

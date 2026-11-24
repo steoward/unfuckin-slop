@@ -1,58 +1,35 @@
 #!/usr/bin/env python3
 """Search the local design and component catalogs.
 
-MiniLM and lexical search rank text. Evidence packets identify the original
+EmbeddingGemma 2 and lexical search rank the catalog. Evidence packets identify the original
 record and what the snapshot contains. Use --record for the stored payload.
 """
 
-import os
 import re
 import sys
 import json
 import argparse
 from pathlib import Path
 from collections import Counter
-from functools import cache
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer, ENGLISH_STOP_WORDS
 from sklearn.metrics.pairwise import cosine_similarity
 
-SHOWCASES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "design_showcases")
-META_PATH = os.path.join(SHOWCASES_DIR, "showcases_meta.json")
-EMBS_PATH = os.path.join(SHOWCASES_DIR, "design_embeddings.npy")
-# Separate UI-component pool (21st.dev + skiper.ui code prompts). Kept apart from the
-# 950 full-design showcases so the design benchmark and design search stay clean.
-COMPONENTS_META_PATH = os.path.join(SHOWCASES_DIR, "components_meta.json")
-COMPONENTS_EMBS_PATH = os.path.join(SHOWCASES_DIR, "component_embeddings.npy")
+from semantic_index import DATA_DIR, MEDIA_DIR, open_index, query_vectors
 
-# The semantic layer is optional. Both pools use the same encoder.
+META_PATH = DATA_DIR / "showcases_meta.json"
+COMPONENTS_META_PATH = DATA_DIR / "components_meta.json"
 SEMANTIC_WEIGHT = 0.7
 
 
-@cache
-def _encoder():
-    from semantic_index import load_encoder
-
-    return load_encoder()
-
-
-@cache
-def _load_index(path):
-    encoder = _encoder()
-    if encoder is not None:
-        try:
-            return encoder, np.load(path)
-        except (OSError, ValueError):
-            pass
-    return None, None
-
-
 def _load_semantic():
-    return _load_index(EMBS_PATH)
+    index = open_index("showcases")
+    return (query_vectors, index) if index is not None else (None, None)
 
 
 def _load_semantic_components():
-    return _load_index(COMPONENTS_EMBS_PATH)
+    index = open_index("components")
+    return (query_vectors, index) if index is not None else (None, None)
 
 
 def _minmax(x):
@@ -274,17 +251,33 @@ def rank_catalog(query, limit, records, load_semantic, *, components=False,
 
     scores = np.asarray(scores)
     encoder, embeddings = load_semantic()
-    hybrid = encoder is not None and embeddings is not None and embeddings.shape[0] == len(records)
+    hybrid = encoder is not None and embeddings is not None and len(embeddings.text) == len(records)
+    visual_hits = {}
     if hybrid:
-        vector = encoder.encode([query])[0] if query_vector is None else query_vector
-        semantic = embeddings[[i for i, _ in indexed]] @ vector
-        scores = (1.0 - SEMANTIC_WEIGHT) * _minmax(scores) + SEMANTIC_WEIGHT * _minmax(semantic)
+        vector = encoder([query])[0] if query_vector is None else query_vector
+        indices = [i for i, _ in indexed]
+        semantic, visual = embeddings.rank(indices, vector)
+        text_score = _minmax(semantic)
+        for position, row_index in enumerate(indices):
+            if row_index not in visual:
+                continue
+            score, asset_index, time = visual[row_index]
+            # A common cosine scale preserves comparable evidence for text-only results.
+            semantic[position] = 0.45 * semantic[position] + 0.55 * score
+            asset = records[row_index]["media"][asset_index]
+            visual_hits[row_index] = {
+                "kind": asset["kind"], "path": str((MEDIA_DIR / asset["path"]).resolve()),
+                "seconds": time, "similarity": round(score, 4),
+            }
+        semantic = _minmax(semantic) if visual_hits else text_score
+        scores = (1.0 - SEMANTIC_WEIGHT) * _minmax(scores) + SEMANTIC_WEIGHT * semantic
     if diagnostics is not None:
-        diagnostics["backend"] = "hybrid" if hybrid else "lexical"
+        diagnostics["backend"] = ("gemma2_multimodal" if visual_hits else "gemma2_text") if hybrid else "lexical"
 
-    ranked = sorted(zip(scores, items), key=lambda pair: pair[0], reverse=True)
-    return [{**item, "relevance_score": round(float(score), 4)}
-            for score, item in ranked[:limit] if score > 0.05 or not terms]
+    ranked = sorted(zip(scores, indexed), key=lambda pair: pair[0], reverse=True)
+    return [{**item, "relevance_score": round(float(score), 4),
+             **({"visual_evidence": visual_hits[row_index]} if row_index in visual_hits else {})}
+            for score, (row_index, item) in ranked[:limit] if hybrid or score > 0.05 or not terms]
 
 
 def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False,
@@ -302,13 +295,14 @@ def search_components(query="", limit=None, filter_3d=False, filter_liquid_glass
 
 
 REFERENCE_SOURCES = {
-    "designs": ("motionsites.ai", "pixlpin.com"),
+    "designs": ("motionsites.ai", "pixlpin.com", "collectui.com"),
     "components": ("skiper-ui.com", "21st.dev"),
 }
 
 SOURCE_MATERIAL = {
     "motionsites.ai": "design_prompt",
     "pixlpin.com": "description",
+    "collectui.com": "description",
     "skiper-ui.com": "component_source_snapshot",
     "21st.dev": "registry_instructions",
 }
@@ -331,6 +325,7 @@ def pack_reference(item):
         "description": (item.get("description") or "")[:750],
         "blueprint_excerpt": body[:550] or None,
         "material": material,
+        "visual_evidence": item.get("visual_evidence"),
     }
 
 

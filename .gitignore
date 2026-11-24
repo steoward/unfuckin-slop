@@ -12,3 +12,6 @@ design_showcases/images/
 sites/
 gallery.html
 gallery_server.py
+
+# Private model, indexes and catalog payloads
+/design_showcases/

@@ -20,6 +20,7 @@ struct Flags {
     source: Option<String>,
     records: Vec<String>,
     category: Option<String>,
+    reference: Option<String>,
     offset: Option<usize>,
     sections: Vec<String>,
     full: bool,
@@ -104,6 +105,7 @@ fn parse(args: &[String]) -> Result<Flags, String> {
             "--source" => flags.source = Some(next_value(args, &mut index, "--source")?),
             "--record" => flags.records.push(next_value(args, &mut index, "--record")?),
             "--category" => flags.category = Some(next_value(args, &mut index, "--category")?),
+            "--reference" => flags.reference = Some(next_value(args, &mut index, "--reference")?),
             "--section" => flags.sections.push(next_value(args, &mut index, "--section")?),
             "--offset" => {
                 let value = next_value(args, &mut index, "--offset")?;
@@ -160,7 +162,7 @@ fn design_cmd(flags: Flags) -> i32 {
     let record = flags.records.last().map(String::as_str);
     let record_only = task.is_empty() && source.is_none() && record.is_some_and(|id| !id.is_empty());
     let valid_source = match (pool, source) {
-        (_, None) | ("designs", Some("motionsites.ai" | "pixlpin.com"))
+        (_, None) | ("designs", Some("motionsites.ai" | "pixlpin.com" | "collectui.com"))
             | ("components", Some("skiper-ui.com" | "21st.dev")) => true,
         _ => false,
     };
@@ -193,6 +195,7 @@ fn build_library_cmd(operation: &str, flags: Flags) -> i32 {
         ("--pool", flags.pool.as_deref()),
         ("--source", flags.source.as_deref()),
         ("--category", flags.category.as_deref()),
+        ("--reference", flags.reference.as_deref()),
         ("--limit", limit.as_deref()),
         ("--offset", offset.as_deref()),
     ] {
@@ -488,7 +491,7 @@ fn print_help() {
 
 USAGE
   unfslop plan \"<product brief>\" [--section NAME=QUERY]... [--limit N] [--full] [--local]
-  unfslop library [\"<query>\"] [--pool designs|components] [--source DOMAIN] [--category NAME] [--limit N] [--offset N]
+  unfslop library [\"<query>\"] [--pool designs|components] [--source DOMAIN] [--category NAME] [--reference SCREENSHOT] [--limit N] [--offset N]
   unfslop library --record ID [--record ID]... [--pool designs|components]
   unfslop design \"<design brief>\" [--pool designs|components] [--source DOMAIN]
   unfslop design --record ID [--pool designs|components]

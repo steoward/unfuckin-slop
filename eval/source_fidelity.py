@@ -35,7 +35,7 @@ def main():
         spec = importlib.util.spec_from_file_location("previous_catalog", args.baseline)
         previous = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(previous)
-        for name in ("META_PATH", "EMBS_PATH", "FALLBACK_DATASET", "COMPONENTS_META_PATH", "COMPONENTS_EMBS_PATH"):
+        for name in ("META_PATH", "COMPONENTS_META_PATH"):
             if hasattr(catalog, name):
                 setattr(previous, name, getattr(catalog, name))
 
@@ -64,7 +64,7 @@ def main():
             if args.baseline:
                 comparisons.insert(0, ("previous", previous.reference_evidence(query, pool)))
             for arm, packet in comparisons:
-                assert packet["backend"] in ("catalog_exact", "hybrid"), packet
+                assert packet["backend"] in ("catalog_exact", "gemma2_text", "gemma2_multimodal", "lexical"), packet
                 ref_ids = [ref["id"] for ref in packet["references"]]
                 counts = outcomes.setdefault(source, {}).setdefault(arm, {}).setdefault(kind, Counter())
                 counts.update({"cases": 1, "top1": bool(ref_ids and ref_ids[0] == record_id),

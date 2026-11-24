@@ -1,7 +1,7 @@
-# Python runtime for search_design_showcases.py (the Rust CLI needs none of these).
-# Lexical search works with just numpy + scikit-learn; the fine-tuned semantic layer
-# additionally needs onnxruntime + tokenizers and falls back to lexical if absent.
-numpy>=1.24
+numpy>=2
 scikit-learn>=1.3
-onnxruntime>=1.17
-tokenizers>=0.15
+sentence-transformers>=6.1,<7
+transformers>=5.18,<6
+pillow>=10
+torchvision
+peft>=0.19

@@ -1,49 +1,42 @@
 # Unfuckin-Slop
 
-Build interfaces from a searchable local library of UI prompts, component source and registry entries. Give `unfslop` a product brief and its fine-tuned MiniLM model ranks a page blueprint and material for each section. The coding agent applies the selected material, connects product data and actions, and verifies the result.
-## Install
+Search a private library of UI prompts, components, screenshots and motion references using **EmbeddingGemma 2**. The CLI can retrieve by text or screenshot, identify matching moments in local videos, and suggest material for each part of a page. The coding agent opens the references and applies specific visual decisions to the product.
 
-Install from Git using Git, Python, and a Rust toolchain.
+## Set up a private library
+
+Install Python 3.12 or 3.13, Rust and FFmpeg. Install matching PyTorch and Torchvision builds for your device, then run:
 
 ```sh
-git clone --depth 1 https://github.com/steoward/unfuckin-slop.git
-cd unfuckin-slop
 python -m pip install -r requirements.txt
+python prepare_catalog.py --prompts PATH_TO_PROMPTS --output design_showcases
+python semantic_index.py rebuild
+python semantic_index.py rebuild-components
 cargo run --locked --release --bin unfslop -- install --agent codex
 ```
 
-Run the same commands on Windows, macOS and Linux. The last command installs the skill, local model and catalog. Codex's project skill directory is `.agents/skills/`. Add `--user` to install for your user account, `--dir PATH` for another location, or `--force` to update an existing installation. Set `UNFSLOP_PYTHON` if the agent uses a different interpreter.
+The importer reads `motionsites-free-prompts.txt`, `skiper-ui-free-prompts.txt` and `21st-dev-free-prompts.txt`. To preserve existing IDs and add existing Pixlpin metadata, pass `--archive PATH_TO_PRIVATE_CATALOG`. For media, pass `--media-manifest PATH_TO_JSONL --media-root PATH_TO_ASSETS`. Media rows may attach an asset to an existing ID or add a CollectUI/Pixlpin reference using an authorized asset. Each line contains `id`, `path` relative to the media root, and `rights`. For a new record, also include `title`, `source_url`, `description` and optionally `category` and `type`. The importer records local assets separately from remote video references. Keep prompt payloads and media private and follow the original sources' terms.
 
-Run commands below with `target/release/unfslop` from the checkout, or with the installed skill's `bin/unfslop` on PATH. On Windows the executable has an `.exe` suffix. The CLI is installed as `unfslop`.
+Set `UNFSLOP_LIBRARY_DATA` to the absolute catalog directory when running the installed CLI, and `UNFSLOP_MEDIA_ROOT` if media is stored separately. Set `UNFSLOP_PYTHON` to the Python executable with the installed dependencies. The runtime loads the pinned official Google checkpoint on demand. `UNFSLOP_MODEL` can point to a local copy. The index stores a fingerprint of its model adapter and catalog, and reports when changes require a rebuild.
 
-## Build with the library
-
-Ask your coding agent to **build your product site with unfuckin-slop**. For example, “Build a site for a portable field recorder. Let hikers compare microphones and reserve a unit. Use unfuckin-slop.”
+## Use
 
 ```sh
-unfslop plan "Portable field recorder for hikers; compare microphones and reserve a unit"
-unfslop plan "Field recording archive" --section "player=audio waveform scrubber" --section "track-list=keyboard navigable list of recordings" --full
-unfslop library
-unfslop library "swipeable card stack" --pool components --limit 5
-unfslop library --source motionsites.ai --category Footer --limit 10
-unfslop library --record 3d-character-studio --record skiper-skiper48 --record 21st-aurora-ribbons
+unfslop plan "Industrial product site, photographic hero and interactive process walkthrough"
+unfslop library "motion-led product carousel"
+unfslop library "strong typographic hierarchy" --reference screenshot.png
+unfslop library --record 3d-character-studio --record skiper-skiper48
+unfslop context "audit a modal for keyboard and focus behavior"
+unfslop lint src/
 ```
 
-- **`plan`** returns a selected blueprint and ranked choices for each section in one JSON response. The default product-page sections are navigation, hero, features, primary action and footer. Repeated `--section NAME=QUERY` supplies the sections for a different page or screen. A section can pin a known reference by ID. `--full` includes complete selected records inline. `--local` restricts selection to the bundled prompts and source snapshots. A partial plan identifies slots that need another catalog query.
-- **`library`** pages through all 10,685 records or searches by intent, ID, title or source URL. Filter by pool, provider or category. Continue with the returned `next_offset`. Repeated `--record` returns the full stored material for several selections in one call, with their source, dependencies where supplied, and a structured integration action.
-- **`design`** remains the compact reference and Apple Design / Impeccable card command. **`context`**, **`get`** and **`lint`** run without Python.
+`library` supports paging and filters on provider, pool and category. `plan` selects a blueprint and material for each section. Repeat `--section NAME=QUERY` to set the sections or add `--full` to include full selected records. An exact match opens the catalog. Search reports `gemma2_text`, `gemma2_multimodal`, or lexical fallback. A multimodal match with local video evidence includes a path and the time of the strongest matching window. Search treats every local video as consecutive eight-sample windows at one frame per second.
 
-A MotionSites record contains the stored build prompt. A Skiper UI record contains its source snapshot and may require project helpers or assets. A 21st.dev record includes registry instructions, with any supported install URL and required environment variable identified separately. Use a configured `API_KEY_21ST` where the registry requires it, or implement the documented pattern in the target stack. See each upstream source for terms and current availability.
+## Fine-tune
 
-## Catalog
+```sh
+python train_gemma2.py --output PATH_TO_CHECKPOINTS --batch-size 4
+```
 
-| Provider | Records | Material available in the bundled snapshot |
-| --- | ---: | --- |
-| MotionSites | 328 | Design prompts. 185 records have video links. |
-| Pixlpin | 622 | Descriptions and video links. |
-| Skiper UI | 37 | Component source snapshots. Integration can require assets, helper files, or current registry code. |
-| 21st.dev | 9,698 | Descriptions and registry instructions. Consult the linked component for its implementation and terms. |
-
-The installed model library packages the ONNX encoder, both vector indexes and the full catalog payloads together. Inference ranks the stored records, so the agent can retrieve the actual material by ID. Hybrid search uses lexical ranking and MiniLM. If the semantic runtime is unavailable, search reports the lexical fallback in JSON. The three supplied prompt and component collections are represented in the catalog by source URL. The catalog covers source records, and the encoder checkpoint does not enumerate individual training examples. [Source comparison and evaluation](eval/README.md)
+The trainer uses contrastive LoRA with all imported text records and available local visual assets. It tokenizes long source payloads into chunks, samples videos across their timeline, and writes resumable checkpoints with counts. Use `--resume PATH_TO_STEP` to resume. Point `UNFSLOP_ADAPTER` at the chosen checkpoint and rebuild both indexes before evaluating. A GPU is recommended for the full corpus. See [Google's EmbeddingGemma 2 fine-tuning guide](https://gemma.ai/models/embeddinggemma/fine-tuning-multimodal/).
 
 Project code is [MIT licensed](LICENSE). See [credits and third-party material](NOTICE.md).

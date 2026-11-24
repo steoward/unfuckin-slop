@@ -1,6 +1,6 @@
 ---
 name: unfuckin-slop
-description: "Build web interfaces from a local model-ranked library of page prompts and UI components. Use when asked to build with unfuckin-slop or to search its catalog. Also supplies Apple Design and Impeccable guidance for UI refinement, interaction design and critique."
+description: "Build web interfaces from a private EmbeddingGemma 2 library of page prompts, UI components and visual references. Use when asked to build with unfuckin-slop or to search its catalog. Also supplies Apple Design and Impeccable guidance for UI refinement, interaction design and critique."
 ---
 
 # Unfuckin-Slop
@@ -23,7 +23,7 @@ Treat the user's brief and established product conventions as design inputs. Pre
 When asked to build a new site or screen with unfuckin-slop, use the library's selected material to build the page.
 
 1. Run `unfslop plan "<product, primary action, interaction and layout constraints>"`. Use a concise English retrieval brief and keep the interface in the requested language. The default sections fit a product landing page. For other screens, name the required parts with repeated `--section "name=focused query"`. Pass a catalog ID as the query to pin a chosen entry.
-2. Read `blueprint.selected` and each `sections[].selected`. Use the blueprint for layout, tokens and motion, then implement the sections in order. A section with `uses_blueprint` shares the blueprint material. Choose an alternative if it better fits the actual interaction or stack. For a missing section, search `unfslop library "<section interaction>"` or narrow by `--pool`, `--source` and `--category`.
+2. Read `blueprint.selected` and each `sections[].selected`. Open the returned `visual_evidence.path` at `visual_evidence.seconds` when available. Before coding, identify which observable choices you will reproduce in the product, such as the focal point and crop, type scale, spacing, palette, and one purposeful transition. Apply those choices in the implementation and compare the rendered result to the reference. If matching against a local screenshot, run `unfslop library "<visual intent>" --reference SCREENSHOT`. A section with `uses_blueprint` shares the blueprint material. Choose an alternative if it better fits the actual interaction or stack. For a missing section, search `unfslop library "<section interaction>"` or narrow by `--pool`, `--source` and `--category`.
 3. Run `unfslop library --record ID --record ID` once with the chosen IDs to load their complete payloads. Use `plan --full` when you want selected payloads inline. Follow each `use.action`: adapt the stored build prompt, integrate the stored source and its dependencies, or review and install the registry entry in a compatible project. When registry access or the framework prevents installation, adapt the stored description or select a bundled source. Use `--local` to plan using bundled prompts and source snapshots only.
 4. Use the actual product copy, data, assets and actions. Apply one set of design tokens across the selected pieces. Verify the rendered page and primary flow. Report which library entries were used and identify any section that required a fallback.
 
@@ -47,7 +47,7 @@ Run `unfslop context "<action, surface, constraint>"` (default budget 2,000 esti
 
 Use `unfslop get <id>` for a specific rule, `unfslop cards` for the index, or open the linked card directly. Pull another only when the task reaches that subject.
 
-Use the [catalog guide](cards/imp.inspiration.md) for preview and material details. The installed `design-library/` includes the encoder, vector indexes and complete catalog payloads. Install its Python requirements in your working Python environment to enable hybrid search. A source checkout has the same requirements at the repository root.
+Use the [catalog guide](cards/imp.inspiration.md) for preview and material details. Set `UNFSLOP_LIBRARY_DATA` to the private catalog and indexes and `UNFSLOP_MEDIA_ROOT` to any separate media directory. The installed skill loads EmbeddingGemma 2 through the configured Python environment. Use the reported backend when describing a result, and acknowledge when a source only provides text.
 
 ## Implement and verify
 

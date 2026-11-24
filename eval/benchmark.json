@@ -1,75 +1,616 @@
 {
   "description": "Hand-written natural-language retrieval benchmark for the 950-item design showcase index. Queries paraphrase real coding-agent intent; relevant ids verified against full titles/descriptions/prompts. dev split is used for model selection, test split for final before/after reporting.",
   "queries": [
-    {"id": "q01", "split": "test", "query": "hero section with floating 3D particles that react to the mouse", "relevant": [62, 182, 575, 478]},
-    {"id": "q02", "split": "dev", "query": "webgl shader background generator with silk-like animated gradients and sliders", "relevant": [385, 614, 285]},
-    {"id": "q03", "split": "test", "query": "scroll-driven 3D camera flying through a point cloud product showcase", "relevant": [233, 611]},
-    {"id": "q04", "split": "test", "query": "3D bookshelf where books tilt and pivot when you hover over them", "relevant": [97, 123, 259]},
-    {"id": "q05", "split": "test", "query": "interactive 3D aluminum can with condensation rotating in dark space", "relevant": [326]},
-    {"id": "q06", "split": "dev", "query": "ascii particle shader hero made of keyboard characters", "relevant": [530, 156, 680]},
-    {"id": "q07", "split": "test", "query": "frosted glass header bar that refracts content while scrolling a timeline", "relevant": [114]},
-    {"id": "q08", "split": "test", "query": "dark glassmorphic pricing tier cards with annual billing toggle", "relevant": [301]},
-    {"id": "q09", "split": "dev", "query": "liquid glass refraction with chromatic aberration over bold typography", "relevant": [432, 373, 407, 803]},
-    {"id": "q10", "split": "test", "query": "circular frosted glass minimap widget on an infinite moodboard canvas", "relevant": [258]},
-    {"id": "q11", "split": "test", "query": "desktop app interface with a frosted glass sidebar", "relevant": [205, 269, 406]},
-    {"id": "q12", "split": "test", "query": "glass pill stepper refracting a glowing sunrise while habits complete", "relevant": [518]},
-    {"id": "q13", "split": "dev", "query": "ai voice interface with fluid liquid shader animation", "relevant": [550, 520]},
-    {"id": "q14", "split": "test", "query": "dark bento grid showcasing an autonomous crypto trading AI agent", "relevant": [63, 474, 556]},
-    {"id": "q15", "split": "test", "query": "banking wallet screen where the balance numbers roll up after a deposit", "relevant": [299, 218]},
-    {"id": "q16", "split": "dev", "query": "crypto landing page with 3D animated debit card renders", "relevant": [279, 472, 690]},
-    {"id": "q17", "split": "test", "query": "minimalist monochrome venture capital website with serif or mono typography", "relevant": [138, 592, 142]},
-    {"id": "q18", "split": "test", "query": "ios invoice and subscription manager with translucent folders", "relevant": [426]},
-    {"id": "q19", "split": "test", "query": "pre-IPO share allocation screen in a trading app", "relevant": [310, 275]},
-    {"id": "q20", "split": "dev", "query": "minimal cross-border payments landing page", "relevant": [409]},
-    {"id": "q21", "split": "test", "query": "dark analytics dashboard with revenue line chart and KPI metric cards", "relevant": [120, 173, 58, 339, 400]},
-    {"id": "q22", "split": "test", "query": "real-time global network telemetry dashboard with a dotted world map", "relevant": [41]},
-    {"id": "q23", "split": "dev", "query": "sensor monitoring dashboard with live gauges in a side drawer", "relevant": [324]},
-    {"id": "q24", "split": "test", "query": "fraud detection dashboard with KPI alert cards and animated charts", "relevant": [500]},
-    {"id": "q25", "split": "test", "query": "dark project management dashboard with task cards and collapsible sidebar", "relevant": [22, 78, 567]},
-    {"id": "q26", "split": "dev", "query": "ios habit tracker with animated streaks and weekly calendar", "relevant": [359, 593, 377]},
-    {"id": "q27", "split": "test", "query": "command palette floating over a multi-column CRM workspace", "relevant": [337]},
-    {"id": "q28", "split": "test", "query": "deployments table with draggable filter chips and date range picker", "relevant": [449]},
-    {"id": "q29", "split": "test", "query": "support ticket queue with proactive high-priority alert cards", "relevant": [398]},
-    {"id": "q30", "split": "dev", "query": "dark cloud file storage dashboard with recent upload cards", "relevant": [131]},
-    {"id": "q31", "split": "test", "query": "ai chat with a floating voice recording widget and live waveform", "relevant": [437, 549]},
-    {"id": "q32", "split": "test", "query": "node-based visual workflow builder for AI agents", "relevant": [127, 562]},
-    {"id": "q33", "split": "dev", "query": "split-view ai coding assistant with chat and live component preview", "relevant": [152]},
-    {"id": "q34", "split": "test", "query": "prompt-driven generative UI that builds an app interface from text", "relevant": [186, 494]},
-    {"id": "q35", "split": "test", "query": "frosted glass panel showing AI reasoning steps over an infinite canvas", "relevant": [522]},
-    {"id": "q36", "split": "test", "query": "customizable dot-matrix loading animations for AI workflows", "relevant": [462]},
-    {"id": "q37", "split": "dev", "query": "interactive cubic bezier easing curve editor with code export", "relevant": [10]},
-    {"id": "q38", "split": "test", "query": "mac utility to scrub through ui animations frame by frame", "relevant": [261]},
-    {"id": "q39", "split": "test", "query": "css gradient border generator with color stop sliders and angle dial", "relevant": [146]},
-    {"id": "q40", "split": "test", "query": "svg pattern generator with tiles colors and opacity controls", "relevant": [246, 381]},
-    {"id": "q41", "split": "dev", "query": "8-bit pixel art loading spinner generator", "relevant": [178]},
-    {"id": "q42", "split": "test", "query": "in-browser ruler overlay measuring element spacing and alignment", "relevant": [239]},
-    {"id": "q43", "split": "test", "query": "feature flag toggle widget in a developer tool hero that changes the headline", "relevant": [98]},
-    {"id": "q44", "split": "test", "query": "macos font viewer with variable font weight sliders", "relevant": [606]},
-    {"id": "q45", "split": "dev", "query": "fashion lookbook with models standing in a receding line or 3D carousel", "relevant": [824, 734, 737]},
-    {"id": "q46", "split": "test", "query": "clothing rail hero with garments hanging on a diagonal rail", "relevant": [710, 711, 712, 733]},
-    {"id": "q47", "split": "test", "query": "virtual try-on hero for a menswear jacket brand", "relevant": [713, 725]},
-    {"id": "q48", "split": "test", "query": "360 drag-to-rotate fashion product page", "relevant": [740]},
-    {"id": "q49", "split": "dev", "query": "office chair finder where products rearrange around filter sliders", "relevant": [12]},
-    {"id": "q50", "split": "test", "query": "sticky note that crumbles into a paper ball and flies into a bin", "relevant": [496]},
-    {"id": "q51", "split": "test", "query": "swipe-to-delete calendar events with particle animation", "relevant": [403]},
-    {"id": "q52", "split": "test", "query": "mac sidebar that collapses into floating island cards", "relevant": [18]},
-    {"id": "q53", "split": "dev", "query": "bottom sheet sliding up to reveal masked card details in a wallet app", "relevant": [276, 229]},
-    {"id": "q54", "split": "test", "query": "elastic toggle switch and step slider micro-interactions in an inspector panel", "relevant": [294]},
-    {"id": "q55", "split": "test", "query": "horizontal card slider driven by vertical page scrolling along an arc", "relevant": [463]},
-    {"id": "q56", "split": "test", "query": "photo grid that folds into a continuously spinning 3D sphere", "relevant": [198, 880]},
-    {"id": "q57", "split": "dev", "query": "cinematic hero with looping video background and glassmorphic navigation", "relevant": [795, 776, 656]},
-    {"id": "q58", "split": "test", "query": "404 error page with looping background video and footer", "relevant": [638]},
-    {"id": "q59", "split": "test", "query": "weather app hourly forecast slider shifting sky from day to night", "relevant": [135, 944]},
-    {"id": "q60", "split": "test", "query": "retro ipod click wheel music player with album art", "relevant": [392]},
-    {"id": "q61", "split": "dev", "query": "newspaper-style ai daily briefing website with unfolding paper intro", "relevant": [226]},
-    {"id": "q62", "split": "test", "query": "scroll-driven jellyfish hero floating in a lilac sky", "relevant": [821, 632]},
-    {"id": "q63", "split": "test", "query": "space travel brand landing page selling seats to mars", "relevant": [932, 774]},
-    {"id": "q64", "split": "test", "query": "smart ring wellness companion app with health metrics", "relevant": [108, 946]},
-    {"id": "q65", "split": "dev", "query": "landing hero for an animated kids farming series", "relevant": [828]},
-    {"id": "q66", "split": "test", "query": "dark project estimation calculator section for a saas site", "relevant": [905]},
-    {"id": "q67", "split": "test", "query": "premium dark faq page for an online trading platform", "relevant": [731]},
-    {"id": "q68", "split": "test", "query": "formula 1 racing fan hub hero with driver and circuit stats", "relevant": [920]},
-    {"id": "q69", "split": "dev", "query": "calm cinematic landing hero for a daily podcast", "relevant": [858]},
-    {"id": "q70", "split": "test", "query": "password manager landing page hero", "relevant": [798, 811]}
+    {
+      "id": "q01",
+      "split": "test",
+      "query": "hero section with floating 3D particles that react to the mouse",
+      "relevant": [
+        "minimal-white-hero-with-generative-particle-animation",
+        "betawise-ai-attribution-hero-section",
+        "axiom-zero-web3-hero",
+        "morpho"
+      ]
+    },
+    {
+      "id": "q02",
+      "split": "dev",
+      "query": "webgl shader background generator with silk-like animated gradients and sliders",
+      "relevant": [
+        "beui-studio-webgl-shader-background-generator",
+        "mesh-gradient-shader-generator",
+        "interactive-mesh-gradient-drawing-tool"
+      ]
+    },
+    {
+      "id": "q03",
+      "split": "test",
+      "query": "scroll-driven 3D camera flying through a point cloud product showcase",
+      "relevant": [
+        "shopify-editions-spring-26",
+        "shopify-editions-gti5"
+      ]
+    },
+    {
+      "id": "q04",
+      "split": "test",
+      "query": "3D bookshelf where books tilt and pivot when you hover over them",
+      "relevant": [
+        "interactive-3d-book-row-website-hero",
+        "stripe-press",
+        "book-animation"
+      ]
+    },
+    {
+      "id": "q05",
+      "split": "test",
+      "query": "interactive 3D aluminum can with condensation rotating in dark space",
+      "relevant": [
+        "3d-can"
+      ]
+    },
+    {
+      "id": "q06",
+      "split": "dev",
+      "query": "ascii particle shader hero made of keyboard characters",
+      "relevant": [
+        "ascii-motion-landing-page",
+        "postgres-terminal-3d-ascii-startup-animation",
+        "glyph-animals"
+      ]
+    },
+    {
+      "id": "q07",
+      "split": "test",
+      "query": "frosted glass header bar that refracts content while scrolling a timeline",
+      "relevant": [
+        "liquid-glass-header-scroll-interaction"
+      ]
+    },
+    {
+      "id": "q08",
+      "split": "test",
+      "query": "dark glassmorphic pricing tier cards with annual billing toggle",
+      "relevant": [
+        "fince-saas-pricing-and-feature-comparison-page"
+      ]
+    },
+    {
+      "id": "q09",
+      "split": "dev",
+      "query": "liquid glass refraction with chromatic aberration over bold typography",
+      "relevant": [
+        "liquid-glass-3d-effect-showcase",
+        "do-more-with-glass-feature-announcement",
+        "lens-distortion-shader-feature-announcement",
+        "rivr-hero"
+      ]
+    },
+    {
+      "id": "q10",
+      "split": "test",
+      "query": "circular frosted glass minimap widget on an infinite moodboard canvas",
+      "relevant": [
+        "infinite-canvas-with-glass-minimap-navigation"
+      ]
+    },
+    {
+      "id": "q11",
+      "split": "test",
+      "query": "desktop app interface with a frosted glass sidebar",
+      "relevant": [
+        "dark-glassmorphic-web-code-editor",
+        "glassmorphic-dark-markdown-editor-mac-app",
+        "atlas-for-mac-app"
+      ]
+    },
+    {
+      "id": "q12",
+      "split": "test",
+      "query": "glass pill stepper refracting a glowing sunrise while habits complete",
+      "relevant": [
+        "habit-tracker-glassmorphism-sunrise-animation"
+      ]
+    },
+    {
+      "id": "q13",
+      "split": "dev",
+      "query": "ai voice interface with fluid liquid shader animation",
+      "relevant": [
+        "voice-assistant-persona-selector-with-fluid-3d-orb",
+        "ambient-koi-water-ai-voice-interface"
+      ]
+    },
+    {
+      "id": "q14",
+      "split": "test",
+      "query": "dark bento grid showcasing an autonomous crypto trading AI agent",
+      "relevant": [
+        "autonomous-crypto-trading-agent-bento-grid",
+        "crypto-wallet-bento-grid-feature-section",
+        "dark-mode-fintech-bento-feature-grid"
+      ]
+    },
+    {
+      "id": "q15",
+      "split": "test",
+      "query": "banking wallet screen where the balance numbers roll up after a deposit",
+      "relevant": [
+        "rolling-balance",
+        "fintech-app-deposit-notifications-and-rolling-balance"
+      ]
+    },
+    {
+      "id": "q16",
+      "split": "dev",
+      "query": "crypto landing page with 3D animated debit card renders",
+      "relevant": [
+        "kast",
+        "auracard-premium-credit-card-hero-section",
+        "animated-cards"
+      ]
+    },
+    {
+      "id": "q17",
+      "split": "test",
+      "query": "minimalist monochrome venture capital website with serif or mono typography",
+      "relevant": [
+        "seed-labs",
+        "roach-capital",
+        "paradigm"
+      ]
+    },
+    {
+      "id": "q18",
+      "split": "test",
+      "query": "ios invoice and subscription manager with translucent folders",
+      "relevant": [
+        "invoices-style"
+      ]
+    },
+    {
+      "id": "q19",
+      "split": "test",
+      "query": "pre-IPO share allocation screen in a trading app",
+      "relevant": [
+        "robinhood-ipo-access",
+        "ipo-allotment-status"
+      ]
+    },
+    {
+      "id": "q20",
+      "split": "dev",
+      "query": "minimal cross-border payments landing page",
+      "relevant": [
+        "peak-cross-border-banking-website"
+      ]
+    },
+    {
+      "id": "q21",
+      "split": "test",
+      "query": "dark analytics dashboard with revenue line chart and KPI metric cards",
+      "relevant": [
+        "dark-financial-overview-saas-dashboard",
+        "dark-mode-financial-analytics-dashboard",
+        "vizora-dark-mode-ecommerce-sales-dashboard",
+        "dark-mode-leads-and-sales-analytics-dashboard",
+        "analytics-dashboard"
+      ]
+    },
+    {
+      "id": "q22",
+      "split": "test",
+      "query": "real-time global network telemetry dashboard with a dotted world map",
+      "relevant": [
+        "real-time-global-traffic-and-network-dashboard"
+      ]
+    },
+    {
+      "id": "q23",
+      "split": "dev",
+      "query": "sensor monitoring dashboard with live gauges in a side drawer",
+      "relevant": [
+        "gas-sensor-live-tracking-dashboard"
+      ]
+    },
+    {
+      "id": "q24",
+      "split": "test",
+      "query": "fraud detection dashboard with KPI alert cards and animated charts",
+      "relevant": [
+        "sentinel-ai-fraud-signals-dashboard-ui-animation"
+      ]
+    },
+    {
+      "id": "q25",
+      "split": "test",
+      "query": "dark project management dashboard with task cards and collapsible sidebar",
+      "relevant": [
+        "etheris-dark-mode-project-management-dashboard",
+        "dark-mode-task-management-dashboard",
+        "dark-mode-project-management-and-task-tracker"
+      ]
+    },
+    {
+      "id": "q26",
+      "split": "dev",
+      "query": "ios habit tracker with animated streaks and weekly calendar",
+      "relevant": [
+        "dark-mode-habit-tracker-mobile-app-animation",
+        "dailyloop-habit-and-routine-tracker-app",
+        "dayrise-habit-tracker"
+      ]
+    },
+    {
+      "id": "q27",
+      "split": "test",
+      "query": "command palette floating over a multi-column CRM workspace",
+      "relevant": [
+        "clean-crm-workspace-with-command-bar"
+      ]
+    },
+    {
+      "id": "q28",
+      "split": "test",
+      "query": "deployments table with draggable filter chips and date range picker",
+      "relevant": [
+        "deployments-table-filter-interaction"
+      ]
+    },
+    {
+      "id": "q29",
+      "split": "test",
+      "query": "support ticket queue with proactive high-priority alert cards",
+      "relevant": [
+        "help-desk-ticket-dashboard-with-smart-alert-cards"
+      ]
+    },
+    {
+      "id": "q30",
+      "split": "dev",
+      "query": "dark cloud file storage dashboard with recent upload cards",
+      "relevant": [
+        "filenns-cloud-file-management-dashboard"
+      ]
+    },
+    {
+      "id": "q31",
+      "split": "test",
+      "query": "ai chat with a floating voice recording widget and live waveform",
+      "relevant": [
+        "a-bar-that-listens",
+        "ai-voice-and-chat-modal-interaction"
+      ]
+    },
+    {
+      "id": "q32",
+      "split": "test",
+      "query": "node-based visual workflow builder for AI agents",
+      "relevant": [
+        "ai-agent-visual-workflow-builder",
+        "dark-mode-ai-workflow-automation-canvas"
+      ]
+    },
+    {
+      "id": "q33",
+      "split": "dev",
+      "query": "split-view ai coding assistant with chat and live component preview",
+      "relevant": [
+        "ai-code-assistant-with-live-component-preview"
+      ]
+    },
+    {
+      "id": "q34",
+      "split": "test",
+      "query": "prompt-driven generative UI that builds an app interface from text",
+      "relevant": [
+        "ai-app-generator-concept-for-ios",
+        "v0-dev"
+      ]
+    },
+    {
+      "id": "q35",
+      "split": "test",
+      "query": "frosted glass panel showing AI reasoning steps over an infinite canvas",
+      "relevant": [
+        "agentic-ai-reasoning-modal-and-canvas"
+      ]
+    },
+    {
+      "id": "q36",
+      "split": "test",
+      "query": "customizable dot-matrix loading animations for AI workflows",
+      "relevant": [
+        "interactive-ai-loader-component-library"
+      ]
+    },
+    {
+      "id": "q37",
+      "split": "dev",
+      "query": "interactive cubic bezier easing curve editor with code export",
+      "relevant": [
+        "easing-graphs"
+      ]
+    },
+    {
+      "id": "q38",
+      "split": "test",
+      "query": "mac utility to scrub through ui animations frame by frame",
+      "relevant": [
+        "animation-debugging-utility-for-macos"
+      ]
+    },
+    {
+      "id": "q39",
+      "split": "test",
+      "query": "css gradient border generator with color stop sliders and angle dial",
+      "relevant": [
+        "interactive-gradient-border-css-generator"
+      ]
+    },
+    {
+      "id": "q40",
+      "split": "test",
+      "query": "svg pattern generator with tiles colors and opacity controls",
+      "relevant": [
+        "svg-pattern-generator-ui",
+        "patternly-generative-pattern-tool"
+      ]
+    },
+    {
+      "id": "q41",
+      "split": "dev",
+      "query": "8-bit pixel art loading spinner generator",
+      "relevant": [
+        "whimsy-loaders-pixel-animation-generator"
+      ]
+    },
+    {
+      "id": "q42",
+      "split": "test",
+      "query": "in-browser ruler overlay measuring element spacing and alignment",
+      "relevant": [
+        "mesurer-in-browser-ui-alignment-and-ruler-tool"
+      ]
+    },
+    {
+      "id": "q43",
+      "split": "test",
+      "query": "feature flag toggle widget in a developer tool hero that changes the headline",
+      "relevant": [
+        "flags-sdk"
+      ]
+    },
+    {
+      "id": "q44",
+      "split": "test",
+      "query": "macos font viewer with variable font weight sliders",
+      "relevant": [
+        "typetray-macos-font-viewer-app"
+      ]
+    },
+    {
+      "id": "q45",
+      "split": "dev",
+      "query": "fashion lookbook with models standing in a receding line or 3D carousel",
+      "relevant": [
+        "vell-lookbook",
+        "fashion-lookbook",
+        "lookbook"
+      ]
+    },
+    {
+      "id": "q46",
+      "split": "test",
+      "query": "clothing rail hero with garments hanging on a diagonal rail",
+      "relevant": [
+        "clothes-rail",
+        "clothing-rail",
+        "dress-rail",
+        "boutique-rail"
+      ]
+    },
+    {
+      "id": "q47",
+      "split": "test",
+      "query": "virtual try-on hero for a menswear jacket brand",
+      "relevant": [
+        "jacket-try-on",
+        "virtual-fitting"
+      ]
+    },
+    {
+      "id": "q48",
+      "split": "test",
+      "query": "360 drag-to-rotate fashion product page",
+      "relevant": [
+        "spin-product"
+      ]
+    },
+    {
+      "id": "q49",
+      "split": "dev",
+      "query": "office chair finder where products rearrange around filter sliders",
+      "relevant": [
+        "vitra-office-chair-finder"
+      ]
+    },
+    {
+      "id": "q50",
+      "split": "test",
+      "query": "sticky note that crumbles into a paper ball and flies into a bin",
+      "relevant": [
+        "toss-your-note-to-the-bin"
+      ]
+    },
+    {
+      "id": "q51",
+      "split": "test",
+      "query": "swipe-to-delete calendar events with particle animation",
+      "relevant": [
+        "interactive-daily-schedule-and-calendar-flow"
+      ]
+    },
+    {
+      "id": "q52",
+      "split": "test",
+      "query": "mac sidebar that collapses into floating island cards",
+      "relevant": [
+        "collapsible-mac-sidebar-and-floating-island-animation"
+      ]
+    },
+    {
+      "id": "q53",
+      "split": "dev",
+      "query": "bottom sheet sliding up to reveal masked card details in a wallet app",
+      "relevant": [
+        "card-details-microinteraction",
+        "cash-app-transfer"
+      ]
+    },
+    {
+      "id": "q54",
+      "split": "test",
+      "query": "elastic toggle switch and step slider micro-interactions in an inspector panel",
+      "relevant": [
+        "design-tool-inspector-slider-and-toggle-micro-interactions"
+      ]
+    },
+    {
+      "id": "q55",
+      "split": "test",
+      "query": "horizontal card slider driven by vertical page scrolling along an arc",
+      "relevant": [
+        "interactive-arc-scroll-slider-for-blink"
+      ]
+    },
+    {
+      "id": "q56",
+      "split": "test",
+      "query": "photo grid that folds into a continuously spinning 3D sphere",
+      "relevant": [
+        "sphere-idle-animation",
+        "sphere-gallery"
+      ]
+    },
+    {
+      "id": "q57",
+      "split": "dev",
+      "query": "cinematic hero with looping video background and glassmorphic navigation",
+      "relevant": [
+        "luminex-hero",
+        "asme-hero",
+        "velorah-hero"
+      ]
+    },
+    {
+      "id": "q58",
+      "split": "test",
+      "query": "404 error page with looping background video and footer",
+      "relevant": [
+        "404-planet"
+      ]
+    },
+    {
+      "id": "q59",
+      "split": "test",
+      "query": "weather app hourly forecast slider shifting sky from day to night",
+      "relevant": [
+        "good-air-india",
+        "forecast-center"
+      ]
+    },
+    {
+      "id": "q60",
+      "split": "test",
+      "query": "retro ipod click wheel music player with album art",
+      "relevant": [
+        "retro-click-wheel-music-player-app"
+      ]
+    },
+    {
+      "id": "q61",
+      "split": "dev",
+      "query": "newspaper-style ai daily briefing website with unfolding paper intro",
+      "relevant": [
+        "the-daily-dispatch"
+      ]
+    },
+    {
+      "id": "q62",
+      "split": "test",
+      "query": "scroll-driven jellyfish hero floating in a lilac sky",
+      "relevant": [
+        "driftlab-hero",
+        "medusa-jellyfish-hero"
+      ]
+    },
+    {
+      "id": "q63",
+      "split": "test",
+      "query": "space travel brand landing page selling seats to mars",
+      "relevant": [
+        "redline-mars-hero",
+        "aetheris-voyage-hero"
+      ]
+    },
+    {
+      "id": "q64",
+      "split": "test",
+      "query": "smart ring wellness companion app with health metrics",
+      "relevant": [
+        "smart-ring-and-wearable-companion-app",
+        "halora"
+      ]
+    },
+    {
+      "id": "q65",
+      "split": "dev",
+      "query": "landing hero for an animated kids farming series",
+      "relevant": [
+        "meadowbell"
+      ]
+    },
+    {
+      "id": "q66",
+      "split": "test",
+      "query": "dark project estimation calculator section for a saas site",
+      "relevant": [
+        "price-calculator"
+      ]
+    },
+    {
+      "id": "q67",
+      "split": "test",
+      "query": "premium dark faq page for an online trading platform",
+      "relevant": [
+        "zentrade-faq"
+      ]
+    },
+    {
+      "id": "q68",
+      "split": "test",
+      "query": "formula 1 racing fan hub hero with driver and circuit stats",
+      "relevant": [
+        "f1-racing-hub"
+      ]
+    },
+    {
+      "id": "q69",
+      "split": "dev",
+      "query": "calm cinematic landing hero for a daily podcast",
+      "relevant": [
+        "murmur"
+      ]
+    },
+    {
+      "id": "q70",
+      "split": "test",
+      "query": "password manager landing page hero",
+      "relevant": [
+        "portal",
+        "vaultshield"
+      ]
+    }
   ]
 }
