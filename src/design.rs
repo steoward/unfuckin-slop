@@ -10,8 +10,9 @@ use serde_json::{json, Value};
 use crate::{cards::Library, index};
 
 const SCRIPT: &str = "search_design_showcases.py";
+const BUILD_LIBRARY: &str = "build_library.py";
 const LIBRARY_FILES: &[&str] = &[
-    SCRIPT, "semantic_index.py", "requirements.txt",
+    SCRIPT, BUILD_LIBRARY, "semantic_index.py", "requirements.txt",
     "design_showcases/showcases_meta.json", "design_showcases/components_meta.json",
     "design_showcases/design_embeddings.npy", "design_showcases/component_embeddings.npy",
     "design_showcases/encoder/model.onnx", "design_showcases/encoder/tokenizer.json",
@@ -54,35 +55,41 @@ pub(crate) fn install_library(target: &Path) -> io::Result<()> {
     Ok(())
 }
 
-fn retrieve(args: &[&str], pool: &str) -> Result<Value, String> {
+fn retrieve(script: &str, args: &[&str]) -> Result<Value, String> {
     let root = library_root().ok_or("Install from the source checkout or set UNFSLOP_DESIGN_LIBRARY to its root.")?;
     let python = std::env::var_os("UNFSLOP_PYTHON")
         .unwrap_or_else(|| if cfg!(windows) { "python" } else { "python3" }.into());
     let output = Command::new(python)
-        .arg(root.join(SCRIPT))
-        .args(["--pool", pool])
+        .arg(root.join(script))
         .args(args)
         .output()
         .map_err(|e| format!("Cannot start Python ({e}). Set UNFSLOP_PYTHON to a Python executable."))?;
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let detail = stderr.lines().last().unwrap_or("retriever exited without a diagnostic");
+        if output.status.code() == Some(2) {
+            return Err(detail.to_owned());
+        }
         return Err(format!("{detail}. Check the installed design-library/requirements.txt."));
     }
     serde_json::from_slice(&output.stdout).map_err(|e| format!("Invalid reference packet: {e}"))
 }
 
 pub fn record(id: &str, pool: &str) -> Result<Value, String> {
-    retrieve(&["--record", id], pool)
+    retrieve(SCRIPT, &["--pool", pool, "--record", id])
+}
+
+pub fn build_library(args: &[&str]) -> Result<Value, String> {
+    retrieve(BUILD_LIBRARY, args)
 }
 
 pub fn brief(lib: &Library, query: &str, pool: &str, source: Option<&str>) -> Value {
-    let mut args = vec!["--evidence"];
+    let mut args = vec!["--pool", pool, "--evidence"];
     if let Some(source) = source {
         args.extend(["--source", source]);
     }
     args.extend(["--", query]);
-    let evidence = retrieve(&args, pool).unwrap_or_else(|reason| {
+    let evidence = retrieve(SCRIPT, &args).unwrap_or_else(|reason| {
         json!({"status":"unavailable", "backend":null, "references":[], "reason":reason})
     });
     let hits = index::search(&lib.cards, query);

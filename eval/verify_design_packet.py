@@ -18,6 +18,53 @@ def run(binary, brief, pool="designs", env=None, source=None):
     return packet["evidence"]
 
 
+
+def run_json(binary, *args):
+    return json.loads(subprocess.check_output([binary, *args], encoding="utf-8"))
+
+
+def verify_build_library(binary, catalog):
+    records = catalog.load_data() + catalog.load_components()
+    by_id = {row["id"]: row for row in records}
+    page = run_json(binary, "library", "--limit", "2")
+    assert page["total"] == len(by_id) and page["next_offset"] == 2
+    tail = run_json(binary, "library", "--offset", str(page["total"] - 1))
+    assert len(tail["items"]) == 1 and tail["next_offset"] is None
+    filtered = run_json(binary, "library", "--source", "motionsites.ai", "--category", "Footer")
+    assert filtered["items"] and all(
+        row["source"] == "motionsites.ai" and row["category"] == "Footer"
+        for row in filtered["items"]
+    )
+    ranked = run_json(binary, "library", "swipeable card stack", "--source", "skiper-ui.com")
+    assert ranked["backends"] == {"components": "hybrid"}
+    assert "skiper-skiper48" in [row["id"] for row in ranked["items"][:5]]
+
+    ids = ["3d-character-studio", "skiper-skiper48", "21st-aurora-ribbons"]
+    opened = run_json(binary, "library", *(arg for record_id in ids for arg in ("--record", record_id)))
+    assert [item["record"] for item in opened["items"]] == [by_id[record_id] for record_id in ids]
+    assert [item["use"]["action"] for item in opened["items"]] == [
+        "adapt_prompt", "adapt_source", "install_registry",
+    ]
+    registry = opened["items"][-1]["use"]
+    assert registry["credential_env"] == "API_KEY_21ST" and "?" not in registry["registry_url"]
+
+    plan = run_json(binary, "plan", "Portable field recorder for hikers with a microphone comparison and reservation")
+    assert plan["status"] == "ok"
+    assert plan["blueprint"]["backends"] == {"designs": "hybrid"}
+    assert plan["blueprint"]["selected"]["use"]["action"] == "adapt_prompt"
+    assert [part["name"] for part in plan["sections"]] == [
+        "navigation", "hero", "features", "call-to-action", "footer",
+    ]
+    for part in plan["sections"]:
+        assert part["selected"]["id"] in by_id and part["selected"]["use"]["instruction"]
+    custom = run_json(binary, "plan", "Photo archive with swipe interaction",
+                      "--section", "carousel=skiper-skiper48", "--full", "--local")
+    section, = custom["sections"]
+    assert section["backends"]["components"] == "catalog_exact"
+    assert section["selected"]["record"] == by_id["skiper-skiper48"]
+    assert custom["blueprint"]["selected"]["record"]["full_prompt"]
+    print("Verified library pagination, hybrid ranking, full source reads and build plans.", flush=True)
+
 def main():
     binary = str(Path(sys.argv[1]).resolve())
     library = Path(binary).parent.parent / "design-library"
@@ -77,6 +124,7 @@ def main():
         lexical = catalog.reference_evidence("audio waveform controls on a playback timeline", "designs")
         assert lexical["backend"] == "lexical" and lexical["references"]
     print("Verified hybrid designs and components, source fidelity, broad briefs, lexical and cards-only fallback.")
+    verify_build_library(binary, catalog)
 
 
 if __name__ == "__main__":

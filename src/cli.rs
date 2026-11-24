@@ -18,7 +18,12 @@ struct Flags {
     agent: Option<String>,
     pool: Option<String>,
     source: Option<String>,
-    record: Option<String>,
+    records: Vec<String>,
+    category: Option<String>,
+    offset: Option<usize>,
+    sections: Vec<String>,
+    full: bool,
+    local: bool,
     json: bool,
     brief: bool,
     all: bool,
@@ -45,6 +50,7 @@ pub fn run(args: &[String]) -> i32 {
     }
     match command.as_str() {
         "design" => design_cmd(flags),
+        "library" | "plan" => build_library_cmd(command, flags),
         "context" | "pack" => context(flags),
         "search" | "find" => search(flags),
         "cards" | "list" => cards(flags),
@@ -77,6 +83,12 @@ fn parse(args: &[String]) -> Result<Flags, String> {
         match arg.as_str() {
             "--json" => flags.json = true,
             "--brief" => flags.brief = true,
+            "--full" => flags.full = true,
+            "--local" => flags.local = true,
+            "--" => {
+                flags.positional.extend_from_slice(&args[index + 1..]);
+                break;
+            }
             "--all" => flags.all = true,
             "--user" => flags.user = true,
             "--force" => flags.force = true,
@@ -90,7 +102,13 @@ fn parse(args: &[String]) -> Result<Flags, String> {
                 flags.limit = Some(parse_number(&value, "--limit")?);
             }
             "--source" => flags.source = Some(next_value(args, &mut index, "--source")?),
-            "--record" => flags.record = Some(next_value(args, &mut index, "--record")?),
+            "--record" => flags.records.push(next_value(args, &mut index, "--record")?),
+            "--category" => flags.category = Some(next_value(args, &mut index, "--category")?),
+            "--section" => flags.sections.push(next_value(args, &mut index, "--section")?),
+            "--offset" => {
+                let value = next_value(args, &mut index, "--offset")?;
+                flags.offset = Some(parse_number(&value, "--offset")?);
+            }
             "--pool" => flags.pool = Some(next_value(args, &mut index, "--pool")?),
             "--mode" => flags.mode = Some(next_value(args, &mut index, "--mode")?),
             "--fail-on" => flags.fail_on = Some(next_value(args, &mut index, "--fail-on")?),
@@ -139,7 +157,7 @@ fn design_cmd(flags: Flags) -> i32 {
     let task = flags.positional.join(" ");
     let pool = flags.pool.as_deref().unwrap_or("designs");
     let source = flags.source.as_deref();
-    let record = flags.record.as_deref();
+    let record = flags.records.last().map(String::as_str);
     let record_only = task.is_empty() && source.is_none() && record.is_some_and(|id| !id.is_empty());
     let valid_source = match (pool, source) {
         (_, None) | ("designs", Some("motionsites.ai" | "pixlpin.com"))
@@ -165,6 +183,50 @@ fn design_cmd(flags: Flags) -> i32 {
     };
     println!("{}", serde_json::to_string_pretty(&packet).expect("JSON value"));
     0
+}
+
+fn build_library_cmd(operation: &str, flags: Flags) -> i32 {
+    let limit = flags.limit.map(|value| value.to_string());
+    let offset = flags.offset.map(|value| value.to_string());
+    let mut args = vec![operation];
+    for (flag, value) in [
+        ("--pool", flags.pool.as_deref()),
+        ("--source", flags.source.as_deref()),
+        ("--category", flags.category.as_deref()),
+        ("--limit", limit.as_deref()),
+        ("--offset", offset.as_deref()),
+    ] {
+        if let Some(value) = value {
+            args.extend([flag, value]);
+        }
+    }
+    for record in &flags.records {
+        args.extend(["--record", record]);
+    }
+    for section in &flags.sections {
+        args.extend(["--section", section]);
+    }
+    if flags.full {
+        args.push("--full");
+    }
+    if flags.local {
+        args.push("--local");
+    }
+    if !flags.positional.is_empty() {
+        args.push("--");
+        args.extend(flags.positional.iter().map(String::as_str));
+    }
+
+    match design::build_library(&args) {
+        Ok(packet) => {
+            println!("{}", serde_json::to_string_pretty(&packet).expect("JSON value"));
+            0
+        }
+        Err(error) => {
+            eprintln!("error: {error}");
+            1
+        }
+    }
 }
 
 fn context(flags: Flags) -> i32 {
@@ -284,7 +346,7 @@ fn install_cmd(flags: Flags) -> i32 {
                 target.to_string_lossy().replace('\\', "/")
             );
             println!("binary copied to {}/bin", target.to_string_lossy().replace('\\', "/"));
-            println!("next: point your agent's skill directory at that folder, then `unfslop context \"<task>\"`.");
+            println!("next: point your agent's skill directory at that folder, then `unfslop plan \"<product brief>\"`.");
             0
         }
         Err(error) => {
@@ -422,9 +484,12 @@ fn stats(_flags: Flags) -> i32 {
 
 fn print_help() {
     println!(
-        "unfuckin-slop · design context that costs only what the moment needs
+        "unfuckin-slop · model-ranked UI library for coding agents
 
 USAGE
+  unfslop plan \"<product brief>\" [--section NAME=QUERY]... [--limit N] [--full] [--local]
+  unfslop library [\"<query>\"] [--pool designs|components] [--source DOMAIN] [--category NAME] [--limit N] [--offset N]
+  unfslop library --record ID [--record ID]... [--pool designs|components]
   unfslop design \"<design brief>\" [--pool designs|components] [--source DOMAIN]
   unfslop design --record ID [--pool designs|components]
   unfslop context \"<task>\" [--budget N] [--limit N] [--mode M] [--brief] [--all] [--json]
@@ -435,8 +500,8 @@ USAGE
   unfslop install [--dir PATH | --user] [--agent claude|antigravity|codex|cursor|opencode] [--force]
   unfslop doctor | stats | version | help
 
-CONTEXT is the main command: it ranks cards for the task and prints only the
-ones that fit the budget (default {} tok, {} cards). Nothing else is loaded.",
+PLAN selects catalog material for a build. LIBRARY browses, searches and opens full records.
+CONTEXT ranks craft cards within a budget (default {} tok, {} cards).",
         pack::DEFAULT_BUDGET, pack::DEFAULT_LIMIT
     );
 }

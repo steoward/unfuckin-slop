@@ -1,6 +1,6 @@
 ---
 name: unfuckin-slop
-description: "Design, refine, and review web or native interfaces. Use the local design-reference model and Apple Design / Impeccable guidance for new screens, UI redesigns, visual critique, interaction and gesture design, accessibility, responsive layouts, or design-system work."
+description: "Build web interfaces from a local model-ranked library of page prompts and UI components. Use when asked to build with unfuckin-slop or to search its catalog. Also supplies Apple Design and Impeccable guidance for UI refinement, interaction design and critique."
 ---
 
 # Unfuckin-Slop
@@ -11,23 +11,23 @@ Start with the person using the screen. Identify their main action, what they ne
 
 | Request | First move | Deliverable |
 | --- | --- | --- |
-| New screen or redesign | Name the primary action and run the design brief below. Pick a surface intent (Persuade, Experience, Operate, Read). | A working screen with real hierarchy and a usable primary flow. |
+| New screen or redesign | Name the primary action and run the library build plan. | A working screen with real hierarchy and a usable primary flow. |
 | Refine or repair | Reproduce the issue. Reuse existing tokens, components, copy and interaction contracts. | The smallest coherent change that solves the observed problem. |
 | Review | Identify the route, screenshot or files under review and the evidence each provides. | Findings ordered by impact. Edit only when requested. |
 | Motion or system work | Isolate the gesture, state transition, token or shared primitive and inspect a real consumer. | A change verified in context, including recovery or fallback where applicable. |
 
 Treat the user's brief and established product conventions as design inputs. Preserve factual claims, supported languages and working actions. For an open brief, pick one concrete organizing idea. On an inventory screen that could mean grouping by stock status with the next action alongside each exception. Decorative effects need a purpose on that surface.
 
-## Build the design direction
+## Build from the model library
 
-For a new identity, page or substantial redesign, start with `unfslop design "<subject, primary action, visual or interaction constraint>"`. For a single new component add `--pool components`. The command returns up to three source records and one complete card from each design tradition. Use `--source` when the provider matters. Known titles, IDs and original URLs can resolve directly. Use a canonical ID if the packet reports more than one exact match.
+When asked to build a new site or screen with unfuckin-slop, use the library's selected material to build the page.
 
-1. Check `material.kind` and `material.excerpt_truncated`. Open a selected result with `unfslop design --record ID` (add `--pool components` for either component provider). A MotionSites prompt describes a build, a Skiper UI snapshot may need assets and helpers, and a 21st.dev entry points to a registry. Read the source text and distinguish these from working demos. Open the most useful source or video when visual inspection is available. A text description alone supports claims about the catalog text. A link alone supplies no evidence about what an animation feels like.
-2. Sketch two plausible compositions using the product's real content. Select one by a concrete constraint such as comparing rows, previewing a surface, or reading uninterrupted. A distinctive gesture can be as important as a distinctive layout. Borrow one transferable relationship and identify what would fail if copied into this product. Skip weak references or re-query using the interaction rather than the industry.
-3. Use the Impeccable card to challenge hierarchy, layout or copy, and the Apple card to refine perception, typography or interaction. Follow a related card when a decision crosses topics. Keep a short direction note while implementing: focal point, composition at wide and narrow widths, primary interaction and reference evidence. Respect the user's pinned visual language.
-4. Inspect the rendered result with realistic content. Could you swap in an unrelated product name without changing the composition? If so, revisit the main design decision. At phone width, confirm that a distinctive preview leaves the primary choice discoverable. In a work queue, keep the field labels users need to compare rows.
+1. Run `unfslop plan "<product, primary action, interaction and layout constraints>"`. Use a concise English retrieval brief and keep the interface in the requested language. The default sections fit a product landing page. For other screens, name the required parts with repeated `--section "name=focused query"`. Pass a catalog ID as the query to pin a chosen entry.
+2. Read `blueprint.selected` and each `sections[].selected`. Use the blueprint for layout, tokens and motion, then implement the sections in order. A section with `uses_blueprint` shares the blueprint material. Choose an alternative if it better fits the actual interaction or stack. For a missing section, search `unfslop library "<section interaction>"` or narrow by `--pool`, `--source` and `--category`.
+3. Run `unfslop library --record ID --record ID` once with the chosen IDs to load their complete payloads. Use `plan --full` when you want selected payloads inline. Follow each `use.action`: adapt the stored build prompt, integrate the stored source and its dependencies, or review and install the registry entry in a compatible project. When registry access or the framework prevents installation, adapt the stored description or select a bundled source. Use `--local` to plan using bundled prompts and source snapshots only.
+4. Use the actual product copy, data, assets and actions. Apply one set of design tokens across the selected pieces. Verify the rendered page and primary flow. Report which library entries were used and identify any section that required a fallback.
 
-Read `evidence.backend` to distinguish hybrid from lexical search. For `needs_specific_query`, supply an English description of the subject and interaction. For `unavailable`, use the diagnostic to restore the full library or use a supplied visual reference and the local cards. Describe fallback honestly. A small repair or a screenshot review can go directly to the relevant cards.
+Start with `unfslop library` to page through the catalog, or `unfslop library "<query>"` for one component. Use `unfslop design "<query>"` when you need a short reference packet with two craft cards. Where the library reports lexical retrieval or a missing model, describe that outcome accurately.
 
 ## Get the relevant cards
 
@@ -47,7 +47,7 @@ Run `unfslop context "<action, surface, constraint>"` (default budget 2,000 esti
 
 Use `unfslop get <id>` for a specific rule, `unfslop cards` for the index, or open the linked card directly. Pull another only when the task reaches that subject.
 
-Use the [catalog guide](cards/imp.inspiration.md) for full source blueprints, videos and targeted searches. The installed `design-library/` includes the model and both catalogs. Install its Python requirements in your working Python environment to enable hybrid search. A source checkout has the same requirements at the repository root.
+Use the [catalog guide](cards/imp.inspiration.md) for preview and material details. The installed `design-library/` includes the encoder, vector indexes and complete catalog payloads. Install its Python requirements in your working Python environment to enable hybrid search. A source checkout has the same requirements at the repository root.
 
 ## Implement and verify
 

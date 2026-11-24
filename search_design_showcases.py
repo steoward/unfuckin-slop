@@ -212,11 +212,13 @@ def matches_filters(item, source, category, only_3d, only_glass):
 
 def rank_catalog(query, limit, records, load_semantic, *, components=False,
                  filter_3d=False, filter_liquid_glass=False, category_filter=None,
-                 source_filter=None, diagnostics=None):
+                 source_filter=None, diagnostics=None, candidate_ids=None, query_vector=None,
+                 allow_broad=False):
     """Keep original row positions for vector lookup when filtering."""
     indexed = [(i, item) for i, item in enumerate(records)
-               if matches_filters(item, source_filter, category_filter,
-                                  filter_3d, filter_liquid_glass)]
+               if (candidate_ids is None or item["id"] in candidate_ids)
+               and matches_filters(item, source_filter, category_filter,
+                                   filter_3d, filter_liquid_glass)]
     if diagnostics is not None:
         diagnostics["catalog_available"] = bool(records)
     if not indexed:
@@ -224,7 +226,7 @@ def rank_catalog(query, limit, records, load_semantic, *, components=False,
 
     items = [item for _, item in indexed]
     limit = 5 if limit is None else limit
-    if is_broad_or_creative_query(query):
+    if not allow_broad and is_broad_or_creative_query(query):
         if not (source_filter or category_filter or filter_3d or filter_liquid_glass or components):
             return []
         return [{**item, "relevance_score": 1.0} for item in items[:limit]]
@@ -274,7 +276,7 @@ def rank_catalog(query, limit, records, load_semantic, *, components=False,
     encoder, embeddings = load_semantic()
     hybrid = encoder is not None and embeddings is not None and embeddings.shape[0] == len(records)
     if hybrid:
-        vector = encoder.encode([query])[0]
+        vector = encoder.encode([query])[0] if query_vector is None else query_vector
         semantic = embeddings[[i for i, _ in indexed]] @ vector
         scores = (1.0 - SEMANTIC_WEIGHT) * _minmax(scores) + SEMANTIC_WEIGHT * _minmax(semantic)
     if diagnostics is not None:
