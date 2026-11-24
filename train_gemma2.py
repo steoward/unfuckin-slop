@@ -23,17 +23,17 @@ def reference_query(row):
 def training_examples(rows, tokenizer, use_media):
     for row in rows:
         query = reference_query(row)
-        yield "text", row["id"], query, document_text(row)
+        yield "text", row["id"], query, document_text(row), row["id"]
         body = row.get("full_prompt")
         if body:
             tokens = tokenizer.encode(body, add_special_tokens=False, truncation=False, verbose=False)
             for offset in range(0, len(tokens), 384):
                 chunk = tokenizer.decode(tokens[offset:offset + 384], skip_special_tokens=True)
-                yield "text", row["id"], query, chunk
+                yield "text", row["id"], query, chunk, row["id"]
         if use_media:
             for asset in row.get("media", []):
                 for _, media in media_windows(asset):
-                    yield asset["kind"], row["id"], query, media
+                    yield asset["kind"], row["id"], query, media, f"{row['id']}:{asset['sha256']}"
 
 
 def encode(model, values, prompt=None):
@@ -45,9 +45,9 @@ def encode(model, values, prompt=None):
 
 def batches(rows, tokenizer, use_media, batch_size):
     pending = defaultdict(list)
-    for kind, record_id, query, value in training_examples(rows, tokenizer, use_media):
+    for kind, record_id, query, value, unit in training_examples(rows, tokenizer, use_media):
         batch = pending[kind]
-        batch.append((record_id, query, value))
+        batch.append((record_id, query, value, unit))
         if len(batch) == batch_size:
             yield kind, batch[:]
             batch.clear()
@@ -57,7 +57,7 @@ def batches(rows, tokenizer, use_media, batch_size):
 
 
 def train_step(model, batch, kind, negative):
-    ids, queries, values = zip(*batch)
+    ids, queries, values, _ = zip(*batch)
     anchor = encode(model, list(queries), model.prompts["query"])
     positive = encode(model, list(values), model.prompts["document"] if kind == "text" else None)
     logits = 20 * (anchor @ positive.T)
@@ -73,13 +73,14 @@ def train_step(model, batch, kind, negative):
     return F.cross_entropy(logits, torch.arange(len(batch), device=model.device))
 
 
-def checkpoint(model, optimizer, output, step, counts, signature, epoch, next_batch):
+def checkpoint(model, optimizer, output, step, counts, covered, signature, epoch, next_batch):
     folder = output / f"step-{step:08d}"
     folder.mkdir(parents=True, exist_ok=True)
     model[0].model.save_pretrained(folder)
     torch.save(optimizer.state_dict(), folder / "optimizer.pt")
     report = {"step": step, "examples": dict(counts), "training_signature": signature,
-              "epoch": epoch, "next_batch": next_batch}
+              "epoch": epoch, "next_batch": next_batch,
+              "covered": {kind: sorted(units) for kind, units in covered.items()}}
     temporary = folder / "coverage.tmp"
     temporary.write_text(json.dumps(report, indent=2), encoding="utf-8")
     temporary.replace(folder / "coverage.json")
@@ -105,7 +106,7 @@ def main():
     if len(rows) < 2:
         parser.error("training requires at least two source records")
     use_media = not args.text_only and any(row.get("media") for row in rows)
-    fingerprint = hashlib.sha256(f"{row_digest(rows)}:{args.batch_size}:{use_media}".encode())
+    fingerprint = hashlib.sha256(f"coverage-v1:{row_digest(rows)}:{args.batch_size}:{use_media}".encode())
     for row in rows:
         fingerprint.update(hashlib.sha256((row.get("full_prompt") or "").encode()).digest())
     signature = fingerprint.hexdigest()
@@ -113,6 +114,13 @@ def main():
     torch.manual_seed(124)
     step, start_epoch, resume_batch = 0, 0, 0
     counts = Counter()
+    covered = defaultdict(set)
+    expected = defaultdict(set)
+    for row in rows:
+        expected["text"].add(row["id"])
+        if use_media:
+            for asset in row.get("media", []):
+                expected[asset["kind"]].add(f"{row['id']}:{asset['sha256']}")
     if args.resume:
         previous = json.loads((args.resume / "coverage.json").read_text(encoding="utf-8"))
         if previous["training_signature"] != signature:
@@ -120,6 +128,7 @@ def main():
         model.load_adapter(str(args.resume), is_trainable=True)
         step, start_epoch, resume_batch = previous["step"], previous["epoch"], previous["next_batch"]
         counts.update(previous["examples"])
+        covered.update({kind: set(units) for kind, units in previous["covered"].items()})
     else:
         targets = [name for name, module in model[0].model.named_modules()
                    if name.startswith("language_model.") and name.rsplit(".", 1)[-1] in ("q_proj", "v_proj")
@@ -157,15 +166,20 @@ def main():
             torch.nn.utils.clip_grad_norm_(trainable, 1.0)
             optimizer.step()
             counts.update({kind: len(batch)})
+            covered[kind].update(entry[-1] for entry in batch)
             step += 1
             if step % 25 == 0 or step == 1:
                 print(f"step={step} {kind} loss={loss.item():.5f} coverage={dict(counts)}", flush=True)
             stopping = args.steps is not None and step >= args.steps
             if stopping or step % args.save_every == 0:
-                checkpoint(model, optimizer, args.output, step, counts, signature, epoch, ordinal + 1)
+                checkpoint(model, optimizer, args.output, step, counts, covered, signature, epoch, ordinal + 1)
             if stopping:
                 return
-    final = checkpoint(model, optimizer, args.output, step, counts, signature, args.epochs, 0)
+    missing = {kind: len(units - covered[kind]) for kind, units in expected.items()
+               if units - covered[kind]}
+    if missing:
+        raise RuntimeError(f"Training finished with missing corpus entries: {missing}")
+    final = checkpoint(model, optimizer, args.output, step, counts, covered, signature, args.epochs, 0)
     print(f"Training complete: {final}; examples={dict(counts)}", flush=True)
 
 
