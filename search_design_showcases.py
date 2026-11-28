@@ -191,7 +191,7 @@ def matches_filters(item, source, category, only_3d, only_glass):
 def rank_catalog(query, limit, records, load_semantic, *, components=False,
                  filter_3d=False, filter_liquid_glass=False, category_filter=None,
                  source_filter=None, diagnostics=None, candidate_ids=None, query_vector=None,
-                 allow_broad=False):
+                 allow_broad=False, visual_only=False):
     """Keep original row positions for vector lookup when filtering."""
     indexed = [(i, item) for i, item in enumerate(records)
                if (candidate_ids is None or item["id"] in candidate_ids)
@@ -253,6 +253,10 @@ def rank_catalog(query, limit, records, load_semantic, *, components=False,
     scores = np.asarray(scores)
     encoder, embeddings = load_semantic()
     hybrid = encoder is not None and embeddings is not None and len(embeddings.text) == len(records)
+    if visual_only and not hybrid:
+        if diagnostics is not None:
+            diagnostics["backend"] = "no_visual_index"
+        return []
     visual_hits = {}
     if hybrid:
         vector = encoder([query])[0] if query_vector is None else query_vector
@@ -272,13 +276,20 @@ def rank_catalog(query, limit, records, load_semantic, *, components=False,
             semantic[position] = 0.45 * semantic[position] + 0.55 * score
         semantic = _minmax(semantic) if visual_hits else text_score
         scores = (1.0 - SEMANTIC_WEIGHT) * _minmax(scores) + SEMANTIC_WEIGHT * semantic
+        if visual_only:
+            # Image queries must rank actual indexed pixels, never lexical-only
+            # rows or a text similarity with an unavailable media file.
+            scores = np.asarray([visual_hits[i]["similarity"] if i in visual_hits else -np.inf
+                                 for i, _ in indexed])
     if diagnostics is not None:
         diagnostics["backend"] = ("gemma2_multimodal" if visual_hits else "gemma2_text") if hybrid else "lexical"
 
     ranked = sorted(zip(scores, indexed), key=lambda pair: pair[0], reverse=True)
     return [{**item, "relevance_score": round(float(score), 4),
+             "retrieval": {"query": query, "backend": ("gemma2_multimodal" if visual_hits else "gemma2_text") if hybrid else "lexical", "score_kind": "visual_cosine" if visual_only else "hybrid_relative" if hybrid else "lexical_weighted"},
              **({"visual_evidence": visual_hits[row_index]} if row_index in visual_hits else {})}
-            for score, (row_index, item) in ranked[:limit] if hybrid or score > 0.05 or not terms]
+            for score, (row_index, item) in ranked[:limit]
+            if np.isfinite(score) and (hybrid or score > 0.05 or not terms)]
 
 
 def search(query="", limit=None, filter_3d=False, filter_liquid_glass=False,

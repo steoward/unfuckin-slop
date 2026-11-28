@@ -40,7 +40,9 @@ def evaluate(system, meta, queries):
         index = open_index("showcases")
         if index is None:
             raise RuntimeError("Build the EmbeddingGemma 2 showcase index first")
-        scores = query_vectors([case["query"] for case in queries]) @ index.text.T
+        indices = list(range(len(meta)))
+        scores = np.stack([index.rank_text(indices, vector)
+                           for vector in query_vectors([case["query"] for case in queries])])
         orders = np.argsort(-scores, axis=1, kind="stable")
     else:
         if catalog._load_semantic()[1] is None:

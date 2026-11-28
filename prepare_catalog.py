@@ -9,6 +9,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from visual_annotations import validate_annotation
+from source_bundle import attach_source_bundles
 
 BUNDLES = {
     "motionsites-free-prompts.txt": ("motionsites.ai", "showcases"),
@@ -128,9 +129,13 @@ def main():
     parser.add_argument("--archive", type=Path, help="Existing private catalog metadata and stable IDs")
     parser.add_argument("--media-manifest", type=Path, help="JSON Lines of authorized local assets")
     parser.add_argument("--media-root", type=Path)
+    parser.add_argument("--source-manifest", type=Path, help="JSON Lines of authorized original source bundles")
+    parser.add_argument("--source-root", type=Path)
     args = parser.parse_args()
     if bool(args.media_manifest) != bool(args.media_root):
         parser.error("--media-manifest and --media-root must be used together")
+    if bool(args.source_manifest) != bool(args.source_root):
+        parser.error("--source-manifest and --source-root must be used together")
     archived = {}
     if args.archive:
         for pool in ("showcases", "components"):
@@ -150,6 +155,8 @@ def main():
             rows.setdefault(row["id"], ("showcases", row))
     if args.media_manifest:
         attach_media(args.media_manifest, args.media_root.resolve(), rows)
+    if args.source_manifest:
+        attach_source_bundles(args.source_manifest, args.source_root.resolve(), rows)
     args.output.mkdir(parents=True, exist_ok=True)
     for pool in ("showcases", "components"):
         selected = [row for group, row in rows.values() if group == pool]
@@ -161,6 +168,7 @@ def main():
                                                if row.get("video_url"))),
         "assets": dict(Counter(asset["kind"] for _, row in rows.values() for asset in row.get("media", []))),
         "annotated_assets": sum("annotation" in asset for _, row in rows.values() for asset in row.get("media", [])),
+        "source_bundles": sum(bool(row.get("source_bundle")) for _, row in rows.values()),
     }
     (args.output / "coverage.json").write_text(json.dumps(coverage, indent=2), encoding="utf-8")
     print(json.dumps(coverage, indent=2))

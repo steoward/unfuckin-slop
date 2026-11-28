@@ -2,11 +2,17 @@
 import argparse
 from itertools import zip_longest
 import json
+import os
 from pathlib import Path
 import re
 import sys
+from urllib.parse import urlsplit
+from uuid import uuid4
 
 import search_design_showcases as search
+from source_material import material_contract, full_evidence
+from delivery_packet import export_packet
+from semantic_index import DATA_DIR
 
 
 DEFAULT_SECTIONS = {
@@ -42,10 +48,53 @@ ACTIONS = {
 }
 
 
+def reference_contract(result):
+    """Report the inputs required before claiming reference fidelity."""
+    delivery = result["delivery"]
+    inspection = result["inspection"]
+    urls = {
+        "source": result["url"],
+        "video": result["video_url"],
+        "registry": result["use"].get("registry_url"),
+        "bundle": delivery.get("source_bundle", {}).get("source_url"),
+    }
+    exact_urls = {}
+    for role, url in urls.items():
+        if not url:
+            continue
+        try:
+            parsed = urlsplit(url)
+            if parsed.scheme in {"http", "https"} and parsed.hostname:
+                exact_urls[role] = url
+        except ValueError:
+            continue
+    missing = []
+    if not result["id"]:
+        missing.append("reference_id")
+    if "source" not in exact_urls and "bundle" not in exact_urls:
+        missing.append("original_source_url")
+    if not delivery["payload"] and not delivery["files"]:
+        missing.append("full_payload")
+    if delivery["tier"] == "source_bundle" and delivery.get("bundle_status") != "verified":
+        missing.append("verified_source_bundle")
+    if delivery["tier"] == "registry_pointer":
+        missing.append("verified_registry_source")
+    if inspection["status"] != "verified":
+        missing.append("verified_original_visual_evidence")
+    return {
+        "reference_id": result["id"],
+        "urls": exact_urls,
+        "visual_evidence_status": inspection["status"],
+        "status": "missing_evidence" if missing else "comparison_required",
+        "missing_evidence": missing,
+        "comparison_required": True,
+    }
+
+
 def entry(row, pool, *, full=False):
     result = search.pack_reference(row)
     kind = result["material"]["kind"]
-    action, instruction = ACTIONS[kind]
+    action, instruction = ACTIONS.get(kind, ACTIONS["description"])
     use = {"action": action, "instruction": instruction}
     if kind == "registry_instructions":
         match = REGISTRY_URL.search(row["full_prompt"])
@@ -59,17 +108,24 @@ def entry(row, pool, *, full=False):
                 "credential_parameter": "api_key",
             }
     result.update(pool=pool, category=search.get_item_category(row), type=row.get("type"), use=use)
+    result["delivery"] = material_contract(row, kind, full=full)
+    if result["delivery"]["tier"] == "source_bundle":
+        result["use"] = {"action": "integrate_bundle", "instruction": "Use the verified original files and assets, preserving dependencies, source revision and declared usage rights. Do not use an unavailable bundle."}
     if "relevance_score" in row:
         result["score"] = row["relevance_score"]
+    if "retrieval" in row:
+        result["retrieval"] = row["retrieval"]
     if full:
-        result["record"] = {key: value for key, value in row.items() if key not in {"relevance_score", "visual_evidence"}}
+        result["record"] = {key: value for key, value in row.items() if key not in {"relevance_score", "visual_evidence", "retrieval"}}
+        result["inspection"] = full_evidence(row, result["visual_evidence"])
+        result["reference_contract"] = reference_contract(result)
     return result
 
 
 def select(query, pool, records, candidates, limit, *, context=None, query_vector=None, visual_only=False):
     exact = [] if visual_only else search.exact_references(query, candidates)
     if exact:
-        return exact[:limit], "catalog_exact"
+        return [{**row, "retrieval": {"backend": "catalog_exact", "query": query}} for row in exact[:limit]], "catalog_exact"
     if query.startswith(("http://", "https://")):
         return [], "catalog_exact"
     ranking_query = context or query
@@ -78,7 +134,7 @@ def select(query, pool, records, candidates, limit, *, context=None, query_vecto
     matches = search.rank_catalog(
         ranking_query, limit, records, load_index, components=pool == "components",
         candidate_ids={row["id"] for row in candidates}, diagnostics=details,
-        query_vector=query_vector, allow_broad=True,
+        query_vector=query_vector, allow_broad=True, visual_only=visual_only,
     )
     return matches, details.get("backend")
 
@@ -107,13 +163,13 @@ def browse(args, catalogs, query):
                                          visual_only=bool(args.reference))
             provenance[pool] = backend
             if backend == "catalog_exact":
-                exact_results.extend(entry(row, pool) for row in candidates)
+                exact_results.extend((row, pool) for row in candidates)
                 continue
         results.append([(row, pool) for row in candidates])
 
     if exact_results:
         total = len(exact_results)
-        page = exact_results[args.offset:args.offset + args.limit]
+        page = [entry(row, pool, full=args.full) for row, pool in exact_results[args.offset:args.offset + args.limit]]
     else:
         if query or args.reference:
             # Pool scores are normalized independently. Interleave by rank.
@@ -121,13 +177,14 @@ def browse(args, catalogs, query):
         else:
             order = [item for batch in results for item in batch]
         total = len(order)
-        page = [entry(row, pool) for row, pool in order[args.offset:args.offset + args.limit]]
+        page = [entry(row, pool, full=args.full) for row, pool in order[args.offset:args.offset + args.limit]]
     next_offset = args.offset + len(page)
     return {
         "status": "ok" if total else "no_matches",
         "total": total, "offset": args.offset,
         "next_offset": next_offset if next_offset < total else None,
         "backends": provenance, "items": page,
+        "query": query,
     }
 
 
@@ -144,13 +201,16 @@ def matches_role(row, pattern):
 
 
 def build_plan(args, catalogs, brief):
-    designs = [row for row in catalogs["designs"] if row.get("full_prompt") or row.get("media")]
+    designs = [row for row in catalogs["designs"] if row.get("full_prompt") or row.get("media") or row.get("source_bundle")]
     components = catalogs["components"]
     if args.local:
-        components = [row for row in components if row["source_site"] == "skiper-ui.com"]
+        designs = [row for row in designs if row.get("full_prompt") or row.get("source_bundle")]
+        components = [row for row in components if row.get("source_bundle") or (row["source_site"] == "skiper-ui.com" and row.get("full_prompt"))]
     foundation = [row for row in designs if row.get("type") in
                   {"hero", "landing", "landing-page", "3d website", "dashboard", "mobile", "showcase"}]
-    sections = args.section or list(DEFAULT_SECTIONS.items())
+    # Do not assemble a generic five-section landing page around every brief.
+    # The retrieved blueprint owns composition; supplementary slots are explicit.
+    sections = args.section or [("hero", DEFAULT_SECTIONS["hero"])]
     queries = [brief, *(f"{query} for {brief}" for _, query in sections)]
     indexed = search.open_index("showcases") is not None or search.open_index("components") is not None
     vectors = dict(zip(queries, search.query_vectors(queries))) if indexed else {}
@@ -164,20 +224,22 @@ def build_plan(args, catalogs, brief):
         return {
             "name": name,
             "backends": backends,
-            "selected": entry(first, pool, full=args.full),
-            "alternatives": [entry(row, pool) for row, pool in options[1:args.limit]],
+            "selected": entry(first, pool, full=True),
+            "alternatives": [entry(row, pool, full=args.full) for row, pool in options[1:args.limit]],
         }
 
-    anchors, backend = select(brief, "designs", catalogs["designs"], foundation, args.limit,
+    pinned = search.exact_references(brief, designs)
+    anchors, backend = select(brief, "designs", catalogs["designs"], pinned or foundation, args.limit,
                               query_vector=vectors.get(brief))
     blueprint = choose("page-blueprint", [(row, "designs") for row in anchors], {"designs": backend})
     parts = []
     for (name, query), context in zip(sections, queries[1:]):
-        if not args.section and name == "hero" and anchors and anchors[0]["type"] == "hero":
+        if not args.section and name == "hero" and anchors:
             selected = blueprint["selected"]
             parts.append({
                 "name": name, "backends": blueprint["backends"],
-                "selected": {key: value for key, value in selected.items() if key != "record"},
+                "selected": {key: value for key, value in selected.items()
+                             if key not in {"record", "delivery", "inspection", "reference_contract"}},
                 "alternatives": [], "uses_blueprint": True,
             })
             continue
@@ -197,19 +259,42 @@ def build_plan(args, catalogs, brief):
                 query, pool, catalogs[pool], candidates, args.limit,
                 context=context, query_vector=vectors.get(context),
             )
-        priority = sorted(options, key=lambda pool: backends[pool] != "catalog_exact")
-        ordered = [[(row, pool) for row in options[pool]] for pool in priority]
-        parts.append(choose(name, interleave(ordered), backends))
+        # Prefer an exact selection; otherwise choose page-level material for the hero,
+        # and reusable components for discrete sections. Alternatives keep both pools.
+        priority = sorted(options, key=lambda pool: (backends[pool] != "catalog_exact",
+                          pool != ("designs" if name.casefold() == "hero" else "components")))
+        ordered = interleave([[(row, pool) for row in options[pool]] for pool in priority])
+        # Keep explicit IDs authoritative. For free-form requests prefer available
+        # implementation within the retrieved candidates, not an unresolved pointer.
+        if not any(backends[p] == "catalog_exact" for p in backends) and name.casefold() != "hero":
+            original = [(row, pool) for row, pool in ordered
+                        if row.get("source_bundle") or (row.get("source_site") == "skiper-ui.com" and row.get("full_prompt"))]
+            if original:
+                first = original[0]
+                ordered = [first] + [item for item in ordered if item[0]["id"] != first[0]["id"]]
+        parts.append(choose(name, ordered, backends))
+    selected_slots = [blueprint, *parts]
+    selected = [part["selected"] for part in selected_slots if part.get("selected") and not part.get("uses_blueprint")]
+    gaps = [{"id": row["id"], "missing": row["reference_contract"]["missing_evidence"]}
+            for row in selected if row["reference_contract"]["missing_evidence"]]
+    lexical = [row["id"] for row in selected if row.get("retrieval", {}).get("backend") == "lexical"]
     return {
         "status": "ok" if blueprint["selected"] and all(p["selected"] for p in parts) else "partial",
         "brief": brief,
         "blueprint": blueprint, "sections": parts,
+        "composition": {"policy": "single_blueprint", "mode": "pinned_reference" if pinned else "adaptation",
+                        "anchor_id": blueprint["selected"]["id"] if blueprint["selected"] else None,
+                        "supplementary_sections": [name for name, _ in args.section or []],
+                        "rule": "Keep the blueprint's complete composition. Add only explicitly requested compatible sections; do not invent generic sections."},
+        "execution_readiness": {"status": "review_required" if gaps or lexical or not selected else "comparison_required",
+                                "evidence_gaps": gaps, "lexical_selections": lexical,
+                                "quality_verified": False},
         "instructions": [
-            "Open visual_evidence at its indicated timestamp when available. Record the observed hierarchy, composition and motion before implementing.",
-            "Use the selected blueprint as the page's visual foundation. It may cover a single section.",
-            "Build each section from its selected material. Use an alternative if it fits the stack or interaction better.",
-            "Open all selected IDs together with unfslop library --record ID --record ID, or rerun with --full. A section marked uses_blueprint uses the same material.",
-            "Use one set of tokens, real product copy and functional actions. For a missing selection, search the library for that section.",
+            "Choose reproduction for an unchanged reference or adaptation when the brief changes its content, assets or design. Pin the reference ID and keep its exact source and asset evidence.",
+            "Read the full delivery payload and files. Open the original visual evidence and record the observed composition, type, assets and motion. A section marked uses_blueprint shares the blueprint's evidence and contract.",
+            "Resolve every missing_evidence item for reproduction. Open an alternative by ID only when the selection is flexible. Report any unresolved evidence and avoid generic substitutions.",
+            "For reproduction, preserve original assets, copy, layout and behavior where authorized. Only use suggested sections that match the pinned reference. For adaptation, implement the brief's changes and preserve the reference's observable design decisions.",
+            "Render at matching viewports and interaction states, compare to verified original images or video frames, and report the source IDs, exact URLs, evidence, discrepancies and any unverified states.",
         ],
     }
 
@@ -229,8 +314,14 @@ def main():
     parser.add_argument("--section", action="append", type=section_spec)
     parser.add_argument("--full", action="store_true")
     parser.add_argument("--local", action="store_true")
+    parser.add_argument("--export-dir", type=Path, help="Export selected full material to a new private directory")
+    parser.add_argument("--no-export", action="store_true", help="Inspect a plan without writing its private material packet")
     parser.add_argument("query", nargs="*")
     args = parser.parse_intermixed_args()
+    if args.no_export and (args.export_dir or args.operation != "plan"):
+        parser.error("--no-export is for plan and conflicts with --export-dir")
+    if args.export_dir and args.operation == "library":
+        args.full = True
     query = " ".join(args.query).strip()
     if args.limit is None:
         args.limit = 3 if args.operation == "plan" else 20
@@ -253,8 +344,8 @@ def main():
         if args.section and len({name.casefold() for name, _ in args.section}) != len(args.section):
             parser.error("section names must be unique")
         result = build_plan(args, catalogs, query)
-    elif args.section or args.full or args.local:
-        parser.error("--section, --full and --local are for plan")
+    elif args.section or args.local:
+        parser.error("--section and --local are for plan")
     elif args.record:
         if query or args.source or args.category or args.offset or args.reference:
             parser.error("--record accepts IDs and an optional --pool")
@@ -265,6 +356,14 @@ def main():
         result = {"status": "ok", "items": [entry(*by_id[record_id], full=True) for record_id in args.record]}
     else:
         result = browse(args, catalogs, query)
+    if args.operation == "plan" and not args.no_export and not args.export_dir and result["blueprint"]["selected"]:
+        root = Path(os.environ.get("UNFSLOP_DELIVERY_ROOT", DATA_DIR / ".deliveries"))
+        args.export_dir = root / uuid4().hex
+    if args.export_dir:
+        try:
+            result["export"] = export_packet(result, args.export_dir)
+        except (OSError, ValueError) as exc:
+            parser.error(str(exc))
     print(json.dumps(result, ensure_ascii=False))
 
 

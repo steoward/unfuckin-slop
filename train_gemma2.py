@@ -5,12 +5,16 @@ import hashlib
 import json
 from pathlib import Path
 import random
+from tempfile import TemporaryDirectory
 
 import torch
 import torch.nn.functional as F
 from peft import LoraConfig
 
-from semantic_index import canonical_rows, document_text, load_encoder, media_windows, row_digest
+from semantic_index import (
+    VISUAL_CACHE_VERSION, VISUAL_WINDOW_SECONDS, canonical_rows, document_text, load_encoder,
+    media_windows, model_key, row_digest,
+)
 
 
 def reference_query(row):
@@ -32,8 +36,9 @@ def training_examples(rows, tokenizer, use_media):
                 yield "text", row["id"], query, chunk, row["id"]
         if use_media:
             for asset in row.get("media", []):
-                for _, media in media_windows(asset):
-                    yield asset["kind"], row["id"], query, media, f"{row['id']}:{asset['sha256']}"
+                for start, media in media_windows(asset):
+                    unit = f"{row['id']}:{asset['sha256']}"
+                    yield asset["kind"], row["id"], query, media, (unit, f"{unit}:{start}")
 
 
 def encode(model, values, prompt=None):
@@ -73,17 +78,35 @@ def train_step(model, batch, kind, negative):
     return F.cross_entropy(logits, torch.arange(len(batch), device=model.device))
 
 
-def checkpoint(model, optimizer, output, step, counts, covered, signature, epoch, next_batch):
+def coverage_units(kind, batch, coverage):
+    for _, _, _, unit in batch:
+        if kind == "text":
+            coverage[kind].add(unit)
+        else:
+            asset, window = unit
+            coverage[kind].add(asset)
+            coverage[f"{kind}_windows"].add(window)
+
+
+def checkpoint(model, optimizer, output, step, counts, covered, signature, epoch, next_batch, *, final=False):
     folder = output / f"step-{step:08d}"
-    folder.mkdir(parents=True, exist_ok=True)
-    model[0].model.save_pretrained(folder)
-    torch.save(optimizer.state_dict(), folder / "optimizer.pt")
+    if final and folder.exists():
+        folder = folder.with_name(f"{folder.name}-final")
+    if folder.exists():
+        raise FileExistsError(f"Checkpoint already exists: {folder}")
+    output.mkdir(parents=True, exist_ok=True)
     report = {"step": step, "examples": dict(counts), "training_signature": signature,
               "epoch": epoch, "next_batch": next_batch,
               "covered": {kind: sorted(units) for kind, units in covered.items()}}
-    temporary = folder / "coverage.tmp"
-    temporary.write_text(json.dumps(report, indent=2), encoding="utf-8")
-    temporary.replace(folder / "coverage.json")
+    with TemporaryDirectory(prefix=".checkpoint-", dir=output) as temporary:
+        staged = Path(temporary) / "checkpoint"
+        model[0].model.save_pretrained(staged)
+        state = {"optimizer": optimizer.state_dict(), "cpu_rng": torch.get_rng_state()}
+        if model.device.type == "cuda":
+            state["cuda_rng"] = torch.cuda.get_rng_state(model.device)
+        torch.save(state, staged / "optimizer.pt")
+        (staged / "coverage.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+        staged.rename(folder)
     return folder
 
 
@@ -100,18 +123,21 @@ def main():
     args = parser.parse_args()
     if min(args.batch_size, args.epochs, args.save_every) < 1:
         parser.error("batch size, epochs and checkpoint interval must be positive")
+    if any(value is not None and value < 1 for value in (args.limit, args.steps)):
+        parser.error("limit and steps must be positive")
     rows = canonical_rows("showcases") + canonical_rows("components")
     if args.limit:
         rows = rows[:args.limit]
     if len(rows) < 2:
         parser.error("training requires at least two source records")
     use_media = not args.text_only and any(row.get("media") for row in rows)
-    fingerprint = hashlib.sha256(f"coverage-v1:{row_digest(rows)}:{args.batch_size}:{use_media}".encode())
+    fingerprint = hashlib.sha256(
+        f"coverage-v2:{model_key(adapter=False)}:{row_digest(rows)}:"
+        f"{args.batch_size}:{use_media}:{VISUAL_CACHE_VERSION}:{VISUAL_WINDOW_SECONDS}".encode()
+    )
     for row in rows:
         fingerprint.update(hashlib.sha256((row.get("full_prompt") or "").encode()).digest())
     signature = fingerprint.hexdigest()
-    model = load_encoder(vision=use_media, adapter=False)
-    torch.manual_seed(124)
     step, start_epoch, resume_batch = 0, 0, 0
     counts = Counter()
     covered = defaultdict(set)
@@ -124,11 +150,18 @@ def main():
     if args.resume:
         previous = json.loads((args.resume / "coverage.json").read_text(encoding="utf-8"))
         if previous["training_signature"] != signature:
-            parser.error("checkpoint corpus, batch size or modality changed")
-        model.load_adapter(str(args.resume), is_trainable=True)
+            parser.error("checkpoint format, base model, corpus, batch size or modality changed")
         step, start_epoch, resume_batch = previous["step"], previous["epoch"], previous["next_batch"]
+        if start_epoch >= args.epochs:
+            parser.error("checkpoint already reached the requested epoch count")
+        if args.steps is not None and args.steps <= step:
+            parser.error("step limit must be greater than the resumed step")
         counts.update(previous["examples"])
         covered.update({kind: set(units) for kind, units in previous["covered"].items()})
+    model = load_encoder(vision=use_media, adapter=False)
+    torch.manual_seed(124)
+    if args.resume:
+        model.load_adapter(str(args.resume), is_trainable=True)
     else:
         targets = [name for name, module in model[0].model.named_modules()
                    if name.startswith("language_model.") and name.rsplit(".", 1)[-1] in ("q_proj", "v_proj")
@@ -142,8 +175,11 @@ def main():
     print(f"model_device={model.device} trainable_parameters={sum(p.numel() for p in trainable)} records={len(rows)} media={use_media}", flush=True)
     optimizer = torch.optim.AdamW(trainable, lr=3e-5)
     if args.resume:
-        optimizer.load_state_dict(torch.load(args.resume / "optimizer.pt", weights_only=True,
-                                             map_location=model.device))
+        state = torch.load(args.resume / "optimizer.pt", weights_only=True, map_location="cpu")
+        optimizer.load_state_dict(state["optimizer"])
+        torch.set_rng_state(state["cpu_rng"])
+        if model.device.type == "cuda" and "cuda_rng" in state:
+            torch.cuda.set_rng_state(state["cuda_rng"], model.device)
     tokenizer = model.tokenizer
     for epoch in range(start_epoch, args.epochs):
         ordered = list(rows)
@@ -151,6 +187,7 @@ def main():
         rng.shuffle(ordered)
         decoys = [(row["id"], document_text(row)) for row in ordered]
         for ordinal, (kind, batch) in enumerate(batches(ordered, tokenizer, use_media, args.batch_size)):
+            coverage_units(kind, batch, expected)
             if epoch == start_epoch and ordinal < resume_batch:
                 continue
             positives = {item[0] for item in batch}
@@ -166,7 +203,7 @@ def main():
             torch.nn.utils.clip_grad_norm_(trainable, 1.0)
             optimizer.step()
             counts.update({kind: len(batch)})
-            covered[kind].update(entry[-1] for entry in batch)
+            coverage_units(kind, batch, covered)
             step += 1
             if step % 25 == 0 or step == 1:
                 print(f"step={step} {kind} loss={loss.item():.5f} coverage={dict(counts)}", flush=True)
@@ -179,7 +216,8 @@ def main():
                if units - covered[kind]}
     if missing:
         raise RuntimeError(f"Training finished with missing corpus entries: {missing}")
-    final = checkpoint(model, optimizer, args.output, step, counts, covered, signature, args.epochs, 0)
+    final = checkpoint(model, optimizer, args.output, step, counts, covered, signature, args.epochs, 0,
+                       final=True)
     print(f"Training complete: {final}; examples={dict(counts)}", flush=True)
 
 

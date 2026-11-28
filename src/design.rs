@@ -12,7 +12,7 @@ use crate::{cards::Library, index};
 const SCRIPT: &str = "search_design_showcases.py";
 const BUILD_LIBRARY: &str = "build_library.py";
 const LIBRARY_FILES: &[&str] = &[
-    SCRIPT, BUILD_LIBRARY, "semantic_index.py", "visual_annotations.py", "prepare_catalog.py", "requirements.txt",
+    SCRIPT, BUILD_LIBRARY, "semantic_index.py", "visual_annotations.py", "source_material.py", "source_bundle.py", "delivery_packet.py", "prepare_catalog.py", "requirements.txt",
 ];
 
 
@@ -27,13 +27,15 @@ fn library_root() -> Option<PathBuf> {
     if dir.ends_with("bin") && installed.join(SCRIPT).is_file() {
         return Some(installed);
     }
-    let checkout = dir.parent()?.parent()?;
-    if (dir.ends_with("release") || dir.ends_with("debug"))
-        && checkout.join("Cargo.toml").is_file()
-        && checkout.join("skills/unfuckin-slop/SKILL.md").is_file()
-        && checkout.join(SCRIPT).is_file()
-    {
-        return Some(checkout.to_path_buf());
+    // Support Cargo target directories nested in a checkout, not only target/debug.
+    if dir.ends_with("release") || dir.ends_with("debug") {
+        for checkout in dir.ancestors().skip(1) {
+            if checkout.join("Cargo.toml").is_file()
+                && checkout.join("skills/unfuckin-slop/SKILL.md").is_file()
+                && checkout.join(SCRIPT).is_file() {
+                return Some(checkout.to_path_buf());
+            }
+        }
     }
     None
 }

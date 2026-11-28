@@ -21,6 +21,8 @@ struct Flags {
     records: Vec<String>,
     category: Option<String>,
     reference: Option<String>,
+    export_dir: Option<String>,
+    no_export: bool,
     offset: Option<usize>,
     sections: Vec<String>,
     full: bool,
@@ -106,6 +108,8 @@ fn parse(args: &[String]) -> Result<Flags, String> {
             "--record" => flags.records.push(next_value(args, &mut index, "--record")?),
             "--category" => flags.category = Some(next_value(args, &mut index, "--category")?),
             "--reference" => flags.reference = Some(next_value(args, &mut index, "--reference")?),
+            "--export-dir" => flags.export_dir = Some(next_value(args, &mut index, "--export-dir")?),
+            "--no-export" => flags.no_export = true,
             "--section" => flags.sections.push(next_value(args, &mut index, "--section")?),
             "--offset" => {
                 let value = next_value(args, &mut index, "--offset")?;
@@ -196,6 +200,7 @@ fn build_library_cmd(operation: &str, flags: Flags) -> i32 {
         ("--source", flags.source.as_deref()),
         ("--category", flags.category.as_deref()),
         ("--reference", flags.reference.as_deref()),
+        ("--export-dir", flags.export_dir.as_deref()),
         ("--limit", limit.as_deref()),
         ("--offset", offset.as_deref()),
     ] {
@@ -214,6 +219,9 @@ fn build_library_cmd(operation: &str, flags: Flags) -> i32 {
     }
     if flags.local {
         args.push("--local");
+    }
+    if flags.no_export {
+        args.push("--no-export");
     }
     if !flags.positional.is_empty() {
         args.push("--");
@@ -493,6 +501,7 @@ USAGE
   unfslop plan \"<product brief>\" [--section NAME=QUERY]... [--limit N] [--full] [--local]
   unfslop library [\"<query>\"] [--pool designs|components] [--source DOMAIN] [--category NAME] [--reference SCREENSHOT] [--limit N] [--offset N]
   unfslop library --record ID [--record ID]... [--pool designs|components]
+  unfslop library \"<query>\" --export-dir NEW_DIRECTORY [--limit N]
   unfslop design \"<design brief>\" [--pool designs|components] [--source DOMAIN]
   unfslop design --record ID [--pool designs|components]
   unfslop context \"<task>\" [--budget N] [--limit N] [--mode M] [--brief] [--all] [--json]
@@ -503,7 +512,7 @@ USAGE
   unfslop install [--dir PATH | --user] [--agent claude|antigravity|codex|cursor|opencode] [--force]
   unfslop doctor | stats | version | help
 
-PLAN selects catalog material for a build. LIBRARY browses, searches and opens full records.
+PLAN returns complete selected material; --full also expands alternatives. LIBRARY browses, searches and opens full records with --record or --full.
 CONTEXT ranks craft cards within a budget (default {} tok, {} cards).",
         pack::DEFAULT_BUDGET, pack::DEFAULT_LIMIT
     );
